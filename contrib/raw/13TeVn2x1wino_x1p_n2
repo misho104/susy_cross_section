@@ -1,0 +1,395 @@
+<h2><a name="Envelope_of_CTEQ6_6_and_MSTW_AN1"></a> Envelope of CTEQ6.6 and MSTW2008nlo90cl NLO-NLL wino-like &#967;&#771;<sup>+</sup><sub>1</sub>&#967;&#771;<sup>0</sup><sub>2</sub> </h2>
+<p />
+<div class="twistyPlugin twikiMakeVisibleInline">  <span id="twistyIdLHCPhysicsSUSYCrossSections13TeVn2x1wino3show" class="twistyFirstStartHide twistyTrigger twikiUnvisited twistyInited0"><a href="#"><span class="twikiLinkLabel twikiUnvisited">Show table</span><img src="/twiki/pub/TWiki/TWikiDocGraphics/toggleopen-small.gif" border="0" alt="" /></a> </span> <span id="twistyIdLHCPhysicsSUSYCrossSections13TeVn2x1wino3hide" class="twistyFirstStartHide twistyTrigger twikiUnvisited twistyHidden twistyInited0"><a href="#"><span class="twikiLinkLabel twikiUnvisited">Hide table </span><img src="/twiki/pub/TWiki/TWikiDocGraphics/toggleclose-small.gif" border="0" alt="" /></a> </span>  </div><!--/twistyPlugin twikiMakeVisibleInline--> <div class="twistyPlugin"><div id="twistyIdLHCPhysicsSUSYCrossSections13TeVn2x1wino3toggle" class="twistyFirstStartHide twistyContent twikiMakeHidden twistyInited0">
+<table cellspacing="0" id="table2" cellpadding="0" class="twikiTable" rules="all" border="1">
+		<tr class="twikiTableOdd twikiTableRowdataBgSorted0 twikiTableRowdataBg0">
+			<th bgcolor="#687684" align="right" valign="top" class="twikiTableCol0 twikiFirstCol"> <a rel="nofollow" href="/twiki/bin/view/LHCPhysics/SUSYCrossSections13TeVn2x1wino?sortcol=0;table=2;up=0#sorted_table" title="Sort by this column"><font color="#ffffff">m<sub>&#967;&#771;</sub> [GeV]</font></a> </th>
+			<th bgcolor="#687684" align="center" valign="top" class="twikiTableCol1"> <a rel="nofollow" href="/twiki/bin/view/LHCPhysics/SUSYCrossSections13TeVn2x1wino?sortcol=1;table=2;up=0#sorted_table" title="Sort by this column"><font color="#ffffff">xsec [fb]</font></a> </th>
+			<th bgcolor="#687684" align="center" valign="top" class="twikiTableCol2 twikiLastCol"> <a rel="nofollow" href="/twiki/bin/view/LHCPhysics/SUSYCrossSections13TeVn2x1wino?sortcol=2;table=2;up=0#sorted_table" title="Sort by this column"><font color="#ffffff">uncertainty [fb]</font></a> </th>
+		</tr>
+		<tr class="twikiTableEven twikiTableRowdataBgSorted0 twikiTableRowdataBg0">
+			<td bgcolor="#ffffff" align="center" valign="top" class="twikiTableCol0 twikiFirstCol"> 100 </td>
+			<td bgcolor="#ffffff" align="center" valign="top" class="twikiTableCol1"> 13895.1 </td>
+			<td bgcolor="#ffffff" align="center" valign="top" class="twikiTableCol2 twikiLastCol"> 485.572 </td>
+		</tr>
+		<tr class="twikiTableOdd twikiTableRowdataBgSorted1 twikiTableRowdataBg1">
+			<td bgcolor="#edf4f9" align="center" valign="top" class="twikiTableCol0 twikiFirstCol"> 125 </td>
+			<td bgcolor="#edf4f9" align="center" valign="top" class="twikiTableCol1"> 6252.21 </td>
+			<td bgcolor="#edf4f9" align="center" valign="top" class="twikiTableCol2 twikiLastCol"> 222.508 </td>
+		</tr>
+		<tr class="twikiTableEven twikiTableRowdataBgSorted0 twikiTableRowdataBg0">
+			<td bgcolor="#ffffff" align="center" valign="top" class="twikiTableCol0 twikiFirstCol"> 150 </td>
+			<td bgcolor="#ffffff" align="center" valign="top" class="twikiTableCol1"> 3273.84 </td>
+			<td bgcolor="#ffffff" align="center" valign="top" class="twikiTableCol2 twikiLastCol"> 127.175 </td>
+		</tr>
+		<tr class="twikiTableOdd twikiTableRowdataBgSorted1 twikiTableRowdataBg1">
+			<td bgcolor="#edf4f9" align="center" valign="top" class="twikiTableCol0 twikiFirstCol"> 175 </td>
+			<td bgcolor="#edf4f9" align="center" valign="top" class="twikiTableCol1"> 1890.26 </td>
+			<td bgcolor="#edf4f9" align="center" valign="top" class="twikiTableCol2 twikiLastCol"> 80.6306 </td>
+		</tr>
+		<tr class="twikiTableEven twikiTableRowdataBgSorted0 twikiTableRowdataBg0">
+			<td bgcolor="#ffffff" align="center" valign="top" class="twikiTableCol0 twikiFirstCol"> 200 </td>
+			<td bgcolor="#ffffff" align="center" valign="top" class="twikiTableCol1"> 1170.26 </td>
+			<td bgcolor="#ffffff" align="center" valign="top" class="twikiTableCol2 twikiLastCol"> 54.8302 </td>
+		</tr>
+		<tr class="twikiTableOdd twikiTableRowdataBgSorted1 twikiTableRowdataBg1">
+			<td bgcolor="#edf4f9" align="center" valign="top" class="twikiTableCol0 twikiFirstCol"> 225 </td>
+			<td bgcolor="#edf4f9" align="center" valign="top" class="twikiTableCol1"> 762.405 </td>
+			<td bgcolor="#edf4f9" align="center" valign="top" class="twikiTableCol2 twikiLastCol"> 37.9761 </td>
+		</tr>
+		<tr class="twikiTableEven twikiTableRowdataBgSorted0 twikiTableRowdataBg0">
+			<td bgcolor="#ffffff" align="center" valign="top" class="twikiTableCol0 twikiFirstCol"> 250 </td>
+			<td bgcolor="#ffffff" align="center" valign="top" class="twikiTableCol1"> 517.259 </td>
+			<td bgcolor="#ffffff" align="center" valign="top" class="twikiTableCol2 twikiLastCol"> 27.6553 </td>
+		</tr>
+		<tr class="twikiTableOdd twikiTableRowdataBgSorted1 twikiTableRowdataBg1">
+			<td bgcolor="#edf4f9" align="center" valign="top" class="twikiTableCol0 twikiFirstCol"> 275 </td>
+			<td bgcolor="#edf4f9" align="center" valign="top" class="twikiTableCol1"> 362.248 </td>
+			<td bgcolor="#edf4f9" align="center" valign="top" class="twikiTableCol2 twikiLastCol"> 20.51 </td>
+		</tr>
+		<tr class="twikiTableEven twikiTableRowdataBgSorted0 twikiTableRowdataBg0">
+			<td bgcolor="#ffffff" align="center" valign="top" class="twikiTableCol0 twikiFirstCol"> 300 </td>
+			<td bgcolor="#ffffff" align="center" valign="top" class="twikiTableCol1"> 260.319 </td>
+			<td bgcolor="#ffffff" align="center" valign="top" class="twikiTableCol2 twikiLastCol"> 15.5522 </td>
+		</tr>
+		<tr class="twikiTableOdd twikiTableRowdataBgSorted1 twikiTableRowdataBg1">
+			<td bgcolor="#edf4f9" align="center" valign="top" class="twikiTableCol0 twikiFirstCol"> 325 </td>
+			<td bgcolor="#edf4f9" align="center" valign="top" class="twikiTableCol1"> 191.314 </td>
+			<td bgcolor="#edf4f9" align="center" valign="top" class="twikiTableCol2 twikiLastCol"> 12.0565 </td>
+		</tr>
+		<tr class="twikiTableEven twikiTableRowdataBgSorted0 twikiTableRowdataBg0">
+			<td bgcolor="#ffffff" align="center" valign="top" class="twikiTableCol0 twikiFirstCol"> 350 </td>
+			<td bgcolor="#ffffff" align="center" valign="top" class="twikiTableCol1"> 143.126 </td>
+			<td bgcolor="#ffffff" align="center" valign="top" class="twikiTableCol2 twikiLastCol"> 9.39716 </td>
+		</tr>
+		<tr class="twikiTableOdd twikiTableRowdataBgSorted1 twikiTableRowdataBg1">
+			<td bgcolor="#edf4f9" align="center" valign="top" class="twikiTableCol0 twikiFirstCol"> 375 </td>
+			<td bgcolor="#edf4f9" align="center" valign="top" class="twikiTableCol1"> 108.84 </td>
+			<td bgcolor="#edf4f9" align="center" valign="top" class="twikiTableCol2 twikiLastCol"> 7.50279 </td>
+		</tr>
+		<tr class="twikiTableEven twikiTableRowdataBgSorted0 twikiTableRowdataBg0">
+			<td bgcolor="#ffffff" align="center" valign="top" class="twikiTableCol0 twikiFirstCol"> 400 </td>
+			<td bgcolor="#ffffff" align="center" valign="top" class="twikiTableCol1"> 83.9069 </td>
+			<td bgcolor="#ffffff" align="center" valign="top" class="twikiTableCol2 twikiLastCol"> 6.05361 </td>
+		</tr>
+		<tr class="twikiTableOdd twikiTableRowdataBgSorted1 twikiTableRowdataBg1">
+			<td bgcolor="#edf4f9" align="center" valign="top" class="twikiTableCol0 twikiFirstCol"> 425 </td>
+			<td bgcolor="#edf4f9" align="center" valign="top" class="twikiTableCol1"> 65.4553 </td>
+			<td bgcolor="#edf4f9" align="center" valign="top" class="twikiTableCol2 twikiLastCol"> 4.94466 </td>
+		</tr>
+		<tr class="twikiTableEven twikiTableRowdataBgSorted0 twikiTableRowdataBg0">
+			<td bgcolor="#ffffff" align="center" valign="top" class="twikiTableCol0 twikiFirstCol"> 450 </td>
+			<td bgcolor="#ffffff" align="center" valign="top" class="twikiTableCol1"> 51.5901 </td>
+			<td bgcolor="#ffffff" align="center" valign="top" class="twikiTableCol2 twikiLastCol"> 4.04097 </td>
+		</tr>
+		<tr class="twikiTableOdd twikiTableRowdataBgSorted1 twikiTableRowdataBg1">
+			<td bgcolor="#edf4f9" align="center" valign="top" class="twikiTableCol0 twikiFirstCol"> 475 </td>
+			<td bgcolor="#edf4f9" align="center" valign="top" class="twikiTableCol1"> 41.0233 </td>
+			<td bgcolor="#edf4f9" align="center" valign="top" class="twikiTableCol2 twikiLastCol"> 3.28837 </td>
+		</tr>
+		<tr class="twikiTableEven twikiTableRowdataBgSorted0 twikiTableRowdataBg0">
+			<td bgcolor="#ffffff" align="center" valign="top" class="twikiTableCol0 twikiFirstCol"> 500 </td>
+			<td bgcolor="#ffffff" align="center" valign="top" class="twikiTableCol1"> 32.9135 </td>
+			<td bgcolor="#ffffff" align="center" valign="top" class="twikiTableCol2 twikiLastCol"> 2.73443 </td>
+		</tr>
+		<tr class="twikiTableOdd twikiTableRowdataBgSorted1 twikiTableRowdataBg1">
+			<td bgcolor="#edf4f9" align="center" valign="top" class="twikiTableCol0 twikiFirstCol"> 525 </td>
+			<td bgcolor="#edf4f9" align="center" valign="top" class="twikiTableCol1"> 26.6028 </td>
+			<td bgcolor="#edf4f9" align="center" valign="top" class="twikiTableCol2 twikiLastCol"> 2.29957 </td>
+		</tr>
+		<tr class="twikiTableEven twikiTableRowdataBgSorted0 twikiTableRowdataBg0">
+			<td bgcolor="#ffffff" align="center" valign="top" class="twikiTableCol0 twikiFirstCol"> 550 </td>
+			<td bgcolor="#ffffff" align="center" valign="top" class="twikiTableCol1"> 21.644 </td>
+			<td bgcolor="#ffffff" align="center" valign="top" class="twikiTableCol2 twikiLastCol"> 1.92376 </td>
+		</tr>
+		<tr class="twikiTableOdd twikiTableRowdataBgSorted1 twikiTableRowdataBg1">
+			<td bgcolor="#edf4f9" align="center" valign="top" class="twikiTableCol0 twikiFirstCol"> 575 </td>
+			<td bgcolor="#edf4f9" align="center" valign="top" class="twikiTableCol1"> 17.7159 </td>
+			<td bgcolor="#edf4f9" align="center" valign="top" class="twikiTableCol2 twikiLastCol"> 1.60859 </td>
+		</tr>
+		<tr class="twikiTableEven twikiTableRowdataBgSorted0 twikiTableRowdataBg0">
+			<td bgcolor="#ffffff" align="center" valign="top" class="twikiTableCol0 twikiFirstCol"> 600 </td>
+			<td bgcolor="#ffffff" align="center" valign="top" class="twikiTableCol1"> 14.5767 </td>
+			<td bgcolor="#ffffff" align="center" valign="top" class="twikiTableCol2 twikiLastCol"> 1.38165 </td>
+		</tr>
+		<tr class="twikiTableOdd twikiTableRowdataBgSorted1 twikiTableRowdataBg1">
+			<td bgcolor="#edf4f9" align="center" valign="top" class="twikiTableCol0 twikiFirstCol"> 625 </td>
+			<td bgcolor="#edf4f9" align="center" valign="top" class="twikiTableCol1"> 12.0454 </td>
+			<td bgcolor="#edf4f9" align="center" valign="top" class="twikiTableCol2 twikiLastCol"> 1.15947 </td>
+		</tr>
+		<tr class="twikiTableEven twikiTableRowdataBgSorted0 twikiTableRowdataBg0">
+			<td bgcolor="#ffffff" align="center" valign="top" class="twikiTableCol0 twikiFirstCol"> 650 </td>
+			<td bgcolor="#ffffff" align="center" valign="top" class="twikiTableCol1"> 10.0188 </td>
+			<td bgcolor="#ffffff" align="center" valign="top" class="twikiTableCol2 twikiLastCol"> 0.977468 </td>
+		</tr>
+		<tr class="twikiTableOdd twikiTableRowdataBgSorted1 twikiTableRowdataBg1">
+			<td bgcolor="#edf4f9" align="center" valign="top" class="twikiTableCol0 twikiFirstCol"> 675 </td>
+			<td bgcolor="#edf4f9" align="center" valign="top" class="twikiTableCol1"> 8.34633 </td>
+			<td bgcolor="#edf4f9" align="center" valign="top" class="twikiTableCol2 twikiLastCol"> 0.832887 </td>
+		</tr>
+		<tr class="twikiTableEven twikiTableRowdataBgSorted0 twikiTableRowdataBg0">
+			<td bgcolor="#ffffff" align="center" valign="top" class="twikiTableCol0 twikiFirstCol"> 700 </td>
+			<td bgcolor="#ffffff" align="center" valign="top" class="twikiTableCol1"> 6.99008 </td>
+			<td bgcolor="#ffffff" align="center" valign="top" class="twikiTableCol2 twikiLastCol"> 0.714013 </td>
+		</tr>
+		<tr class="twikiTableOdd twikiTableRowdataBgSorted1 twikiTableRowdataBg1">
+			<td bgcolor="#edf4f9" align="center" valign="top" class="twikiTableCol0 twikiFirstCol"> 725 </td>
+			<td bgcolor="#edf4f9" align="center" valign="top" class="twikiTableCol1"> 5.86536 </td>
+			<td bgcolor="#edf4f9" align="center" valign="top" class="twikiTableCol2 twikiLastCol"> 0.602628 </td>
+		</tr>
+		<tr class="twikiTableEven twikiTableRowdataBgSorted0 twikiTableRowdataBg0">
+			<td bgcolor="#ffffff" align="center" valign="top" class="twikiTableCol0 twikiFirstCol"> 750 </td>
+			<td bgcolor="#ffffff" align="center" valign="top" class="twikiTableCol1"> 4.95438 </td>
+			<td bgcolor="#ffffff" align="center" valign="top" class="twikiTableCol2 twikiLastCol"> 0.532335 </td>
+		</tr>
+		<tr class="twikiTableOdd twikiTableRowdataBgSorted1 twikiTableRowdataBg1">
+			<td bgcolor="#edf4f9" align="center" valign="top" class="twikiTableCol0 twikiFirstCol"> 775 </td>
+			<td bgcolor="#edf4f9" align="center" valign="top" class="twikiTableCol1"> 4.18041 </td>
+			<td bgcolor="#edf4f9" align="center" valign="top" class="twikiTableCol2 twikiLastCol"> 0.452388 </td>
+		</tr>
+		<tr class="twikiTableEven twikiTableRowdataBgSorted0 twikiTableRowdataBg0">
+			<td bgcolor="#ffffff" align="center" valign="top" class="twikiTableCol0 twikiFirstCol"> 800 </td>
+			<td bgcolor="#ffffff" align="center" valign="top" class="twikiTableCol1"> 3.54111 </td>
+			<td bgcolor="#ffffff" align="center" valign="top" class="twikiTableCol2 twikiLastCol"> 0.389213 </td>
+		</tr>
+		<tr class="twikiTableOdd twikiTableRowdataBgSorted1 twikiTableRowdataBg1">
+			<td bgcolor="#edf4f9" align="center" valign="top" class="twikiTableCol0 twikiFirstCol"> 825 </td>
+			<td bgcolor="#edf4f9" align="center" valign="top" class="twikiTableCol1"> 3.0052 </td>
+			<td bgcolor="#edf4f9" align="center" valign="top" class="twikiTableCol2 twikiLastCol"> 0.335727 </td>
+		</tr>
+		<tr class="twikiTableEven twikiTableRowdataBgSorted0 twikiTableRowdataBg0">
+			<td bgcolor="#ffffff" align="center" valign="top" class="twikiTableCol0 twikiFirstCol"> 850 </td>
+			<td bgcolor="#ffffff" align="center" valign="top" class="twikiTableCol1"> 2.55793 </td>
+			<td bgcolor="#ffffff" align="center" valign="top" class="twikiTableCol2 twikiLastCol"> 0.284029 </td>
+		</tr>
+		<tr class="twikiTableOdd twikiTableRowdataBgSorted1 twikiTableRowdataBg1">
+			<td bgcolor="#edf4f9" align="center" valign="top" class="twikiTableCol0 twikiFirstCol"> 875 </td>
+			<td bgcolor="#edf4f9" align="center" valign="top" class="twikiTableCol1"> 2.17847 </td>
+			<td bgcolor="#edf4f9" align="center" valign="top" class="twikiTableCol2 twikiLastCol"> 0.255221 </td>
+		</tr>
+		<tr class="twikiTableEven twikiTableRowdataBgSorted0 twikiTableRowdataBg0">
+			<td bgcolor="#ffffff" align="center" valign="top" class="twikiTableCol0 twikiFirstCol"> 900 </td>
+			<td bgcolor="#ffffff" align="center" valign="top" class="twikiTableCol1"> 1.87338 </td>
+			<td bgcolor="#ffffff" align="center" valign="top" class="twikiTableCol2 twikiLastCol"> 0.216666 </td>
+		</tr>
+		<tr class="twikiTableOdd twikiTableRowdataBgSorted1 twikiTableRowdataBg1">
+			<td bgcolor="#edf4f9" align="center" valign="top" class="twikiTableCol0 twikiFirstCol"> 925 </td>
+			<td bgcolor="#edf4f9" align="center" valign="top" class="twikiTableCol1"> 1.59963 </td>
+			<td bgcolor="#edf4f9" align="center" valign="top" class="twikiTableCol2 twikiLastCol"> 0.185445 </td>
+		</tr>
+		<tr class="twikiTableEven twikiTableRowdataBgSorted0 twikiTableRowdataBg0">
+			<td bgcolor="#ffffff" align="center" valign="top" class="twikiTableCol0 twikiFirstCol"> 950 </td>
+			<td bgcolor="#ffffff" align="center" valign="top" class="twikiTableCol1"> 1.36565 </td>
+			<td bgcolor="#ffffff" align="center" valign="top" class="twikiTableCol2 twikiLastCol"> 0.168945 </td>
+		</tr>
+		<tr class="twikiTableOdd twikiTableRowdataBgSorted1 twikiTableRowdataBg1">
+			<td bgcolor="#edf4f9" align="center" valign="top" class="twikiTableCol0 twikiFirstCol"> 975 </td>
+			<td bgcolor="#edf4f9" align="center" valign="top" class="twikiTableCol1"> 1.18309 </td>
+			<td bgcolor="#edf4f9" align="center" valign="top" class="twikiTableCol2 twikiLastCol"> 0.15545 </td>
+		</tr>
+		<tr class="twikiTableEven twikiTableRowdataBgSorted0 twikiTableRowdataBg0">
+			<td bgcolor="#ffffff" align="center" valign="top" class="twikiTableCol0 twikiFirstCol"> 1000 </td>
+			<td bgcolor="#ffffff" align="center" valign="top" class="twikiTableCol1"> 1.01451 </td>
+			<td bgcolor="#ffffff" align="center" valign="top" class="twikiTableCol2 twikiLastCol"> 0.123448 </td>
+		</tr>
+		<tr class="twikiTableOdd twikiTableRowdataBgSorted1 twikiTableRowdataBg1">
+			<td bgcolor="#edf4f9" align="center" valign="top" class="twikiTableCol0 twikiFirstCol"> 1025 </td>
+			<td bgcolor="#edf4f9" align="center" valign="top" class="twikiTableCol1"> 0.879192 </td>
+			<td bgcolor="#edf4f9" align="center" valign="top" class="twikiTableCol2 twikiLastCol"> 0.108224 </td>
+		</tr>
+		<tr class="twikiTableEven twikiTableRowdataBgSorted0 twikiTableRowdataBg0">
+			<td bgcolor="#ffffff" align="center" valign="top" class="twikiTableCol0 twikiFirstCol"> 1050 </td>
+			<td bgcolor="#ffffff" align="center" valign="top" class="twikiTableCol1"> 0.757183 </td>
+			<td bgcolor="#ffffff" align="center" valign="top" class="twikiTableCol2 twikiLastCol"> 0.0900054 </td>
+		</tr>
+		<tr class="twikiTableOdd twikiTableRowdataBgSorted1 twikiTableRowdataBg1">
+			<td bgcolor="#edf4f9" align="center" valign="top" class="twikiTableCol0 twikiFirstCol"> 1075 </td>
+			<td bgcolor="#edf4f9" align="center" valign="top" class="twikiTableCol1"> 0.651686 </td>
+			<td bgcolor="#edf4f9" align="center" valign="top" class="twikiTableCol2 twikiLastCol"> 0.0799626 </td>
+		</tr>
+		<tr class="twikiTableEven twikiTableRowdataBgSorted0 twikiTableRowdataBg0">
+			<td bgcolor="#ffffff" align="center" valign="top" class="twikiTableCol0 twikiFirstCol"> 1100 </td>
+			<td bgcolor="#ffffff" align="center" valign="top" class="twikiTableCol1"> 0.55945 </td>
+			<td bgcolor="#ffffff" align="center" valign="top" class="twikiTableCol2 twikiLastCol"> 0.0711016 </td>
+		</tr>
+		<tr class="twikiTableOdd twikiTableRowdataBgSorted1 twikiTableRowdataBg1">
+			<td bgcolor="#edf4f9" align="center" valign="top" class="twikiTableCol0 twikiFirstCol"> 1125 </td>
+			<td bgcolor="#edf4f9" align="center" valign="top" class="twikiTableCol1"> 0.491938 </td>
+			<td bgcolor="#edf4f9" align="center" valign="top" class="twikiTableCol2 twikiLastCol"> 0.0637444 </td>
+		</tr>
+		<tr class="twikiTableEven twikiTableRowdataBgSorted0 twikiTableRowdataBg0">
+			<td bgcolor="#ffffff" align="center" valign="top" class="twikiTableCol0 twikiFirstCol"> 1150 </td>
+			<td bgcolor="#ffffff" align="center" valign="top" class="twikiTableCol1"> 0.419984 </td>
+			<td bgcolor="#ffffff" align="center" valign="top" class="twikiTableCol2 twikiLastCol"> 0.0565834 </td>
+		</tr>
+		<tr class="twikiTableOdd twikiTableRowdataBgSorted1 twikiTableRowdataBg1">
+			<td bgcolor="#edf4f9" align="center" valign="top" class="twikiTableCol0 twikiFirstCol"> 1175 </td>
+			<td bgcolor="#edf4f9" align="center" valign="top" class="twikiTableCol1"> 0.371485 </td>
+			<td bgcolor="#edf4f9" align="center" valign="top" class="twikiTableCol2 twikiLastCol"> 0.0412257 </td>
+		</tr>
+		<tr class="twikiTableEven twikiTableRowdataBgSorted0 twikiTableRowdataBg0">
+			<td bgcolor="#ffffff" align="center" valign="top" class="twikiTableCol0 twikiFirstCol"> 1200 </td>
+			<td bgcolor="#ffffff" align="center" valign="top" class="twikiTableCol1"> 0.31567 </td>
+			<td bgcolor="#ffffff" align="center" valign="top" class="twikiTableCol2 twikiLastCol"> 0.0415881 </td>
+		</tr>
+		<tr class="twikiTableOdd twikiTableRowdataBgSorted1 twikiTableRowdataBg1">
+			<td bgcolor="#edf4f9" align="center" valign="top" class="twikiTableCol0 twikiFirstCol"> 1225 </td>
+			<td bgcolor="#edf4f9" align="center" valign="top" class="twikiTableCol1"> 0.27623 </td>
+			<td bgcolor="#edf4f9" align="center" valign="top" class="twikiTableCol2 twikiLastCol"> 0.0371856 </td>
+		</tr>
+		<tr class="twikiTableEven twikiTableRowdataBgSorted0 twikiTableRowdataBg0">
+			<td bgcolor="#ffffff" align="center" valign="top" class="twikiTableCol0 twikiFirstCol"> 1250 </td>
+			<td bgcolor="#ffffff" align="center" valign="top" class="twikiTableCol1"> 0.240685 </td>
+			<td bgcolor="#ffffff" align="center" valign="top" class="twikiTableCol2 twikiLastCol"> 0.0286937 </td>
+		</tr>
+		<tr class="twikiTableOdd twikiTableRowdataBgSorted1 twikiTableRowdataBg1">
+			<td bgcolor="#edf4f9" align="center" valign="top" class="twikiTableCol0 twikiFirstCol"> 1275 </td>
+			<td bgcolor="#edf4f9" align="center" valign="top" class="twikiTableCol1"> 0.210298 </td>
+			<td bgcolor="#edf4f9" align="center" valign="top" class="twikiTableCol2 twikiLastCol"> 0.0264908 </td>
+		</tr>
+		<tr class="twikiTableEven twikiTableRowdataBgSorted0 twikiTableRowdataBg0">
+			<td bgcolor="#ffffff" align="center" valign="top" class="twikiTableCol0 twikiFirstCol"> 1300 </td>
+			<td bgcolor="#ffffff" align="center" valign="top" class="twikiTableCol1"> 0.18015 </td>
+			<td bgcolor="#ffffff" align="center" valign="top" class="twikiTableCol2 twikiLastCol"> 0.0229469 </td>
+		</tr>
+		<tr class="twikiTableOdd twikiTableRowdataBgSorted1 twikiTableRowdataBg1">
+			<td bgcolor="#edf4f9" align="center" valign="top" class="twikiTableCol0 twikiFirstCol"> 1325 </td>
+			<td bgcolor="#edf4f9" align="center" valign="top" class="twikiTableCol1"> 0.159393 </td>
+			<td bgcolor="#edf4f9" align="center" valign="top" class="twikiTableCol2 twikiLastCol"> 0.0196224 </td>
+		</tr>
+		<tr class="twikiTableEven twikiTableRowdataBgSorted0 twikiTableRowdataBg0">
+			<td bgcolor="#ffffff" align="center" valign="top" class="twikiTableCol0 twikiFirstCol"> 1350 </td>
+			<td bgcolor="#ffffff" align="center" valign="top" class="twikiTableCol1"> 0.139246 </td>
+			<td bgcolor="#ffffff" align="center" valign="top" class="twikiTableCol2 twikiLastCol"> 0.0174043 </td>
+		</tr>
+		<tr class="twikiTableOdd twikiTableRowdataBgSorted1 twikiTableRowdataBg1">
+			<td bgcolor="#edf4f9" align="center" valign="top" class="twikiTableCol0 twikiFirstCol"> 1375 </td>
+			<td bgcolor="#edf4f9" align="center" valign="top" class="twikiTableCol1"> 0.120872 </td>
+			<td bgcolor="#edf4f9" align="center" valign="top" class="twikiTableCol2 twikiLastCol"> 0.0154592 </td>
+		</tr>
+		<tr class="twikiTableEven twikiTableRowdataBgSorted0 twikiTableRowdataBg0">
+			<td bgcolor="#ffffff" align="center" valign="top" class="twikiTableCol0 twikiFirstCol"> 1400 </td>
+			<td bgcolor="#ffffff" align="center" valign="top" class="twikiTableCol1"> 0.10087 </td>
+			<td bgcolor="#ffffff" align="center" valign="top" class="twikiTableCol2 twikiLastCol"> 0.0128138 </td>
+		</tr>
+		<tr class="twikiTableOdd twikiTableRowdataBgSorted1 twikiTableRowdataBg1">
+			<td bgcolor="#edf4f9" align="center" valign="top" class="twikiTableCol0 twikiFirstCol"> 1425 </td>
+			<td bgcolor="#edf4f9" align="center" valign="top" class="twikiTableCol1"> 0.0906208 </td>
+			<td bgcolor="#edf4f9" align="center" valign="top" class="twikiTableCol2 twikiLastCol"> 0.012095 </td>
+		</tr>
+		<tr class="twikiTableEven twikiTableRowdataBgSorted0 twikiTableRowdataBg0">
+			<td bgcolor="#ffffff" align="center" valign="top" class="twikiTableCol0 twikiFirstCol"> 1450 </td>
+			<td bgcolor="#ffffff" align="center" valign="top" class="twikiTableCol1"> 0.0807007 </td>
+			<td bgcolor="#ffffff" align="center" valign="top" class="twikiTableCol2 twikiLastCol"> 0.0110593 </td>
+		</tr>
+		<tr class="twikiTableOdd twikiTableRowdataBgSorted1 twikiTableRowdataBg1">
+			<td bgcolor="#edf4f9" align="center" valign="top" class="twikiTableCol0 twikiFirstCol"> 1475 </td>
+			<td bgcolor="#edf4f9" align="center" valign="top" class="twikiTableCol1"> 0.0704072 </td>
+			<td bgcolor="#edf4f9" align="center" valign="top" class="twikiTableCol2 twikiLastCol"> 0.0109494 </td>
+		</tr>
+		<tr class="twikiTableEven twikiTableRowdataBgSorted0 twikiTableRowdataBg0">
+			<td bgcolor="#ffffff" align="center" valign="top" class="twikiTableCol0 twikiFirstCol"> 1500 </td>
+			<td bgcolor="#ffffff" align="center" valign="top" class="twikiTableCol1"> 0.0598541 </td>
+			<td bgcolor="#ffffff" align="center" valign="top" class="twikiTableCol2 twikiLastCol"> 0.00896721 </td>
+		</tr>
+		<tr class="twikiTableOdd twikiTableRowdataBgSorted1 twikiTableRowdataBg1">
+			<td bgcolor="#edf4f9" align="center" valign="top" class="twikiTableCol0 twikiFirstCol"> 1525 </td>
+			<td bgcolor="#edf4f9" align="center" valign="top" class="twikiTableCol1"> 0.0520963 </td>
+			<td bgcolor="#edf4f9" align="center" valign="top" class="twikiTableCol2 twikiLastCol"> 0.00809093 </td>
+		</tr>
+		<tr class="twikiTableEven twikiTableRowdataBgSorted0 twikiTableRowdataBg0">
+			<td bgcolor="#ffffff" align="center" valign="top" class="twikiTableCol0 twikiFirstCol"> 1550 </td>
+			<td bgcolor="#ffffff" align="center" valign="top" class="twikiTableCol1"> 0.0456082 </td>
+			<td bgcolor="#ffffff" align="center" valign="top" class="twikiTableCol2 twikiLastCol"> 0.00758726 </td>
+		</tr>
+		<tr class="twikiTableOdd twikiTableRowdataBgSorted1 twikiTableRowdataBg1">
+			<td bgcolor="#edf4f9" align="center" valign="top" class="twikiTableCol0 twikiFirstCol"> 1575 </td>
+			<td bgcolor="#edf4f9" align="center" valign="top" class="twikiTableCol1"> 0.0394537 </td>
+			<td bgcolor="#edf4f9" align="center" valign="top" class="twikiTableCol2 twikiLastCol"> 0.00722754 </td>
+		</tr>
+		<tr class="twikiTableEven twikiTableRowdataBgSorted0 twikiTableRowdataBg0">
+			<td bgcolor="#ffffff" align="center" valign="top" class="twikiTableCol0 twikiFirstCol"> 1600 </td>
+			<td bgcolor="#ffffff" align="center" valign="top" class="twikiTableCol1"> 0.0347174 </td>
+			<td bgcolor="#ffffff" align="center" valign="top" class="twikiTableCol2 twikiLastCol"> 0.00671145 </td>
+		</tr>
+		<tr class="twikiTableOdd twikiTableRowdataBgSorted1 twikiTableRowdataBg1">
+			<td bgcolor="#edf4f9" align="center" valign="top" class="twikiTableCol0 twikiFirstCol"> 1625 </td>
+			<td bgcolor="#edf4f9" align="center" valign="top" class="twikiTableCol1"> 0.0307532 </td>
+			<td bgcolor="#edf4f9" align="center" valign="top" class="twikiTableCol2 twikiLastCol"> 0.00626805 </td>
+		</tr>
+		<tr class="twikiTableEven twikiTableRowdataBgSorted0 twikiTableRowdataBg0">
+			<td bgcolor="#ffffff" align="center" valign="top" class="twikiTableCol0 twikiFirstCol"> 1650 </td>
+			<td bgcolor="#ffffff" align="center" valign="top" class="twikiTableCol1"> 0.0266118 </td>
+			<td bgcolor="#ffffff" align="center" valign="top" class="twikiTableCol2 twikiLastCol"> 0.00561368 </td>
+		</tr>
+		<tr class="twikiTableOdd twikiTableRowdataBgSorted1 twikiTableRowdataBg1">
+			<td bgcolor="#edf4f9" align="center" valign="top" class="twikiTableCol0 twikiFirstCol"> 1675 </td>
+			<td bgcolor="#edf4f9" align="center" valign="top" class="twikiTableCol1"> 0.0231039 </td>
+			<td bgcolor="#edf4f9" align="center" valign="top" class="twikiTableCol2 twikiLastCol"> 0.00527505 </td>
+		</tr>
+		<tr class="twikiTableEven twikiTableRowdataBgSorted0 twikiTableRowdataBg0">
+			<td bgcolor="#ffffff" align="center" valign="top" class="twikiTableCol0 twikiFirstCol"> 1700 </td>
+			<td bgcolor="#ffffff" align="center" valign="top" class="twikiTableCol1"> 0.0200153 </td>
+			<td bgcolor="#ffffff" align="center" valign="top" class="twikiTableCol2 twikiLastCol"> 0.00498133 </td>
+		</tr>
+		<tr class="twikiTableOdd twikiTableRowdataBgSorted1 twikiTableRowdataBg1">
+			<td bgcolor="#edf4f9" align="center" valign="top" class="twikiTableCol0 twikiFirstCol"> 1725 </td>
+			<td bgcolor="#edf4f9" align="center" valign="top" class="twikiTableCol1"> 0.0176634 </td>
+			<td bgcolor="#edf4f9" align="center" valign="top" class="twikiTableCol2 twikiLastCol"> 0.00412917 </td>
+		</tr>
+		<tr class="twikiTableEven twikiTableRowdataBgSorted0 twikiTableRowdataBg0">
+			<td bgcolor="#ffffff" align="center" valign="top" class="twikiTableCol0 twikiFirstCol"> 1750 </td>
+			<td bgcolor="#ffffff" align="center" valign="top" class="twikiTableCol1"> 0.0153969 </td>
+			<td bgcolor="#ffffff" align="center" valign="top" class="twikiTableCol2 twikiLastCol"> 0.00373792 </td>
+		</tr>
+		<tr class="twikiTableOdd twikiTableRowdataBgSorted1 twikiTableRowdataBg1">
+			<td bgcolor="#edf4f9" align="center" valign="top" class="twikiTableCol0 twikiFirstCol"> 1775 </td>
+			<td bgcolor="#edf4f9" align="center" valign="top" class="twikiTableCol1"> 0.0134356 </td>
+			<td bgcolor="#edf4f9" align="center" valign="top" class="twikiTableCol2 twikiLastCol"> 0.00341071 </td>
+		</tr>
+		<tr class="twikiTableEven twikiTableRowdataBgSorted0 twikiTableRowdataBg0">
+			<td bgcolor="#ffffff" align="center" valign="top" class="twikiTableCol0 twikiFirstCol"> 1800 </td>
+			<td bgcolor="#ffffff" align="center" valign="top" class="twikiTableCol1"> 0.0117395 </td>
+			<td bgcolor="#ffffff" align="center" valign="top" class="twikiTableCol2 twikiLastCol"> 0.00312039 </td>
+		</tr>
+		<tr class="twikiTableOdd twikiTableRowdataBgSorted1 twikiTableRowdataBg1">
+			<td bgcolor="#edf4f9" align="center" valign="top" class="twikiTableCol0 twikiFirstCol"> 1825 </td>
+			<td bgcolor="#edf4f9" align="center" valign="top" class="twikiTableCol1"> 0.0100904 </td>
+			<td bgcolor="#edf4f9" align="center" valign="top" class="twikiTableCol2 twikiLastCol"> 0.00285901 </td>
+		</tr>
+		<tr class="twikiTableEven twikiTableRowdataBgSorted0 twikiTableRowdataBg0">
+			<td bgcolor="#ffffff" align="center" valign="top" class="twikiTableCol0 twikiFirstCol"> 1850 </td>
+			<td bgcolor="#ffffff" align="center" valign="top" class="twikiTableCol1"> 0.00869944 </td>
+			<td bgcolor="#ffffff" align="center" valign="top" class="twikiTableCol2 twikiLastCol"> 0.00278534 </td>
+		</tr>
+		<tr class="twikiTableOdd twikiTableRowdataBgSorted1 twikiTableRowdataBg1">
+			<td bgcolor="#edf4f9" align="center" valign="top" class="twikiTableCol0 twikiFirstCol"> 1875 </td>
+			<td bgcolor="#edf4f9" align="center" valign="top" class="twikiTableCol1"> 0.00754745 </td>
+			<td bgcolor="#edf4f9" align="center" valign="top" class="twikiTableCol2 twikiLastCol"> 0.00262309 </td>
+		</tr>
+		<tr class="twikiTableEven twikiTableRowdataBgSorted0 twikiTableRowdataBg0">
+			<td bgcolor="#ffffff" align="center" valign="top" class="twikiTableCol0 twikiFirstCol"> 1900 </td>
+			<td bgcolor="#ffffff" align="center" valign="top" class="twikiTableCol1"> 0.00675782 </td>
+			<td bgcolor="#ffffff" align="center" valign="top" class="twikiTableCol2 twikiLastCol"> 0.00217148 </td>
+		</tr>
+		<tr class="twikiTableOdd twikiTableRowdataBgSorted1 twikiTableRowdataBg1">
+			<td bgcolor="#edf4f9" align="center" valign="top" class="twikiTableCol0 twikiFirstCol"> 1925 </td>
+			<td bgcolor="#edf4f9" align="center" valign="top" class="twikiTableCol1"> 0.00582783 </td>
+			<td bgcolor="#edf4f9" align="center" valign="top" class="twikiTableCol2 twikiLastCol"> 0.00201806 </td>
+		</tr>
+		<tr class="twikiTableEven twikiTableRowdataBgSorted0 twikiTableRowdataBg0">
+			<td bgcolor="#ffffff" align="center" valign="top" class="twikiTableCol0 twikiFirstCol"> 1950 </td>
+			<td bgcolor="#ffffff" align="center" valign="top" class="twikiTableCol1"> 0.0050955 </td>
+			<td bgcolor="#ffffff" align="center" valign="top" class="twikiTableCol2 twikiLastCol"> 0.00176923 </td>
+		</tr>
+		<tr class="twikiTableOdd twikiTableRowdataBgSorted1 twikiTableRowdataBg1">
+			<td bgcolor="#edf4f9" align="center" valign="top" class="twikiTableCol0 twikiFirstCol"> 1975 </td>
+			<td bgcolor="#edf4f9" align="center" valign="top" class="twikiTableCol1"> 0.00444781 </td>
+			<td bgcolor="#edf4f9" align="center" valign="top" class="twikiTableCol2 twikiLastCol"> 0.00167948 </td>
+		</tr>
+		<tr class="twikiTableEven twikiTableRowdataBgSorted0 twikiTableRowdataBg0">
+			<td bgcolor="#ffffff" align="center" valign="top" class="twikiTableCol0 twikiFirstCol twikiLast"> 2000 </td>
+			<td bgcolor="#ffffff" align="center" valign="top" class="twikiTableCol1 twikiLast"> 0.00389224 </td>
+			<td bgcolor="#ffffff" align="center" valign="top" class="twikiTableCol2 twikiLastCol twikiLast"> 0.00155069 </td>
+		</tr></table>
+</div></div> <!--/twistyPlugin-->
