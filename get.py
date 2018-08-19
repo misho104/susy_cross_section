@@ -2,6 +2,8 @@
 
 import json
 import logging
+import pathlib
+import re
 from typing import List, Tuple, Union
 
 import click
@@ -23,6 +25,8 @@ ResultType = Union[
     Tuple[float, float, UncertaintyType],                    # mass, xs, unc
     Tuple[float, float, UncertaintyType, UncertaintyType]    # mass, xs, +unc, -unc
 ]
+
+NAMES_DICTIONARY = 'names.json'
 
 
 def is_number(obj)->bool:
@@ -126,22 +130,53 @@ def interpolate_original_format(data: List[ResultType], mass: float)->str:
         return format_str([xs_result, unc_p])
 
 
+def parse_filename(name: str)->str:
+    # direct specification
+    if pathlib.Path(name).is_file():
+        return name
+
+    # ECM.process, where process is in dictionary
+    cwd = pathlib.Path(__file__).resolve().parent
+    try:
+        with open(cwd / NAMES_DICTIONARY) as f:
+            filename_dictionary = json.load(f)
+    except FileNotFoundError:
+        logger.error(f'NAMES_DICTIONARY {NAMES_DICTIONARY} not found. Specify data file directly.')
+        exit(1)
+
+    m = re.match(r'(\d+)\.(.*)', name)
+    if m and m.group(2) in filename_dictionary:
+        path = cwd / f'{m.group(1)}TeV/{filename_dictionary[m.group(2)]}'
+        if not path.is_file:
+            logger.error(f'{path} not found.')
+        return str(path)
+
+    logger.error(f'Cannot recognize {name}, which should be a jsonfile, or ECM.process with `processes` being:\n\t' +
+                 ',\t'.join(filename_dictionary.keys()))
+    exit(1)
+
+
 def get(input: str, mass: float)->Tuple[float, float, float]:
-    with open(input) as f:
-        data = json.load(f)
+    filename = parse_filename(input)
+    try:
+        with open(filename) as f:
+            data = json.load(f)
+    except json.decoder.JSONDecodeError:
+        logger.error(f'Data in {filename} are malformed.')
+        exit(1)
     return interpolate(data, mass)
 
 
 @click.command(help='Interpolate cross-section data',
                context_settings=dict(help_option_names=['-h', '--help']))
-@click.argument('input', type=click.Path(exists=True, dir_okay=False), required=True)
+@click.argument('input',  required=True)
 @click.argument('mass', type=float, required=True)
 @click.option('--format', type=click.Choice(['short', 'original']), default='short',
               help='output format', show_default=True)
 @click.version_option(__version__, '-V', '--version', prog_name=__scriptname__)
 def command_get(input: str, mass: float, format: str):
     if format == 'original':
-        with open(input) as f:
+        with open(parse_filename(input)) as f:
             data = json.load(f)
         result_str = interpolate_original_format(data, mass)
         print(result_str)
