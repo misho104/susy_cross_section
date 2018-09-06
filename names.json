@@ -4,5 +4,10 @@
   "wino.-0": "n2x1wino_x1m_n2.json",
   "wino.x0": "n2x1wino_x1pm_n2.json",
   "slsl.ll": "slsl_ll.json",
-  "slsl.rr": "slsl_rr.json"
+  "slsl.rr": "slsl_rr.json",
+  "hino.00": "n1n2hino.json",
+  "hino.+-": "x1x1hino.json",
+  "hino.x0": "n2x1hino_x1pm_n2.json",
+  "hino.+0": "n2x1hino_x1p_n2.json",
+  "hino.-0": "n2x1hino_x1p_n2.json"
 }

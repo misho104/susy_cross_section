@@ -31,4 +31,11 @@ References (original data)
   [JHEP **1612** (2016) 133](https://doi.org/10.1007/JHEP12(2016)133)
   [[arXiv:1607.07741](https://arxiv.org/abs/1607.07741)].
 
+
+Notes
+-----
+
+The data `13TeV/n2x1hino_x1p_n2.json` and `13TeV/n2x1hino_x1m_n2.json` are not on the original [LHC SUSY Cross Section Working Group](https://twiki.cern.ch/twiki/bin/view/LHCPhysics/SUSYCrossSections) web page; the envelope for two PDF sets (CTEQ6.6 and MSTW2008NLO) is calculated by Sho Iwamoto.
+
+
 and more...
