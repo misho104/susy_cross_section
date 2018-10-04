@@ -4,7 +4,7 @@ import json
 import logging
 import pathlib
 import re
-from typing import List, Tuple, Union
+from typing import cast, Sequence, Any, List, Tuple, Union, Callable  # noqa: F401
 
 import click
 import numpy as np
@@ -29,11 +29,11 @@ ResultType = Union[
 NAMES_DICTIONARY = 'names.json'
 
 
-def is_number(obj)->bool:
+def is_number(obj: Any)->bool:
     return isinstance(obj, int) or isinstance(obj, float)
 
 
-def format_str(obj)->str:
+def format_str(obj: Any)->str:
     if isinstance(obj, float):
         result = '{:#.7}'.format(obj)
         if result.endswith('.'):
@@ -67,11 +67,13 @@ def assert_same_type(data: List[ResultType])->bool:
 
 
 def log_interp1d(x, y, kind='linear'):
+    # type: (Sequence[float], Sequence[float], str)->Callable[[float], float]
     lx = np.log10(x)
     ly = np.log10(y)
     lin_interp = scipy.interpolate.interp1d(lx, ly, kind=kind)
 
-    def log_interp(z): return np.power(10.0, lin_interp(np.log10(z)))
+    def log_interp(z):  # type: (float)->float
+        return cast(float, np.power(10.0, lin_interp(np.log10(z))))
     return log_interp
 
 
@@ -114,6 +116,8 @@ def interpolate_original_format(data: List[ResultType], mass: float)->str:
         exit(1)
 
     xs_result = log_interp1d(masses, [p[1] for p in data])(mass)
+
+    unc_p, unc_m = 0, 0  # type: Union[float, List[float]], Union[float, List[float]]
     if is_number(data[0][2]):
         unc_p = log_interp1d(masses, [p[1] + p[2] for p in data])(mass) - xs_result
     else:
@@ -174,7 +178,7 @@ def get(input: str, mass: float)->Tuple[float, float, float]:
 @click.option('--format', type=click.Choice(['short', 'original']), default='short',
               help='output format', show_default=True)
 @click.version_option(__version__, '-V', '--version', prog_name=__scriptname__)
-def command_get(input: str, mass: float, format: str):
+def command_get(input: str, mass: float, format: str)->None:
     if format == 'original':
         with open(parse_filename(input)) as f:
             data = json.load(f)
