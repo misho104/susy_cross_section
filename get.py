@@ -98,7 +98,7 @@ def interpolate(data: List[ResultType], mass: float)->Tuple[float, float, float]
     xs_result = log_interp1d(masses, [p[1] for p in data])(mass)
     unc_p = log_interp1d(masses, xs_plus)(mass) - xs_result
     unc_m = log_interp1d(masses, xs_minus)(mass) - xs_result
-    return xs_result, unc_p, unc_m
+    return float(xs_result), float(unc_p), float(unc_m)
 
 
 def interpolate_original_format(data: List[ResultType], mass: float)->str:
