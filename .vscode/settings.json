@@ -1,15 +1,3 @@
 {
-  "python.autoComplete.addBrackets": true,
-  "python.autoComplete.preloadModules": ["numpy", "scipy"],
-  "python.unitTest.nosetestArgs": ["-s", "."],
-  "python.unitTest.pyTestEnabled": false,
-  "python.unitTest.unittestEnabled": false,
-  "python.unitTest.nosetestsEnabled": true,
-  "python.linting.mypyArgs": ["--ignore-missing-imports", "--follow-imports=silent"],
-  "prettier.printWidth": 120,
-  "cSpell.words": [
-    "interp",
-    "numpy",
-    "scipy"
-  ]
+  "cSpell.words": ["interp", "numpy", "scipy"]
 }

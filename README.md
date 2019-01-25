@@ -1,12 +1,12 @@
-LHC SUSY CrossSection
-=====================
+SUSY Cross Section
+==================
 
-Machine-readable (`json` format) data of [LHC SUSY Cross Sections](https://twiki.cern.ch/twiki/bin/view/LHCPhysics/SUSYCrossSections).
+Tool to handle various cross-section data-set for high-energy physics, mainly based on [LHC SUSY Cross Sections](https://twiki.cern.ch/twiki/bin/view/LHCPhysics/SUSYCrossSections).
 
 License
 -------
 
-The program codes included in this repository are licensed by [Sho Iwamoto / Misho](https://www.misho-web.com) under [MIT License](https://github.com/misho104/LHC_SUSY_crosssection/blob/master/LICENSE).
+The program codes included in this repository are licensed by [Sho Iwamoto / Misho](https://www.misho-web.com) under [MIT License](https://github.com/misho104/SUSY_cross_section/blob/master/LICENSE).
 
 Original data is distributed by [LHC SUSY Cross Section Working Group](https://twiki.cern.ch/twiki/bin/view/LHCPhysics/SUSYCrossSections).
 
@@ -31,11 +31,9 @@ References (original data)
   [JHEP **1612** (2016) 133](https://doi.org/10.1007/JHEP12(2016)133)
   [[arXiv:1607.07741](https://arxiv.org/abs/1607.07741)].
 
-
 Notes
 -----
 
 The data `13TeV/n2x1hino_x1p_n2.json` and `13TeV/n2x1hino_x1m_n2.json` are not on the original [LHC SUSY Cross Section Working Group](https://twiki.cern.ch/twiki/bin/view/LHCPhysics/SUSYCrossSections) web page; the envelope for two PDF sets (CTEQ6.6 and MSTW2008NLO) is calculated by Sho Iwamoto.
-
 
 and more...
