@@ -1,0 +1,116 @@
+"""Utility functions for numpy-compatible handling of numbers."""
+
+from typing import Any, Optional, Sequence, SupportsFloat, Union  # noqa: F401
+
+import numpy as np
+
+
+def convert_int_like(obj, to_numpy=False):
+    # type: (Any, bool)->Any
+    """Convert an int-like object to python- or numpy-integer."""
+    if isinstance(obj, int):
+        return np.int_(obj) if to_numpy else obj
+    try:
+        if np.issubdtype(obj, np.integer):
+            return obj if to_numpy else int(obj)
+    except TypeError:
+        pass
+    raise TypeError('not an int-like: %s', obj)
+
+
+def convert_float_like(obj, to_numpy=False):
+    # type: (Any, bool)->Any
+    """Convert an float-like object to python- or numpy-float."""
+    if isinstance(obj, int):
+        return np.float_(obj) if to_numpy else obj
+    try:
+        if np.issubdtype(obj, np.integer):
+            return obj if to_numpy else float(obj)
+    except TypeError:
+        pass
+    raise TypeError('not a float-like: %s', obj)
+
+
+def is_int_like(obj):
+    # type: (Any)->bool
+    """Check if an object is int-like."""
+    try:
+        if isinstance(obj, int) or np.issubdtype(obj, np.integer):
+            return True
+    except TypeError:
+        pass
+    return False
+
+
+def is_float_like(obj):
+    # type: (Any)->bool
+    """Check if an object is float-like."""
+    try:
+        if isinstance(obj, float) or np.issubdtype(obj, np.floating):
+            return True
+    except TypeError:
+        pass
+    return False
+
+
+class UValue:
+    """A numerical value with 1- and 2-sigma uncertainties.
+
+    An instance of this class represents a numeric value with 1- and
+    2-sigma level, possibly asymmetric, uncertainties. The uncertainties
+    may be multiple, for which they are combined to single number by
+    `_combine_uncertainties` method.
+    """
+
+    __slots__ = ['v', 'p1', 'm1', 'p2', 'm2']
+
+    def __init__(self, v, **kw):
+        # type: (Any, Any)->None
+        if isinstance(v, UValue):
+            # just copy the properties, asserting there are no other arguments.
+            assert not kw
+            for slot in self.__slots__:
+                setattr(self, slot, getattr(v, slot))
+        elif is_int_like(v) or is_float_like(v):
+            self.v = v              # type: SupportsFloat
+            self.p1 = self._combine_uncertainties(kw['p1']) if 'p1' in kw else None  # type: Optional[SupportsFloat]
+            self.m1 = self._combine_uncertainties(kw['m1']) if 'm1' in kw else None  # type: Optional[SupportsFloat]
+            self.p2 = self._combine_uncertainties(kw['p2']) if 'p2' in kw else None  # type: Optional[SupportsFloat]
+            self.m2 = self._combine_uncertainties(kw['m2']) if 'm2' in kw else None  # type: Optional[SupportsFloat]
+
+    def validate(self):
+        # type: ()->None
+        """Validate the instance."""
+        for slot in self.__slots__:
+            if not hasattr(getattr(self, slot), '__float__'):
+                raise TypeError('UValue: %s must be numeric: %s', slot, getattr(self, slot))
+            if slot != 'v' and getattr(self, slot) < 0:
+                raise ValueError('UValue: %s must be positive: %s', slot, getattr(self, slot))
+
+    @classmethod
+    def _combine_uncertainties(cls, uncertainties):
+        # type: (Union[SupportsFloat, Sequence[SupportsFloat]])->SupportsFloat
+        if hasattr(uncertainties, '__float__'):
+            return uncertainties         # type: ignore
+        elif hasattr(uncertainties, '__len__'):
+            if len(uncertainties) == 1:  # type: ignore
+                return uncertainties[0]  # type: ignore
+            else:
+                return (sum(float(x) ** 2 for x in uncertainties))**0.5  # type: ignore
+        raise TypeError('Invalid uncertainty specification: %s', uncertainties)
+
+    def __str__(self):
+        # type: ()->str
+        """Return basic-formatted string of the instance."""
+        return self.format_str(format_string='{:8g}')
+
+    def format_str(self, format_string='{:8.3g}'):
+        # type: (str)->str
+        """Return pretty-formatted string of the instance."""
+        f = {slot: format_string.format(getattr(self, slot) or 0) for slot in self.__slots__}
+        one_sigma = two_sigma = ''
+        if not (self.p1 is None and self.m1 is None):
+            one_sigma = (' +-{p1}' if f['p1'] == f['m1'] else ' +{p1}-{m1}').format(**f)
+        if not (self.p2 is None and self.m2 is None):
+            two_sigma = (' (+-{p2})' if f['p2'] == f['m2'] else ' (+{p2}-{m2})').format(**f)
+        return f['v'] + one_sigma + two_sigma
