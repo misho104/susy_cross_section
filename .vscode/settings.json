@@ -1,3 +1,24 @@
 {
-  "cSpell.words": ["interp", "numpy", "scipy"]
+  "cSpell.words": [
+    "bs",
+    "chargino",
+    "cteq",
+    "interp",
+    "issubdtype",
+    "lxml",
+    "mstw",
+    "neutralino",
+    "nlo",
+    "noqa",
+    "numpy",
+    "resummino",
+    "scipy",
+    "skipinitialspace",
+    "susy",
+    "xsec"
+  ],
+  "python.unitTest.nosetestsEnabled": false,
+  "files.associations": {
+    "*.info": "json"
+  }
 }
