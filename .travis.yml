@@ -1,0 +1,34 @@
+sudo: false
+cache: pip
+language: python
+
+before_install:
+  - pip install poetry
+
+install:
+  - poetry install --develop=susy_cross_section
+
+stages:
+  - test
+  - typecheck
+#  - linting
+
+script:
+  - nosetests -s -d
+  - coveralls
+
+jobs:
+  include:
+    - python: "3.5"
+    - python: "3.6"
+    - python: "3.7"
+      dist: xenial
+
+    - stage: typecheck
+      python: "3.6"
+      script:
+        - mypy -p susy_cross_section
+#    - stage: linting
+#      python: "3.6"
+#      script:
+#        - flake8 susy_cross_section
