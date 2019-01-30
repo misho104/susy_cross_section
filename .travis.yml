@@ -6,7 +6,8 @@ before_install:
   - pip install poetry
 
 install:
-  - poetry install --develop=susy_cross_section
+  - poetry --version
+  - poetry install -vvv --develop=susy_cross_section
 
 stages:
   - test
@@ -19,6 +20,7 @@ script:
 
 jobs:
   include:
+    - python: "2.7"
     - python: "3.5"
     - python: "3.6"
     - python: "3.7"
