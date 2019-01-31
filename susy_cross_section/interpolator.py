@@ -89,11 +89,6 @@ class AbstractInterpolator:
     interpolation of pandas data frame.
     """
 
-    @staticmethod
-    def dim_index(df):
-        # type: (Any)->int
-        """Return the dimension of dataframe index."""
-        return len(df.index.names)
 
     @staticmethod
     def axes_wrapper(axes_type, x, y):
@@ -140,7 +135,7 @@ class Scipy1dInterpolator(AbstractInterpolator):
 
     def _interpolate(self, df):
         # type: (Any)->Interpolation
-        if self.dim_index(df) != 1:
+        if df.index.nlevels != 1:
             raise Exception('Scipy1dInterpolator not handle multiindex data.')
         x0 = df.index.to_numpy()
         y0 = df.to_numpy()
