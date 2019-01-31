@@ -186,7 +186,12 @@ class CrossSectionTable(object):
             name = value_info.column
             value_unit = self.info.get_column(name).unit
             parameters = self.info.parameters
-            data = self.raw_data.set_index([p.column for p in parameters])  # copy data with setting indices
+            data = self.raw_data.copy()
+
+            # set index with quantizing the values with granularity to avoid float precision problems
+            for p in parameters:
+                data[p.column] = (data[p.column] / p.granularity).apply(round) * p.granularity
+            data.set_index([p.column for p in parameters], inplace=True)
 
             self._validate_uncertainty_info(value_info.unc_p)
             self._validate_uncertainty_info(value_info.unc_m)
