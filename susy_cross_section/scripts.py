@@ -78,5 +78,45 @@ def command_get(**kw):
     exit(0)
 
 
+@click.command(help='Show the interpreted cross-section table with positive and negative uncertainties.',
+               context_settings={'help_option_names': ['-h', '--help']})
+@click.argument('table', required=True, type=click.Path(exists=False))
+# @click.option('--config', type=click.Path(exists=True, dir_okay=False),
+#              help='path of config json file for extra name dictionary')
+@click.option('--info', type=click.Path(exists=True, dir_okay=False),
+              help='path of table-info file if non-standard file name')
+@click.version_option(__version__, '-V', '--version', prog_name=__scriptname__)
+def command_show(**kw):
+    # type: (Any)->None
+    """Script for cross-section interpolation."""
+    # handle arguments
+    info_path = None
+    if os.path.exists(kw['table']):
+        table_path = pathlib.Path(kw['table'])
+    elif kw['table'] in susy_cross_section.config.table_names:
+        pwd = pathlib.Path(__file__).parent
+        t = susy_cross_section.config.table_names[kw['table']]
+        if isinstance(t, str):
+            table_path = pwd / t
+        else:
+            table_path, info_path = pwd / t[0], pwd / t[1]
+    else:
+        click.echo('No table found: {}'.format(kw['table']))
+        exit(1)
+    if kw['info']:
+        info_path = kw['info']
+
+    # data evaluation
+    table = CrossSectionTable(table_path, info_path)
+    click.echo('=' * 80)
+    for key in table.data:
+        unit_str = '[{}]'.format(table.units[key]) if table.units[key] else ''
+        click.echo('{} {}'.format(key, unit_str))
+        click.echo('-' * 80)
+        click.echo(table.data[key])
+        click.echo('=' * 80)
+    exit(0)
+
+
 if __name__ == '__main__':
     command_get()
