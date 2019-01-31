@@ -1,8 +1,11 @@
 """Scripts for user's ease of handling the data."""
 
+from __future__ import absolute_import, division, print_function  # py2
+
 import logging
 import os
 import pathlib
+import sys
 from typing import Any  # noqa: F401
 
 import click
@@ -17,6 +20,9 @@ __copyright__ = 'Copyright (C) 2018-2019 Sho Iwamoto / Misho'
 __license__ = 'MIT'
 __scriptname__ = 'XS interpolator'
 __version__ = '0.1.0'
+
+if sys.version_info[0] < 3:  # py2
+    str = basestring          # noqa: F821
 
 logging.basicConfig(level=logging.WARNING)
 logger = logging.getLogger(__name__)

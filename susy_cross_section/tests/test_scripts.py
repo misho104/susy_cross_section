@@ -1,11 +1,14 @@
 """Test codes."""
 
+from __future__ import absolute_import, division, print_function  # py2
+
 import logging
 import pathlib
 import unittest
 
 from click.testing import CliRunner
 from nose.tools import assert_almost_equals, eq_, ok_, raises  # noqa: F401
+
 from susy_cross_section.scripts import command_get
 
 logging.basicConfig(level=logging.WARNING)

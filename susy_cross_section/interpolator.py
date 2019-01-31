@@ -1,11 +1,17 @@
 """Interpolators of cross-section data."""
 
+from __future__ import absolute_import, division, print_function  # py2
+
 import logging
+import sys
 from typing import (Any, Callable, List, Sequence, Tuple, Union,  # noqa: F401
                     cast)
 
 import numpy
 import scipy.interpolate
+
+if sys.version_info[0] < 3:  # py2
+    str = basestring          # noqa: F821
 
 logging.basicConfig(level=logging.WARNING)
 logger = logging.getLogger(__name__)
@@ -25,9 +31,11 @@ class InterpolationWithUncertainties:
         self.extra_p_source = lambda _x: 0    # type: Callable[[float], float]
         self.extra_m_source = lambda _x: 0    # type: Callable[[float], float]
 
-    def __call__(self, *args, unc_level=0):
+    # py2 does not accept single kwarg after args.
+    def __call__(self, *args, **kwargs):   # py2; in py3, def __call__(self, *args, unc_level=0):
         # type: (Any, float)->float
         """Return the fitted value with requested uncertainty level."""
+        unc_level = kwargs.get('unc_level', 0)  # py2
         return self.f0(*args) + (
             unc_level * self.unc_p_at(*args) if unc_level > 0 else
             unc_level * abs(self.unc_m_at(*args)) if unc_level < 0 else

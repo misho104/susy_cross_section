@@ -1,7 +1,10 @@
 """Classes for annotations to a table."""
 
+from __future__ import absolute_import, division, print_function  # py2
+
 import logging
 import pathlib
+import sys
 from typing import (Any, List, Mapping, MutableMapping, Optional,  # noqa: F401
                     Sequence, SupportsFloat, Tuple, Union, cast)
 
@@ -10,11 +13,14 @@ import pandas
 from susy_cross_section.table_info import ParameterInfo, TableInfo, ValueInfo
 from susy_cross_section.utility import Unit
 
+if sys.version_info[0] < 3:  # py2
+    str = basestring          # noqa: F821
+
 logging.basicConfig(level=logging.WARNING)
 logger = logging.getLogger(__name__)
 
 
-class CrossSectionAttributes:
+class CrossSectionAttributes(object):
     """Stores physical attributes of a cross section table."""
 
     def __init__(self,
@@ -63,13 +69,13 @@ class CrossSectionInfo(TableInfo):
         self.attributes = attributes or CrossSectionAttributes()   # type: CrossSectionAttributes
         self.parameters = parameters or []                         # type: List[ParameterInfo]
         self.values = values or []                                 # type: List[ValueInfo]
-        super().__init__(**kw)
+        super(CrossSectionInfo, self).__init__(**kw)  # py2
 
     @classmethod
     def load(cls, source):
         # type: (Union[pathlib.Path, str])->CrossSectionInfo
         """Load and construct CrossSectionInfo from a json file."""
-        return cast(CrossSectionInfo, super().load(source))
+        return cast(CrossSectionInfo, super(CrossSectionInfo, cls).load(source))  # py2
 
     def _load(self, **kw):    # noqa: C901
         # type: (Any)->None
@@ -80,7 +86,7 @@ class CrossSectionInfo(TableInfo):
             exit(1)
         del kw['attributes']
         del kw['data']
-        super()._load(**kw)
+        super(CrossSectionInfo, self)._load(**kw)  # py2
         if not isinstance(attributes, Mapping):
             logger.error('CrossSectionInfo.attributes must be a dict.')
             exit(1)
@@ -114,7 +120,7 @@ class CrossSectionInfo(TableInfo):
         self.validate()
 
 
-class CrossSectionTable:
+class CrossSectionTable(object):
     """Data of a cross section with parameters, read from a table file."""
 
     def _reader_options(self):

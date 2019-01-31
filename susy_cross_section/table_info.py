@@ -1,15 +1,24 @@
 """Classes for annotations to a table."""
+
+from __future__ import absolute_import, division, print_function  # py2
+
 import json
 import logging
 import pathlib  # noqa: F401
+import sys
 from typing import (Any, List, Mapping, MutableMapping, Optional,  # noqa: F401
                     Sequence, Union)
+
+if sys.version_info[0] < 3:  # py2
+    str = basestring          # noqa: F821
 
 logging.basicConfig(level=logging.WARNING)
 logger = logging.getLogger(__name__)
 
+JSONDecodeError = Exception if sys.version_info[0] < 3 else json.decoder.JSONDecodeError   # py2
 
-class ColumnInfo:
+
+class ColumnInfo(object):
     """Stores information of a column.
 
     A column is defined by `index`, but is referreed to by `name` for
@@ -56,7 +65,7 @@ class ColumnInfo:
             raise TypeError('Column %d: `unit` must be string: %s', self.index, self.unit)
 
 
-class ParameterInfo:
+class ParameterInfo(object):
     """Stores information of parameter.
 
     Parameter is a number characterized by its `column` name and users
@@ -123,7 +132,7 @@ class ParameterInfo:
         return json_data
 
 
-class ValueInfo:
+class ValueInfo(object):
     """Stores information of value accompanied by uncertainties.
 
     This includes `column` as the name of column the value is stored,
@@ -208,7 +217,7 @@ class ValueInfo:
         }
 
 
-class TableInfo:
+class TableInfo(object):
     """Stores annotations of a table.
 
     Attributes
@@ -252,10 +261,10 @@ class TableInfo:
         # type: (Union[pathlib.Path, str])->TableInfo
         """Load and construct TableInfo from a json file."""
         obj = cls()
-        with open(source) as f:
+        with open(source.__str__()) as f:  # py2
             try:
                 obj._load(**(json.load(f)))
-            except json.decoder.JSONDecodeError:
+            except JSONDecodeError:  # type: ignore
                 logger.error('Invalid JSON file: %s', source)
                 exit(1)
         return obj
