@@ -146,6 +146,7 @@ class CrossSectionTable(object):
             logger.error('Data parse failed: %s', *e.args)
             exit(1)
         self._parse_data()
+        self.validate()
 
     @staticmethod
     def _validate_uncertainty_info(uncertainty_info):
@@ -211,6 +212,20 @@ class CrossSectionTable(object):
             self.data[name]['unc+'] = data.apply(unc_p, axis=1)
             self.data[name]['unc-'] = data.apply(unc_m, axis=1)
             self.units[name] = value_unit
+
+    def validate(self):
+        # type: ()->None
+        """Validate the data grid."""
+        failed = False
+        for key, data in self.data.items():
+            duplication = data.index[data.index.duplicated()]
+            for d in duplication:
+                failed = True
+                logger.error('Found duplicated entries: %s, %s', key, d)
+                if len(duplication) > 5:
+                    logger.error('Maybe parameter granularity is set too large?')
+        if failed:
+            exit(1)
 
     def __getitem__(self, key):
         # type: (str)->pandas.core.frame.DataFrame
