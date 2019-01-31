@@ -1,8 +1,14 @@
 """Utility functions and classes."""
 
+from __future__ import absolute_import, division, print_function  # py2
+
+import sys
 from typing import List, Mapping, MutableMapping, Optional, Union  # noqa: F401
 
 import numpy
+
+if sys.version_info[0] < 3:  # py2
+    str = basestring          # noqa: F821
 
 
 class Unit:

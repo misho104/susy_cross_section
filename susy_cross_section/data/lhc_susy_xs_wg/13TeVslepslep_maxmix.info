@@ -1,0 +1,43 @@
+{
+  "document": {
+    "title": "NLO-NLL slepton-pair cross sections",
+    "authors": "LHC SUSY Cross Section Working Group",
+    "calculator": "resummino",
+    "source": "https://twiki.cern.ch/twiki/bin/view/LHCPhysics/SUSYCrossSections13TeVslepslep",
+    "version": "2017-06-15"
+  },
+  "attributes": {
+    "processes": "p p > ta1+ ta1- (max-mixing)",
+    "collider": "pp",
+    "ecm": "13TeV",
+    "order": "NLO+NLL",
+    "pdf_name": "CT10 NLO"
+  },
+  "columns": [
+    { "name": "m_slep", "unit": "GeV" },
+    { "name": "xsec", "unit": "fb" },
+    { "name": "unc-_scale", "unit": "%" },
+    { "name": "unc-_pdf", "unit": "%" },
+    { "name": "unc+_scale", "unit": "%" },
+    { "name": "unc+_pdf", "unit": "%" }
+  ],
+  "reader_options": {
+    "skipinitialspace": 1
+  },
+  "data": {
+    "parameters": [{ "column": "m_slep", "granularity": 1 }],
+    "values": [
+      {
+        "column": "xsec",
+        "unc-": [
+          { "column": "unc-_scale", "type": "relative" },
+          { "column": "unc-_pdf", "type": "relative" }
+        ],
+        "unc+": [
+          { "column": "unc+_scale", "type": "relative" },
+          { "column": "unc+_pdf", "type": "relative" }
+        ]
+      }
+    ]
+  }
+}
