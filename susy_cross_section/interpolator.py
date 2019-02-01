@@ -4,11 +4,11 @@ from __future__ import absolute_import, division, print_function  # py2
 
 import logging
 import sys
-from typing import (Any, Callable, List, Sequence, Tuple, Union,  # noqa: F401
-                    cast)
+from typing import Any, Callable, Tuple  # noqa: F401
 
-import numpy
 import scipy.interpolate
+
+import susy_cross_section.axes_wrapper as AW
 
 if sys.version_info[0] < 3:  # py2
     str = basestring          # noqa: A001, F821
@@ -16,14 +16,14 @@ if sys.version_info[0] < 3:  # py2
 logging.basicConfig(level=logging.WARNING)
 logger = logging.getLogger(__name__)
 
-InterpolationType = Tuple[Any, Callable[[float], float], Callable[[float], float]]
+InterpolationType = Callable[[float], float]
 
 
 class InterpolationWithUncertainties:
     """An interpolation result of values accompanied by uncertainties."""
 
     def __init__(self, central, central_plus_unc, central_minus_unc):
-        # type: (Interpolation, Interpolation, Interpolation)->None
+        # type: (InterpolationType, InterpolationType, InterpolationType)->None
         self.f0 = central
         self.fp = central_plus_unc
         self.fm = central_minus_unc
@@ -64,52 +64,12 @@ class InterpolationWithUncertainties:
         return -((self.f0(*args) - self.fm(*args)) ** 2 + self.extra_m_source(*args) ** 2)**0.5
 
 
-WrapperType = Callable[[float], float]
-
-
-class Interpolation:
-    """An interpolation result with modified axes."""
-
-    def __init__(self, f, x_wrapper, y_wrapper):
-        # type: (Any, WrapperType, WrapperType)->None
-        self.f = f                  # type: Any
-        self.x_wrapper = x_wrapper  # type: WrapperType
-        self.y_wrapper = y_wrapper  # type: WrapperType
-
-    def __call__(self, x):
-        # type: (float)->float
-        """Return interpolation result with corrected axes."""
-        return self.y_wrapper(self.f(self.x_wrapper(x)))
-
-
 class AbstractInterpolator:
     """Abstract class for interpolators of values with 1sigma uncertainties.
 
     Actual interpolators, inheriting this abstract class, will perform
     interpolation of pandas data frame.
     """
-
-
-    @staticmethod
-    def axes_wrapper(axes_type, x, y):
-        # type: (str, Any, Any)->Tuple[Any, Any, Callable[[float], float], Callable[[float], float]]
-        """Wrap x- and y-data to fit and return wrapped data with inverters.
-
-        `axes_type` is the name of wrapper, and the grid data `x` and `y` are
-        wrapped with it. The wrapped data of x, y, and the functions wx
-        and wy to invert the wrap is returned, i.e., with fit function f,
-        y_fit = wy(f(wx(x_fit))).
-        """
-        if axes_type == 'linear':
-            return x, y, lambda a: a, lambda a: a
-        elif axes_type == 'log':
-            return x, numpy.log10(y), lambda a: a, lambda a: 10**a
-        elif axes_type == 'loglinear':
-            return numpy.log10(x), y, lambda a: float(numpy.log10(a)), lambda a: a
-        elif axes_type == 'loglog':
-            return numpy.log10(x), numpy.log10(y), lambda a: float(numpy.log10(a)), lambda a: 10**a
-        else:
-            raise ValueError('Invalid axes_type: %s', axes_type)
 
     def interpolate(self, df_with_unc):
         # type: (Any)->InterpolationWithUncertainties
@@ -121,7 +81,7 @@ class AbstractInterpolator:
         )
 
     def _interpolate(self, df):
-        # type: (Any)->Interpolation
+        # type: (Any)->InterpolationType
         return NotImplemented  # type: ignore
 
 
@@ -131,13 +91,12 @@ class Scipy1dInterpolator(AbstractInterpolator):
     def __init__(self, kind=None, axes=None):
         # type: (str, str)->None
         self.kind = (kind or 'linear').lower()
-        self.axes = (axes or 'linear').lower()
+        self.wrapper = AW.one_dim_wrapper[axes or 'linear']
 
     def _interpolate(self, df):
-        # type: (Any)->Interpolation
+        # type: (Any)->InterpolationType
         if df.index.nlevels != 1:
             raise Exception('Scipy1dInterpolator not handle multiindex data.')
-        x0 = df.index.to_numpy()
-        y0 = df.to_numpy()
-        x, y, wx, wy = self.axes_wrapper(self.axes, x0, y0)
-        return Interpolation(scipy.interpolate.interp1d(x, y, self.kind), wx, wy)
+        x = [self.wrapper.wx[0](x) for x in df.index.to_numpy()]   # array(n_points)
+        y = [self.wrapper.wy(y) for y in df.to_numpy()]            # array(n_points)
+        return self.wrapper.correct(scipy.interpolate.interp1d(x, y, self.kind))
