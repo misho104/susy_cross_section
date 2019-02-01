@@ -8,7 +8,7 @@ from typing import List, Mapping, MutableMapping, Optional, Union  # noqa: F401
 import numpy
 
 if sys.version_info[0] < 3:  # py2
-    str = basestring          # noqa: F821
+    str = basestring          # noqa: A001, F821
 
 
 class Unit:

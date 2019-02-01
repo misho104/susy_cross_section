@@ -14,7 +14,7 @@ from susy_cross_section.table_info import ParameterInfo, TableInfo, ValueInfo
 from susy_cross_section.utility import Unit
 
 if sys.version_info[0] < 3:  # py2
-    str = basestring          # noqa: F821
+    str = basestring          # noqa: A001, F821
 
 logging.basicConfig(level=logging.WARNING)
 logger = logging.getLogger(__name__)

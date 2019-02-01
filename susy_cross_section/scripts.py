@@ -22,7 +22,7 @@ __scriptname__ = 'XS interpolator'
 __version__ = '0.1.0'
 
 if sys.version_info[0] < 3:  # py2
-    str = basestring          # noqa: F821
+    str = basestring          # noqa: A001, F821
 
 logging.basicConfig(level=logging.WARNING)
 logger = logging.getLogger(__name__)
