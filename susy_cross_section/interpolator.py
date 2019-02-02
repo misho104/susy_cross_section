@@ -4,11 +4,13 @@ from __future__ import absolute_import, division, print_function  # py2
 
 import logging
 import sys
-from typing import Any, Callable, Tuple  # noqa: F401
+from typing import (Any, Callable, List, Mapping, Sequence,  # noqa: F401
+                    Tuple, Union, cast)
 
+import pandas  # noqa: F401
 import scipy.interpolate
 
-import susy_cross_section.axes_wrapper as AW
+from susy_cross_section.axes_wrapper import AxesWrapper
 
 if sys.version_info[0] < 3:  # py2
     str = basestring          # noqa: A001, F821
@@ -16,20 +18,18 @@ if sys.version_info[0] < 3:  # py2
 logging.basicConfig(level=logging.WARNING)
 logger = logging.getLogger(__name__)
 
-InterpolationType = Callable[[float], float]
+InterpolationType = Callable[[Sequence[float]], float]
 
 
 class InterpolationWithUncertainties:
     """An interpolation result of values accompanied by uncertainties."""
 
-    def __init__(self, central, central_plus_unc, central_minus_unc):
-        # type: (InterpolationType, InterpolationType, InterpolationType)->None
-        self.f0 = central
-        self.fp = central_plus_unc
-        self.fm = central_minus_unc
-
-        self.extra_p_source = lambda _x: 0    # type: Callable[[float], float]
-        self.extra_m_source = lambda _x: 0    # type: Callable[[float], float]
+    def __init__(self, central, central_plus_unc, central_minus_unc, param_names=None):
+        # type: (InterpolationType, InterpolationType, InterpolationType, List[str])->None
+        self._f0 = central
+        self._fp = central_plus_unc
+        self._fm = central_minus_unc
+        self.param_index = {name: i for i, name in enumerate(param_names or [])}  # type: Mapping[str, int]
 
     # py2 does not accept single kwarg after args.
     def __call__(self, *args, **kwargs):   # py2; in py3, def __call__(self, *args, unc_level=0):
@@ -42,26 +42,52 @@ class InterpolationWithUncertainties:
             0
         )
 
-    def tuple_at(self, *args):
-        # type: (Any, float)->Tuple[float, float, float]
+    def _interpret_args(self, *args, **kwargs):
+        # type: (float, float)->Sequence[float]
+        if not kwargs:
+            return args
+        tmp = list(args)   # type: List[Union[float, None]]
+        for key, value in kwargs.items():
+            index = self.param_index[key]
+            if index >= len(tmp):
+                tmp.extend([None for i in range(index + 1 - len(tmp))])
+            tmp[index] = value
+        if any(v is None for v in tmp):
+            raise ValueError('insufficient arguments: %s, %s.', args, kwargs)
+        return cast(Sequence[float], tmp)
+
+    def f0(self, *a, **kw):
+        # type: (float, float)->float
+        """Return the fitted value of central value."""
+        return self._f0(self._interpret_args(*a, **kw))
+
+    def fp(self, *a, **kw):
+        # type: (float, float)->float
+        """Return the fitted value of central value."""
+        return self._fp(self._interpret_args(*a, **kw))
+
+    def fm(self, *a, **kw):
+        # type: (float, float)->float
+        """Return the fitted value of central value."""
+        return self._fm(self._interpret_args(*a, **kw))
+
+    def tuple_at(self, *a, **kw):
+        # type: (float, float)->Tuple[float, float, float]
         """Return the tuple (central, +unc, -unc) at the fit point."""
-        return float(self.f0(*args)), self.unc_p_at(*args), self.unc_m_at(*args)
+        args = self._interpret_args(*a, **kw)
+        return self.f0(*args), self.unc_p_at(*args), self.unc_m_at(*args)
 
-    def unc_p_at(self, *args):
-        # type: (Any)->float
-        """Return the fitted value of positive uncertainty.
+    def unc_p_at(self, *a, **kw):
+        # type: (float, float)->float
+        """Return the fitted value of positive uncertainty."""
+        args = self._interpret_args(*a, **kw)
+        return self.fp(*args) - self.f0(*args)
 
-        Note that this is not the positive uncertainty of the fitting.
-        """
-        return ((self.fp(*args) - self.f0(*args)) ** 2 + self.extra_p_source(*args) ** 2)**0.5
-
-    def unc_m_at(self, *args):
-        # type: (Any)->float
-        """Return the fitted value of negative uncertainty, which is negative.
-
-        Note that this is not the negative uncertainty of the fitting.
-        """
-        return -((self.f0(*args) - self.fm(*args)) ** 2 + self.extra_m_source(*args) ** 2)**0.5
+    def unc_m_at(self, *a, **kw):
+        # type: (float, float)->float
+        """Return the fitted (negative) value of negative uncertainty."""
+        args = self._interpret_args(*a, **kw)
+        return -(self.f0(*args) - self.fm(*args))
 
 
 class AbstractInterpolator:
@@ -72,17 +98,17 @@ class AbstractInterpolator:
     """
 
     def interpolate(self, df_with_unc):
-        # type: (Any)->InterpolationWithUncertainties
+        # type: (pandas.DataFrame)->InterpolationWithUncertainties
         """Interpolate the values accompanied by uncertainties."""
         return InterpolationWithUncertainties(
             self._interpolate(df_with_unc['value']),
             self._interpolate(df_with_unc['value'] + df_with_unc['unc+']),
             self._interpolate(df_with_unc['value'] - abs(df_with_unc['unc-'])),
-        )
+            param_names=df_with_unc.index.names)
 
     def _interpolate(self, df):
-        # type: (Any)->InterpolationType
-        return NotImplemented  # type: ignore
+        # type: (pandas.DataFrame)->InterpolationType
+        raise NotImplementedError
 
 
 class Scipy1dInterpolator(AbstractInterpolator):
@@ -90,13 +116,24 @@ class Scipy1dInterpolator(AbstractInterpolator):
 
     def __init__(self, kind=None, axes=None):
         # type: (str, str)->None
-        self.kind = (kind or 'linear').lower()
-        self.wrapper = AW.one_dim_wrapper[axes or 'linear']
+        self.kind = (kind or 'linear').lower()  # type: str
+        self.wrapper = {
+            'linear': AxesWrapper(['linear'], 'linear', 'linear'),
+            'log': AxesWrapper(['linear'], 'log', 'exp'),
+            'loglinear': AxesWrapper(['log'], 'linear', 'linear'),
+            'loglog': AxesWrapper(['log'], 'log', 'exp'),
+        }[axes or 'linear']  # type: AxesWrapper
 
     def _interpolate(self, df):
-        # type: (Any)->InterpolationType
+        # type: (pandas.DataFrame)->InterpolationType
         if df.index.nlevels != 1:
             raise Exception('Scipy1dInterpolator not handle multiindex data.')
-        x = [self.wrapper.wx[0](x) for x in df.index.to_numpy()]   # array(n_points)
-        y = [self.wrapper.wy(y) for y in df.to_numpy()]            # array(n_points)
-        return self.wrapper.correct(scipy.interpolate.interp1d(x, y, self.kind))
+        x_list = [self.wrapper.wx[0](x) for x in df.index.to_numpy()]   # array(n_points)
+        y_list = [self.wrapper.wy(y) for y in df.to_numpy()]            # array(n_points)
+        # as interp1d is float->float, we convert it to Tuple[float]->float.
+
+        def fit(x, f=scipy.interpolate.interp1d(x_list, y_list, self.kind)):  # noqa: B008
+            # type: (Sequence[float], Callable[[float], float])->float
+            return f(*x)
+
+        return self.wrapper.correct(fit)
