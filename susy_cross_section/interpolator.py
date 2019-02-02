@@ -137,3 +137,29 @@ class Scipy1dInterpolator(AbstractInterpolator):
             return f(*x)
 
         return self.wrapper.correct(fit)
+
+
+class ScipyRegularGridInterpolator(AbstractInterpolator):
+    """Interpolator based on Scipy RegularGridInterpolator."""
+
+    def __init__(self, param_axes, value_axis):
+        # type: (Sequence[str], str)->None
+        self.wrapper = AxesWrapper(param_axes, value_axis)
+
+    def _interpolate(self, df):
+        # type: (pandas.DataFrame)->InterpolationType
+        np = df.index.nlevels
+        if len(self.wrapper.wx) != np:
+            raise ValueError('Interpolator accepts %d-parameters but %d-parameter data is given.',
+                             len(self.wrapper.wx), np)
+        x0 = df.index.levels   # arrays of grid "ticks"
+        x = [w(axis) for w, axis in zip(self.wrapper.wx, x0)]
+        y = df.apply(self.wrapper.wy).unstack().values
+        # as RegularGridInterpolator `fit` works as:
+        #     fit([700, 700])  ->  [0.7],   we have to correct the returning value.
+
+        def fit(x, fit=scipy.interpolate.RegularGridInterpolator(x, y)):  # noqa: B008
+            # type: (Sequence[float], Any)->float
+            return cast(float, fit(x)[0])
+
+        return self.wrapper.correct(fit)
