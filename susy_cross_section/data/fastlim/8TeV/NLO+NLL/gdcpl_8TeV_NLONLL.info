@@ -24,7 +24,7 @@
     "skiprows": 4
   },
   "data": {
-    "parameters": [{ "column": "msq", "granularity": 1 }],
+    "parameters": [{ "column": "mgl", "granularity": 1 }],
     "values": [
       {
         "column": "xsec",

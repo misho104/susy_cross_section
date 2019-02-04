@@ -30,8 +30,8 @@ class CrossSectionAttributes(object):
                  order='',
                  pdf_id=None,
                  pdf_name=None):
-        # type: (List[str], str, str, str, int, str)->None
-        self.processes = processes or []   # type: List[str]
+        # type: (Union[str, List[str]], str, str, str, int, str)->None
+        self.processes = [processes] if isinstance(processes, str) else processes or []   # type: List[str]
         self.collider = collider           # type: str
         self.ecm = ecm                     # type: str            # because it is always with units
         self.order = order                 # type: str
