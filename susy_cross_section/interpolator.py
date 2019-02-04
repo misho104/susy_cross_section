@@ -115,7 +115,22 @@ class AbstractInterpolator:
 
 
 class Scipy1dInterpolator(AbstractInterpolator):
-    """Interpolator for values with uncertainty based on Scipy interp1d."""
+    """Interpolator for one-dimensional data.
+
+    `kind` should be either "linear" (for linear interpolation) or
+    "cubic" (for cubic-spline interpolation).
+
+    Scipy has several interpolators, among which linear and spline (with
+    order=3) interpolators are sensible for cross-section interpolation.
+    Polynomial interpolation is not recommended due to Runge's
+    phenomenon, and also because it is approximately covered by linear
+    fit with log-log axes. This class chooses natural boundary condition
+    for cubic spline interpolation, while for quadratic spline the
+    boundary condition is left default ('not-a-knot').
+
+    Users should notice that the accuracy of spline fits will be worse in
+    the first- and last-segments.
+    """
 
     def __init__(self, kind=None, axes=None):
         # type: (str, str)->None
@@ -152,12 +167,19 @@ class Scipy1dInterpolator(AbstractInterpolator):
         return self.wrapper.correct(_fit)
 
 
-class ScipyRegularGridInterpolator(AbstractInterpolator):
-    """Interpolator based on Scipy RegularGridInterpolator."""
+class ScipyGridInterpolator(AbstractInterpolator):
+    """Interpolator for multi-dimensional structural data.
 
-    def __init__(self, param_axes, value_axis):
-        # type: (Sequence[str], str)->None
+    Among the several implementations in scipy.interpolate for multi-
+    dimensional structural data, "linear" (RegularGridInterpolator) and
+    "spline" (spline-f2d; for 2d; RectBivariateSpline) are sensible for
+    cross-section fitting.
+    """
+
+    def __init__(self, param_axes, value_axis, kind='linear'):
+        # type: (Sequence[str], str, str)->None
         self.wrapper = AxesWrapper(param_axes, value_axis)
+        self.kind = kind or 'linear'
 
     def _interpolate(self, df):
         # type: (pandas.DataFrame)->InterpolationType
@@ -165,14 +187,45 @@ class ScipyRegularGridInterpolator(AbstractInterpolator):
         if len(self.wrapper.wx) != np:
             raise ValueError('Interpolator accepts %d-parameters but %d-parameter data is given.',
                              len(self.wrapper.wx), np)
+        if np < 2:
+            raise ValueError('ScipyGridInterpolator available for multi-index data.')
+
+        # setup data and wrap by wrappers
         x0 = df.index.levels   # arrays of grid "ticks"
         x = [w(axis) for w, axis in zip(self.wrapper.wx, x0)]
         y = df.apply(self.wrapper.wy).unstack().values
-        # as RegularGridInterpolator `fit` works as:
-        #     fit([700, 700])  ->  [0.7],   we have to correct the returning value.
 
-        def fit(x, fit=scipy.interpolate.RegularGridInterpolator(x, y)):  # noqa: B008
-            # type: (Sequence[float], Any)->float
-            return cast(float, fit(x)[0])
+        # call scipy
+        if self.kind == 'linear':
+            # RGI works as: fit([700, 700])  ->  [0.7]
+            fit = scipy.interpolate.RegularGridInterpolator(x, y, method='linear', bounds_error=True)
 
-        return self.wrapper.correct(fit)
+            def _fit(x, f=fit):
+                # type: (Sequence[float], Any)->float
+                return cast(float, f(x)[0])
+        elif self.kind == 'spline' and np == 2:
+            if numpy.isnan(x).any() or numpy.isnan(y).any():
+                raise ValueError('ScipyGridInterpolator does not allow missing grid points for spline fit.')
+            # RBS works as: fit(700, 700)  -> [[0.7]]
+            kx, ky = 3, 3   # can be modified but cubic spline is default
+            fit = scipy.interpolate.RectBivariateSpline(x[0], x[1], y, s=0, kx=kx, ky=ky)
+
+            def _fit(x, f=fit):
+                # type: (Sequence[float], Any)->float
+                return cast(float, f(x[0], x[1])[0][0])
+        else:
+            raise ValueError('ScipyGridInterpolator.kind is invalid.')
+
+        return self.wrapper.correct(_fit)
+
+
+class ScipyMultiDimensionalInterpolator(AbstractInterpolator):
+    """Interpolator for multi-dimensional non-structural data.
+
+    Among the several implementations in scipy.interpolate for multi-
+    dimensional non-structural data, "linear" (LinearNDInterpolator) and
+    "spline" (LSQBivariateSpline) are sensible for cross-section
+    fitting.
+    """
+
+    NotImplemented

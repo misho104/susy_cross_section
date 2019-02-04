@@ -1,5 +1,6 @@
 {
   "cSpell.words": [
+    "bivariate",
     "bs",
     "chargino",
     "cteq",
@@ -16,6 +17,7 @@
     "nlo",
     "noqa",
     "numpy",
+    "rect",
     "resummino",
     "scipy",
     "skipinitialspace",

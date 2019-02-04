@@ -13,7 +13,7 @@ from nose.tools import (assert_almost_equals, assert_raises, eq_,  # noqa: F401
 
 from susy_cross_section.cross_section_table import CrossSectionTable
 from susy_cross_section.interpolator import (Scipy1dInterpolator,
-                                             ScipyRegularGridInterpolator)
+                                             ScipyGridInterpolator)
 
 logging.basicConfig(level=logging.WARNING)
 logger = logging.getLogger(__name__)
@@ -38,6 +38,7 @@ class TestInterpolator(unittest.TestCase):
         self.dirs = {
             'lhc_wg': pathlib.Path(__file__).parent / '..' / 'data' / 'lhc_susy_xs_wg',
             'fastlim8': pathlib.Path(__file__).parent / '..' / 'data' / 'fastlim' / '8TeV' / 'NLO+NLL',
+            'fastlim8mod': pathlib.Path(__file__).parent / 'data',
         }
 
     def test_scipy_1d_interpolator(self):
@@ -105,73 +106,79 @@ class TestInterpolator(unittest.TestCase):
                 with assert_raises(TypeError):
                     test_method(m_wino=bad_input)
 
-    def test_scipy_regular_grid_interpolator(self):
-        """Verify ScipyRegularGridInterpolator."""
-        table = CrossSectionTable(self.dirs['fastlim8'] / 'sg_8TeV_NLONLL.xsec')
+    def test_scipy_grid_interpolator(self):
+        """Verify ScipyGridInterpolator."""
+        table = CrossSectionTable(self.dirs['fastlim8mod'] / 'sg_8TeV_NLONLL_modified.xsec')
         midpoint = {
             'linear': lambda x, y: (x + y) / 2,
             'log': lambda x, y: (x * y) ** 0.5,
         }
         for x1a, x2a, ya in itertools.product(['linear', 'log'], repeat=3):
-            fit = ScipyRegularGridInterpolator([x1a, x2a], ya).interpolate(table, 'xsec')
-            # on the grid points:
-            # 700    1400   0.0473379597888      0.00905940683923
-            # 700    1450   0.0382279746207      0.0075711349465
-            # 750    1400   0.0390134257995      0.00768847466247
-            # 750    1450   0.0316449395656      0.0065050745643
-            self._assert_all_close(fit.tuple_at(700, 1400), (0.04734, 0.00906, -0.00906), decimal=5)
-            assert_almost_equals(fit(700, 1400), 0.04734, 5)
-            assert_almost_equals(fit.unc_p_at(700, 1400), +0.00906, 5)
-            assert_almost_equals(fit.unc_m_at(700, 1400), -0.00906, 5)
-            assert_almost_equals(fit(700, 1400, unc_level=1), 0.04734 + 0.00906 * 1, 5)
-            assert_almost_equals(fit(700, 1400, unc_level=-1), 0.04734 + 0.00906 * -1, 5)
-            assert_almost_equals(fit(750, 1450, unc_level=0.5), 0.03164 + 0.00651 * 0.5, 5)
-            assert_almost_equals(fit(750, 1450, unc_level=-1.5), 0.0316449 + 0.006505 * -1.5, 5)
+            for kind in ['linear', 'spline']:
+                print(kind, x1a, x2a, ya)
+                fit = ScipyGridInterpolator([x1a, x2a], ya, kind=kind).interpolate(table, 'xsec')
+                # on the grid points:
+                # 700    1400   0.0473379597888      0.00905940683923
+                # 700    1450   0.0382279746207      0.0075711349465
+                # 750    1400   0.0390134257995      0.00768847466247
+                # 750    1450   0.0316449395656      0.0065050745643
+                self._assert_all_close(fit.tuple_at(700, 1400), (0.04734, 0.00906, -0.00906), decimal=5)
+                assert_almost_equals(fit(700, 1400), 0.04734, 5)
+                assert_almost_equals(fit.unc_p_at(700, 1400), +0.00906, 5)
+                assert_almost_equals(fit.unc_m_at(700, 1400), -0.00906, 5)
+                assert_almost_equals(fit(700, 1400, unc_level=1), 0.04734 + 0.00906 * 1, 5)
+                assert_almost_equals(fit(700, 1400, unc_level=-1), 0.04734 + 0.00906 * -1, 5)
+                assert_almost_equals(fit(750, 1450, unc_level=0.5), 0.03164 + 0.00651 * 0.5, 5)
+                assert_almost_equals(fit(750, 1450, unc_level=-1.5), 0.0316449 + 0.006505 * -1.5, 5)
 
-            # interpolation: for uncertainty, returns sensible results
-            for interp_axis in (1, 2):
-                x1 = midpoint[x1a](700, 750) if interp_axis == 1 else 700
-                x2 = midpoint[x2a](1400, 1450) if interp_axis == 2 else 1400
-                y_expect = midpoint[ya](0.0473379, 0.0390134 if interp_axis == 1 else 0.03822797)
-                assert_almost_equals(fit(x1, x2), y_expect, 5)
-                ok_(0.0075711 < fit.unc_p_at(x1, x2) < 0.0090594)
-                ok_(0.0075711 < -fit.unc_m_at(x1, x2) < 0.0090594)
-            ok_(0.0316449 < fit(725, 1425) < 0.0473378)
-            ok_(0.0065051 < fit.unc_p_at(725, 1425) < 0.0090594)
-            ok_(0.0065051 < -fit.unc_m_at(725, 1425) < 0.0090594)
+                # interpolation: for uncertainty, returns sensible results
+                for interp_axis in (1, 2):
+                    x1 = midpoint[x1a](700, 750) if interp_axis == 1 else 700
+                    x2 = midpoint[x2a](1400, 1450) if interp_axis == 2 else 1400
+                    y_upperend = 0.0390134 if interp_axis == 1 else 0.03822797
+                    if kind == 'linear':
+                        assert_almost_equals(fit(x1, x2), midpoint[ya](0.0473379, y_upperend), 5)
+                    else:
+                        ok_(y_upperend < fit(x1, x2) < 0.047337959)
+                    ok_(0.0075711 < fit.unc_p_at(x1, x2) < 0.0090594)
+                    ok_(0.0075711 < -fit.unc_m_at(x1, x2) < 0.0090594)
+                ok_(0.0316449 < fit(725, 1425) < 0.0473378)
+                ok_(0.0065051 < fit.unc_p_at(725, 1425) < 0.0090594)
+                ok_(0.0065051 < -fit.unc_m_at(725, 1425) < 0.0090594)
 
-    def test_scipy_regular_grid_interpolator_nonstandard_args(self):
-        """Verify ScipyRegularGridInterp accepts/refuses args correctly."""
-        table = CrossSectionTable(self.dirs['fastlim8'] / 'sg_8TeV_NLONLL.xsec')
+    def test_scipy_grid_interpolator_nonstandard_args(self):
+        """Verify ScipyGridInterp accepts/refuses args correctly."""
+        table = CrossSectionTable(self.dirs['fastlim8mod'] / 'sg_8TeV_NLONLL_modified.xsec')
 
-        fit = ScipyRegularGridInterpolator(['id', 'id'], 'id').interpolate(table, 'xsec')
-        for m in ['f0', 'fp', 'fm', 'unc_p_at', 'unc_m_at', 'tuple_at']:
-            test_method = getattr(fit, m)
-            value = test_method(777, 888)
-            if m == 'tuple_at':
-                # the output should be (3,) array (or 3-element tuple)
-                eq_(numpy.array(value).shape, (3,))
-            else:
-                # it is a scalar
-                ok_(self._is_scalar_number(value))
-            # method should accept keyword arguments
-            eq_(test_method(msq=777, mgl=888), value)
-            eq_(test_method(mgl=888, msq=777), value)
-            eq_(test_method(777, mgl=888), value)
+        for kind in ['linear', 'spline']:
+            fit = ScipyGridInterpolator(['id', 'id'], 'id', kind=kind).interpolate(table, 'xsec')
+            for m in ['f0', 'fp', 'fm', 'unc_p_at', 'unc_m_at', 'tuple_at']:
+                test_method = getattr(fit, m)
+                value = test_method(777, 888)
+                if m == 'tuple_at':
+                    # the output should be (3,) array (or 3-element tuple)
+                    eq_(numpy.array(value).shape, (3,))
+                else:
+                    # it is a scalar
+                    ok_(self._is_scalar_number(value))
+                # method should accept keyword arguments
+                eq_(test_method(msq=777, mgl=888), value)
+                eq_(test_method(mgl=888, msq=777), value)
+                eq_(test_method(777, mgl=888), value)
 
-            # method should not accept arrays or numpy.ndarray with >0 dim.
-            for bad_input in ([777, 888], [[777]], [[777, 888], [789, 890]], [777, 888, 999]):
+                # method should not accept arrays or numpy.ndarray with >0 dim.
+                for bad_input in ([777, 888], [[777]], [[777, 888], [789, 890]], [777, 888, 999]):
+                    with assert_raises(TypeError):
+                        test_method(bad_input)
+                    with assert_raises(TypeError):
+                        test_method(numpy.array(bad_input))
+                with assert_raises(KeyError):
+                    test_method(777, 888, m_wino=100)
+                with assert_raises(KeyError):
+                    test_method(777, m_wino=100)
+                with assert_raises(KeyError):
+                    test_method(m_wino=100)
                 with assert_raises(TypeError):
-                    test_method(bad_input)
+                    test_method()
                 with assert_raises(TypeError):
-                    test_method(numpy.array(bad_input))
-            with assert_raises(KeyError):
-                test_method(777, 888, m_wino=100)
-            with assert_raises(KeyError):
-                test_method(777, m_wino=100)
-            with assert_raises(KeyError):
-                test_method(m_wino=100)
-            with assert_raises(TypeError):
-                test_method()
-            with assert_raises(TypeError):
-                test_method(777)
+                    test_method(777)
