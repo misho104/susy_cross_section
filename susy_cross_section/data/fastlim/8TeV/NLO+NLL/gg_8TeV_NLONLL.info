@@ -1,0 +1,39 @@
+{
+  "document": {
+    "title": "gg xsec",
+    "authors": "FastLim collaboration",
+    "calculator": "NLL-fast,1206.2892",
+    "source": "http://fastlim.web.cern.ch/fastlim/",
+    "version": "FastLim-1.0",
+    "note": "scale uncertainty, pdf uncertainty and alphas uncertainty taken into account"
+  },
+  "attributes": {
+    "processes": "??",
+    "collider": "pp",
+    "ecm": "8TeV",
+    "order": "NLO+NLL"
+  },
+  "columns": [
+    { "name": "msq", "unit": "GeV" },
+    { "name": "mgl", "unit": "GeV" },
+    { "name": "xsec", "unit": "pb" },
+    { "name": "delta_xsec", "unit": "pb" }
+  ],
+  "reader_options": {
+    "skipinitialspace": 1,
+    "delim_whitespace": 1,
+    "skiprows": 4
+  },
+  "data": {
+    "parameters": [
+      { "column": "msq", "granularity": 1 },
+      { "column": "mgl", "granularity": 1 }
+    ],
+    "values": [
+      {
+        "column": "xsec",
+        "unc": [{ "column": "delta_xsec", "type": "absolute" }]
+      }
+    ]
+  }
+}

@@ -14,7 +14,7 @@ from susy_cross_section.table_info import ParameterInfo, TableInfo, ValueInfo
 from susy_cross_section.utility import Unit
 
 if sys.version_info[0] < 3:  # py2
-    str = basestring          # noqa: F821
+    str = basestring          # noqa: A001, F821
 
 logging.basicConfig(level=logging.WARNING)
 logger = logging.getLogger(__name__)
@@ -30,8 +30,8 @@ class CrossSectionAttributes(object):
                  order='',
                  pdf_id=None,
                  pdf_name=None):
-        # type: (List[str], str, str, str, int, str)->None
-        self.processes = processes or []   # type: List[str]
+        # type: (Union[str, List[str]], str, str, str, int, str)->None
+        self.processes = [processes] if isinstance(processes, str) else processes or []   # type: List[str]
         self.collider = collider           # type: str
         self.ecm = ecm                     # type: str            # because it is always with units
         self.order = order                 # type: str
@@ -146,6 +146,7 @@ class CrossSectionTable(object):
             logger.error('Data parse failed: %s', *e.args)
             exit(1)
         self._parse_data()
+        self.validate()
 
     @staticmethod
     def _validate_uncertainty_info(uncertainty_info):
@@ -186,7 +187,12 @@ class CrossSectionTable(object):
             name = value_info.column
             value_unit = self.info.get_column(name).unit
             parameters = self.info.parameters
-            data = self.raw_data.set_index([p.column for p in parameters])  # copy data with setting indices
+            data = self.raw_data.copy()
+
+            # set index with quantizing the values with granularity to avoid float precision problems
+            for p in parameters:
+                data[p.column] = (data[p.column] / p.granularity).apply(round) * p.granularity
+            data.set_index([p.column for p in parameters], inplace=True)
 
             self._validate_uncertainty_info(value_info.unc_p)
             self._validate_uncertainty_info(value_info.unc_m)
@@ -207,6 +213,20 @@ class CrossSectionTable(object):
             self.data[name]['unc-'] = data.apply(unc_m, axis=1)
             self.units[name] = value_unit
 
+    def validate(self):
+        # type: ()->None
+        """Validate the data grid."""
+        failed = False
+        for key, data in self.data.items():
+            duplication = data.index[data.index.duplicated()]
+            for d in duplication:
+                failed = True
+                logger.error('Found duplicated entries: %s, %s', key, d)
+                if len(duplication) > 5:
+                    logger.error('Maybe parameter granularity is set too large?')
+        if failed:
+            exit(1)
+
     def __getitem__(self, key):
         # type: (str)->pandas.core.frame.DataFrame
         """Return the cross-section table."""
@@ -218,3 +238,43 @@ class CrossSectionTable(object):
         for key, data_table in self.data.items():
             print('# {name} [{unit}] with absolute uncertainties'.format(name=key, unit=self.units[key]))
             print(data_table)
+
+    def str_information(self):
+        # type: ()->str
+        """Return the information in a formatted string display."""
+        rows = []  # type: List[str]
+
+        # information
+        rows.append('[Document]')
+        for k, v in self.info.document.items():
+            rows.append('  {}: {}'.format(k, v))
+
+        attr = self.info.attributes
+        rows.append('[Attributes]')
+        rows.append('  collider : {}-collider with ECM={}'.format(attr.collider, attr.ecm))
+        rows.append('  order: {} with PDF={}'.format(attr.order, attr.pdf_name or attr.pdf_id))
+        rows.append('[Processes]')
+        for i in attr.processes:
+            rows.append('  {}'.format(i))
+
+        return '\n'.join(rows)
+
+    def param_information(self):
+        # type: ()->Sequence[Mapping[str,str]]
+        """Return the information of parameters."""
+        result = []   # type: List[MutableMapping[str, Any]]
+        for param in self.info.parameters:
+            name = param.column
+            column = self.info.get_column(name)
+            result.append({'name': name, 'unit': column.unit, 'granularity': param.granularity})
+        return result
+
+    def value_information(self):
+        # type: ()->Sequence[Mapping[str,str]]
+        """Return the information of parameters."""
+        result = []   # type: List[MutableMapping[str, str]]
+        for value in self.info.values:
+            name = value.column
+            column = self.info.get_column(name)
+            result.append({'name': name, 'unit': column.unit})
+        return result

@@ -6,7 +6,7 @@ import sys
 from typing import Mapping, Tuple, Union  # noqa: F401
 
 if sys.version_info[0] < 3:  # py2
-    str = basestring          # noqa: F821
+    str = basestring          # noqa: A001, F821
 
 table_names = {
     '13TeV.n2x1-.wino': 'data/lhc_susy_xs_wg/13TeVn2x1wino_envelope_m.csv',

@@ -10,7 +10,7 @@ from typing import (Any, List, Mapping, MutableMapping, Optional,  # noqa: F401
                     Sequence, Union)
 
 if sys.version_info[0] < 3:  # py2
-    str = basestring          # noqa: F821
+    str = basestring          # noqa: A001, F821
 
 logging.basicConfig(level=logging.WARNING)
 logger = logging.getLogger(__name__)

@@ -1,6 +1,6 @@
 [![Build Status](https://api.travis-ci.org/misho104/susy_cross_section.svg?branch=master)](https://travis-ci.org/misho104/susy_cross_section)
 [![Coverage Status](https://coveralls.io/repos/github/misho104/susy_cross_section/badge.svg?branch=master)](https://coveralls.io/github/misho104/susy_cross_section?branch=master)
-[![License: MIT](https://img.shields.io/badge/License-MIT-ff25d1.svg)](https://github.com/misho104/yaslha/blob/master/LICENSE)
+[![License: MIT](https://img.shields.io/badge/License-MIT-ff25d1.svg)](https://github.com/misho104/susy_cross_section/blob/master/LICENSE)
 
 [susy_cross_section](https://github.com/misho104/susy_cross_section): Table-format cross-section data handler
 =============================================================================================================
@@ -15,7 +15,7 @@ This package supports Python 2.7 and 3.5+.
 Install simply via PyPI and use a script as:
 
 ```console
-$ pip install susy_cross_section
+$ pip install susy-cross-section
 $ susy-xs-get 13TeV.n2x1+.wino 500
 (32.9 +2.7 -2.7) fb
 $ susy-xs-get 13TeV.n2x1+.wino 513.3
@@ -25,14 +25,14 @@ $ susy-xs-get 13TeV.n2x1+.wino 513.3
 which gives the 13 TeV LHC cross section to wino-like neutralino-chargino pair-production (`p p > n2 x1+`), etc.
 The values are taken from [LHC SUSY Cross Section Working Group](https://twiki.cern.ch/twiki/bin/view/LHCPhysics/SUSYCrossSections13TeVn2x1wino#Envelope_of_CTEQ6_6_and_MSTW_AN1) with interpolation if needed.
 
-You can find a list of supported process in [susy_cross_section/config.py](https://github.com/misho104/susy_cross_section/blob/master/susy_cross_section/config.py).
+You can find a list of supported processes in [susy_cross_section/config.py](https://github.com/misho104/susy_cross_section/blob/master/susy_cross_section/config.py).
 It is also straight forward to parse your own table files once you provide `.info` files as you find in [susy_cross_section/data/](https://github.com/misho104/susy_cross_section/tree/master/susy_cross_section/data/).
 
 You can uninstall this package as simple as
 
 ```console
-$ pip uninstall susy_cross_section
-Uninstalling susy-cross-section-0.0.1:
+$ pip uninstall susy-cross-section
+Uninstalling susy-cross-section-x.y.z:
    ...
 Proceed (y/n)?
 ```
