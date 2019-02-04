@@ -63,10 +63,10 @@ def command_get(**kw):
 
     # data evaluation
     table = CrossSectionTable(table_path, info_path)
-    data = table.data[kw['name']]
-    unit = table.units[kw['name']] if kw['unit'] else None
-    interpolator = Scipy1dInterpolator(axes='loglog')
-    central, unc_p, unc_m = interpolator.interpolate(data).tuple_at(*kw['args'])
+    name = kw.get('name') or 'xsec'
+    unit = table.units[name] if kw['unit'] else None
+    interpolator = Scipy1dInterpolator(axes='loglog', kind='linear')
+    central, unc_p, unc_m = interpolator.interpolate(table, name=name).tuple_at(*kw['args'])
 
     # display
     if kw['simplest']:

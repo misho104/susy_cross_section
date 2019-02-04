@@ -11,6 +11,7 @@ import pandas  # noqa: F401
 import scipy.interpolate
 
 from susy_cross_section.axes_wrapper import AxesWrapper
+from susy_cross_section.cross_section_table import CrossSectionTable
 
 if sys.version_info[0] < 3:  # py2
     str = basestring          # noqa: A001, F821
@@ -97,14 +98,15 @@ class AbstractInterpolator:
     interpolation of pandas data frame.
     """
 
-    def interpolate(self, df_with_unc):
-        # type: (pandas.DataFrame)->InterpolationWithUncertainties
+    def interpolate(self, xs_table, name='xsec'):
+        # type: (CrossSectionTable, str)->InterpolationWithUncertainties
         """Interpolate the values accompanied by uncertainties."""
+        df = xs_table.data[name]
         return InterpolationWithUncertainties(
-            self._interpolate(df_with_unc['value']),
-            self._interpolate(df_with_unc['value'] + df_with_unc['unc+']),
-            self._interpolate(df_with_unc['value'] - abs(df_with_unc['unc-'])),
-            param_names=df_with_unc.index.names)
+            self._interpolate(df['value']),
+            self._interpolate(df['value'] + df['unc+']),
+            self._interpolate(df['value'] - abs(df['unc-'])),
+            param_names=df.index.names)
 
     def _interpolate(self, df):
         # type: (pandas.DataFrame)->InterpolationType

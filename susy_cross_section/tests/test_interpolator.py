@@ -19,7 +19,7 @@ logging.basicConfig(level=logging.WARNING)
 logger = logging.getLogger(__name__)
 
 
-class TestScripts(unittest.TestCase):
+class TestInterpolator(unittest.TestCase):
     """Test codes for one-dimensional cross-section fit."""
 
     @staticmethod
@@ -45,7 +45,7 @@ class TestScripts(unittest.TestCase):
         table = CrossSectionTable(self.dirs['lhc_wg'] / '13TeVn2x1wino_cteq_pm.csv')
         for kind in ['linear', 'slinear', 'quadratic', 'cubic']:
             for axes in ['linear', 'log', 'loglog', 'loglinear']:
-                fit = Scipy1dInterpolator(kind=kind, axes=axes).interpolate(table.data['xsec'])
+                fit = Scipy1dInterpolator(kind=kind, axes=axes).interpolate(table, 'xsec')
                 # on the grid points:
                 # 300.0: 379.23, -0.47, -4.8, 0.4, 4.7 == 379.23 -18.29 +17.89
                 # 325.0: 276.17, -0.44, -5.1, 0.4, 4.8 == 276.17 -14.14 +13.30
@@ -77,7 +77,7 @@ class TestScripts(unittest.TestCase):
     def test_scipy_1d_interpolator_nonstandard_args(self):
         """Verify Scipy1dInterpolator accepts/refuses argument correctly."""
         table = CrossSectionTable(self.dirs['lhc_wg'] / '13TeVn2x1wino_cteq_pm.csv')
-        fit = Scipy1dInterpolator().interpolate(table.data['xsec'])
+        fit = Scipy1dInterpolator().interpolate(table, 'xsec')
         for m in ['f0', 'fp', 'fm', 'unc_p_at', 'unc_m_at', 'tuple_at']:
             test_method = getattr(fit, m)
             value = test_method(333.3)
@@ -113,7 +113,7 @@ class TestScripts(unittest.TestCase):
             'log': lambda x, y: (x * y) ** 0.5,
         }
         for x1a, x2a, ya in itertools.product(['linear', 'log'], repeat=3):
-            fit = ScipyRegularGridInterpolator([x1a, x2a], ya).interpolate(table.data['xsec'])
+            fit = ScipyRegularGridInterpolator([x1a, x2a], ya).interpolate(table, 'xsec')
             # on the grid points:
             # 700    1400   0.0473379597888      0.00905940683923
             # 700    1450   0.0382279746207      0.0075711349465
@@ -144,7 +144,7 @@ class TestScripts(unittest.TestCase):
         """Verify ScipyRegularGridInterp accepts/refuses args correctly."""
         table = CrossSectionTable(self.dirs['fastlim8'] / 'sg_8TeV_NLONLL.xsec')
 
-        fit = ScipyRegularGridInterpolator(['id', 'id'], 'id').interpolate(table.data['xsec'])
+        fit = ScipyRegularGridInterpolator(['id', 'id'], 'id').interpolate(table, 'xsec')
         for m in ['f0', 'fp', 'fm', 'unc_p_at', 'unc_m_at', 'tuple_at']:
             test_method = getattr(fit, m)
             value = test_method(777, 888)
