@@ -238,3 +238,43 @@ class CrossSectionTable(object):
         for key, data_table in self.data.items():
             print('# {name} [{unit}] with absolute uncertainties'.format(name=key, unit=self.units[key]))
             print(data_table)
+
+    def str_information(self):
+        # type: ()->str
+        """Return the information in a formatted string display."""
+        rows = []  # type: List[str]
+
+        # information
+        rows.append('[Document]')
+        for k, v in self.info.document.items():
+            rows.append('  {}: {}'.format(k, v))
+
+        attr = self.info.attributes
+        rows.append('[Attributes]')
+        rows.append('  collider : {}-collider with ECM={}'.format(attr.collider, attr.ecm))
+        rows.append('  order: {} with PDF={}'.format(attr.order, attr.pdf_name or attr.pdf_id))
+        rows.append('[Processes]')
+        for i in attr.processes:
+            rows.append('  {}'.format(i))
+
+        return '\n'.join(rows)
+
+    def param_information(self):
+        # type: ()->Sequence[Mapping[str,str]]
+        """Return the information of parameters."""
+        result = []   # type: List[MutableMapping[str, str]]
+        for param in self.info.parameters:
+            name = param.column
+            column = self.info.get_column(name)
+            result.append({'name': name, 'unit': column.unit, 'granularity': str(param.granularity)})
+        return result
+
+    def value_information(self):
+        # type: ()->Sequence[Mapping[str,str]]
+        """Return the information of parameters."""
+        result = []   # type: List[MutableMapping[str, str]]
+        for value in self.info.values:
+            name = value.column
+            column = self.info.get_column(name)
+            result.append({'name': name, 'unit': column.unit})
+        return result

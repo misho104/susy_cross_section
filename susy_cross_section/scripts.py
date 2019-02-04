@@ -13,7 +13,9 @@ import click
 import susy_cross_section.config
 import susy_cross_section.utility
 from susy_cross_section.cross_section_table import CrossSectionTable
-from susy_cross_section.interpolator import Scipy1dInterpolator
+from susy_cross_section.interpolator import (AbstractInterpolator,
+                                             Scipy1dInterpolator,
+                                             ScipyGridInterpolator)
 
 __author__ = 'Sho Iwamoto'
 __copyright__ = 'Copyright (C) 2018-2019 Sho Iwamoto / Misho'
@@ -31,7 +33,7 @@ logger = logging.getLogger(__name__)
 @click.command(help='Interpolate cross-section data using the standard scipy interpolator (with log-log axes).',
                context_settings={'help_option_names': ['-h', '--help']})
 @click.argument('table', required=True, type=click.Path(exists=False))
-@click.argument('args', type=float, required=True, nargs=-1)
+@click.argument('args', type=float, nargs=-1)
 @click.option('--name', default='xsec', help='name of a table')
 @click.option('-0', 'simplest', is_flag=True, help='show in simplest format')
 @click.option('-1', 'simple', is_flag=True, help='show in simple format')
@@ -41,8 +43,9 @@ logger = logging.getLogger(__name__)
 @click.option('--info', type=click.Path(exists=True, dir_okay=False),
               help='path of table-info file if non-standard file name')
 @click.version_option(__version__, '-V', '--version', prog_name=__scriptname__)
-def command_get(**kw):
-    # type: (Any)->None
+@click.pass_context
+def command_get(context, **kw):
+    # type: (Any, Any)->None
     """Script for cross-section interpolation."""
     # handle arguments
     info_path = None
@@ -61,12 +64,35 @@ def command_get(**kw):
     if kw['info']:
         info_path = kw['info']
 
-    # data evaluation
+    # get table
     table = CrossSectionTable(table_path, info_path)
-    name = kw.get('name') or 'xsec'
-    unit = table.units[name] if kw['unit'] else None
-    interpolator = Scipy1dInterpolator(axes='loglog', kind='linear')
-    central, unc_p, unc_m = interpolator.interpolate(table, name=name).tuple_at(*kw['args'])
+    params = table.param_information()
+    values = table.value_information()
+
+    # without arguments or with invalid number of arguments, show the table information.
+    if not kw['args'] or len(kw['args']) != len(params):
+        args = ' '.join([p['name'].upper() for p in params])
+        click.echo('Usage: {} [OPTIONS] {} {}\n'.format(context.info_name, kw['table'], args))
+        for p in params:
+            click.echo('  {} in the unit of {}'.format(p['name'].upper(), p['unit']))
+        click.echo('')
+        for v in values:
+            name = v['name'] + ' (default)' if v['name'] == 'xsec' else v['name']
+            click.echo('  --name={}      unit: [{}]'.format(name, v['unit']))
+        click.echo('')
+        click.echo('-' * 80)
+        click.echo(table.str_information())
+        exit(0)
+
+    # data evaluation
+    value_name = kw.get('name') or 'xsec'
+    value_unit = table.units[value_name] if kw['unit'] else None
+    if len(params) == 1:
+        interp = Scipy1dInterpolator(axes='loglog', kind='linear')  # type: AbstractInterpolator
+    else:
+        param_axes = ['log' for _ in params]
+        interp = ScipyGridInterpolator(param_axes=param_axes, value_axis='log', kind='linear')
+    central, unc_p, unc_m = interp.interpolate(table, name=value_name).tuple_at(*kw['args'])
 
     # display
     if kw['simplest']:
@@ -74,7 +100,7 @@ def command_get(**kw):
     elif kw['simple']:
         click.echo('{} +{} -{}'.format(central, unc_p, abs(unc_m)))
     else:
-        click.echo(susy_cross_section.utility.value_format(central, unc_p, unc_m, unit))
+        click.echo(susy_cross_section.utility.value_format(central, unc_p, unc_m, value_unit))
     exit(0)
 
 
