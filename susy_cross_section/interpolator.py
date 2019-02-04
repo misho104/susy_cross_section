@@ -7,6 +7,7 @@ import sys
 from typing import (Any, Callable, List, Mapping, Sequence,  # noqa: F401
                     Tuple, Union, cast)
 
+import numpy
 import pandas  # noqa: F401
 import scipy.interpolate
 
@@ -128,17 +129,27 @@ class Scipy1dInterpolator(AbstractInterpolator):
 
     def _interpolate(self, df):
         # type: (pandas.DataFrame)->InterpolationType
+        if self.kind not in ['linear', 'cubic']:
+            logging.info('Non-standard interpolation method is specified.')
         if df.index.nlevels != 1:
-            raise Exception('Scipy1dInterpolator not handle multiindex data.')
+            raise ValueError('Scipy1dInterpolator not handle multiindex data.')
+
         x_list = [self.wrapper.wx[0](x) for x in df.index.to_numpy()]   # array(n_points)
         y_list = [self.wrapper.wy(y) for y in df.to_numpy()]            # array(n_points)
-        # as interp1d is float->float, we convert it to Tuple[float]->float.
 
-        def fit(x, f=scipy.interpolate.interp1d(x_list, y_list, self.kind)):  # noqa: B008
+        if self.kind == 'cubic':
+            # we should specify the "natural" boundary condition for cross-section fitting.
+            fit = scipy.interpolate.CubicSpline(x_list, y_list, bc_type='natural', extrapolate=False)
+        else:
+            fit = scipy.interpolate.interp1d(x_list, y_list, self.kind)
+
+        # now `fit` is float->float; we should convert it to Tuple[float]->float.
+
+        def _fit(x, f=fit):  # noqa: B008
             # type: (Sequence[float], Callable[[float], float])->float
             return f(*x)
 
-        return self.wrapper.correct(fit)
+        return self.wrapper.correct(_fit)
 
 
 class ScipyRegularGridInterpolator(AbstractInterpolator):

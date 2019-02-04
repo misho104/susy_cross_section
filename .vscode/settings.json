@@ -4,6 +4,7 @@
     "chargino",
     "cteq",
     "interp",
+    "isnan",
     "issubdtype",
     "lxml",
     "mstw",
