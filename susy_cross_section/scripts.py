@@ -21,7 +21,7 @@ __author__ = 'Sho Iwamoto'
 __copyright__ = 'Copyright (C) 2018-2019 Sho Iwamoto / Misho'
 __license__ = 'MIT'
 __scriptname__ = 'XS interpolator'
-__version__ = '0.1.0'
+__version__ = '0.0.3'
 
 if sys.version_info[0] < 3:  # py2
     str = basestring          # noqa: A001, F821
