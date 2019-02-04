@@ -262,11 +262,11 @@ class CrossSectionTable(object):
     def param_information(self):
         # type: ()->Sequence[Mapping[str,str]]
         """Return the information of parameters."""
-        result = []   # type: List[MutableMapping[str, str]]
+        result = []   # type: List[MutableMapping[str, Any]]
         for param in self.info.parameters:
             name = param.column
             column = self.info.get_column(name)
-            result.append({'name': name, 'unit': column.unit, 'granularity': str(param.granularity)})
+            result.append({'name': name, 'unit': column.unit, 'granularity': param.granularity})
         return result
 
     def value_information(self):
