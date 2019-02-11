@@ -2,6 +2,7 @@
 
 from __future__ import absolute_import, division, print_function  # py2
 
+import itertools
 import sys
 from typing import List, Mapping, MutableMapping, Optional, Union  # noqa: F401
 
@@ -35,12 +36,33 @@ class Unit:
     This dictionary defines the replacement rules for unit conversion.
     Each key should be replaced with the product of its values."""
 
+    @classmethod
+    def _get_base_units(cls, name):
+        # type: (Union[float, str])->List[Union[float, str]]
+        """Expand the unit name to the base units.
+
+        Parameters
+        ----------
+        name: float or str
+            The unit name to be expanded, or possibly a numerical factor.
+
+        Returns
+        -------
+        list[float or str]
+            Expansion result as a list of factors and base unit names.
+        """
+        if isinstance(name, str) and name in cls.definitions:
+            nested = [cls._get_base_units(u) for u in cls.definitions[name]]
+            return list(itertools.chain.from_iterable(nested))  # flatten
+        else:
+            return [name]
+
     def __init__(self, *args):
         # type: (Union[float, str, Unit])->None
         self._factor = 1   # type: float
         self._units = {}   # type: MutableMapping[str, int]
         for u in args:
-            self.__imul__(u)
+            self *= u
 
     def inverse(self):
         # type: ()->Unit
@@ -57,7 +79,7 @@ class Unit:
         return result
 
     def __imul__(self, other):
-        # type: (Union[float, str, Unit])->None
+        # type: (Union[float, str, Unit])->Unit
         """Multiply by another unit.
 
         Parameters
@@ -70,11 +92,7 @@ class Unit:
             for k, v in other._units.items():
                 self._units[k] = self._units.get(k, 0) + v
         else:
-            if isinstance(other, str):
-                base_units = self.definitions.get(other, [other])
-            else:
-                base_units = [other]
-            for b in base_units:
+            for b in self._get_base_units(other):
                 if isinstance(b, str):
                     self._units[b] = self._units.get(b, 0) + 1
                 else:
@@ -82,6 +100,7 @@ class Unit:
                         self._factor *= float(b)
                     except ValueError:
                         raise TypeError('invalid unit: %s', other)
+        return self
 
     def __mul__(self, other):
         # type: (Union[float, str, Unit])->Unit
