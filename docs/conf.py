@@ -19,6 +19,8 @@ from pathlib import Path
 
 project_root_dir = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root_dir))
+import docs._themes.conf_bibtex  # noqa:
+
 
 # -- Project information -----------------------------------------------------
 
@@ -53,6 +55,9 @@ extensions = [
     'sphinx.ext.ifconfig',
     'sphinx.ext.viewcode',
     'sphinx.ext.githubpages',
+    'docs._themes.conf_bibtex',
+    'sphinxcontrib.bibtex',
+    'docs._themes.latex_writer',
 ]
 
 napoleon_numpy_docstring = True
@@ -95,6 +100,16 @@ exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 pygments_style = None
 
 
+add_module_names = False
+
+rst_epilog = """
+.. only:: html
+.. bibliography:: susy_cross_section.bib
+    :filter: docname in docnames
+    :style: default
+"""
+
+
 # -- Options for HTML output -------------------------------------------------
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
@@ -131,21 +146,31 @@ htmlhelp_basename = 'SUSYCrossSectiondoc'
 
 
 # -- Options for LaTeX output ------------------------------------------------
-
+latex_additional_files = [
+    '_themes/latex_preamble.txt',
+    '_themes/utphys27mod.bst',
+    'susy_cross_section.bib',
+]
 latex_elements = {
     'papersize': 'a4paper',
-    # 'pointsize': '10pt',
-    # 'preamble': '',
+    'pointsize': 'compress,sort,final,10pt,3p',
+    'preamble': r'\input{latex_preamble.txt}',
     'figure_align': 'ht',
 }
 
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, documentclass).
 latex_documents = [
-    (master_doc, 'SUSYCrossSection.tex', 'SUSY Cross Section Documentation',
-     'Sho Iwamoto / Misho', 'manual'),
+    (
+        master_doc,
+        'SUSYCrossSection.tex',
+        'SUSY Cross Section Documentation',
+        'Sho Iwamoto / Misho',
+        'elsarticle',
+    )
 ]
 
+latex_toplevel_sectioning = 'section'
 
 # -- Extension configuration -------------------------------------------------
 

@@ -2,3 +2,6 @@ click==7.0
 numpy==1.16.0
 pandas==0.24.0
 scipy==1.2.0
+pybtex==0.22.2
+sphinxcontrib-bibtex==0.4.2
+
