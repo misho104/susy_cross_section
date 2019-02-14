@@ -1,9 +1,9 @@
-"""Classes to describe a general-purpose table with annotations.
+"""Classes to describe annotations of general-purpose tables.
 
-This module provides classes to handle CSV-like table data, which represents
-functions over a parameter space. Data is a two-dimensional
-:typ:`pandas.DataFrame` object. Some columns represent parameters and others do
-values. Each row represents a single data point and corresponding value.
+This module provides annotation classes for CSV-like table data. The data is a
+two-dimensional table and represents functions over a parameter space. Some
+columns represent parameters and others do values. Each row represents a single
+data point and corresponding value.
 
 Two structural annotations and two semantic annotations are defined.
 `TableInfo` and `ColumnInfo` are structural, which respectively annotate the
@@ -11,27 +11,16 @@ whole table and each columns. For semantics, `ParameterInfo` collects the
 information of parameters, each of which is a column, and `ValueInfo` is for a
 value. A value may be given by multiple columns if, for example, the value has
 uncertainties or the value is given by the average of two columns.
-
-================ =========================================================
-class name       description
-================ =========================================================
-`Table`          contains data and `TableInfo`
-`TableInfo`      has table properties, `ColumnInfo`, `ParameterInfo`, and
-                 `ValueInfo`
-`ColumnInfo`     has properties of each column
-`ParameterInfo`  annotates a column as a parameter
-`ValueInfo`      defines a value from possibly-multiple columns
-================ =========================================================
 """
 
 from __future__ import absolute_import, division, print_function  # py2
 
+import itertools
 import json
 import logging
 import pathlib  # noqa: F401
 import sys
-from typing import (Any, List, Mapping, MutableMapping, Optional,  # noqa: F401
-                    Sequence, Union)
+from typing import Any, List, Mapping, MutableMapping, Optional, Sequence, Union
 
 if sys.version_info[0] < 3:  # py2
     str = basestring          # noqa: A001, F821
@@ -87,6 +76,11 @@ class ColumnInfo(object):
         ----------
         json_obj: Any
             a valid json object.
+
+        Returns
+        -------
+        ColumnInfo
+            Constructed instance.
 
         Raises
         ------
@@ -170,6 +164,7 @@ class ParameterInfo(object):
 
         This is used to round the parameter so that a data point should be
         exactly on the grid. Internally, a parameter is rounded to::
+
             round(value / granularity) * granularity
 
         For example, for a grid ``[10, 20, 30, 50, 70]``, it should be set to
@@ -191,6 +186,11 @@ class ParameterInfo(object):
         ----------
         json_obj: Any
             a valid json object.
+
+        Returns
+        -------
+        ParameterInfo
+            Constructed instance.
 
         Raises
         ------
@@ -266,21 +266,28 @@ class ValueInfo(object):
         Name of the column that stores this value.
 
         This must be match one of the :attr:`ColumnInfo.name` in the table.
-    unc_p : dict of (str, str)
+    unc_p : dict (str, str)
         The sources of "plus" uncertainties.
 
         Multiple uncertainty sources can be specified. Each key corresponds
         :attr:`ColumnInfo.name` of the source column, and each value denotes
-        the "type" of the source. Currently, two types ``"relative"`` and
-        ``"absolute"`` are implemented.
+        the "type" of the source. Currently, two types are implementend:
+
+        - ``"relative"`` for relative uncertainty, where the unit of the column
+          must be dimension-less.
+
+        - ``"absolute"`` for absolute uncertainty, where the unit of the column
+          must be the same as that of the value column up to a factor.
 
         The unit of the uncertainty column should be consistent with the unit
         of the value column.
-    unc_m : dict of (str, str)
+    unc_m : dict(str, str)
         The sources of "minus" uncertainties.
 
         Details are the same as `!unc_p`.
     """
+
+    _valid_uncertainty_types = ['relative', 'absolute']  # type: List[str]
 
     def __init__(self, column='', unc_p=None, unc_m=None, **kw):
         # type: (str, MutableMapping[str, str], MutableMapping[str, str], Any)->None
@@ -290,12 +297,7 @@ class ValueInfo(object):
 
     def validate(self):
         # type: ()->None
-        """Validate the content.
-
-        Perform the validation only within this class. This is intended to be
-        called from outside of this class upon the user (of this class)'s
-        request.
-        """
+        """Validate the content."""
         if not isinstance(self.column, str):
             raise TypeError('ValueInfo.column must be string: %s', self.column)
         if not self.column:
@@ -303,36 +305,43 @@ class ValueInfo(object):
         for title, unc in [('unc+', self.unc_p), ('unc-', self.unc_m)]:
             if not isinstance(unc, MutableMapping):
                 raise TypeError('Value %s: %s must be dict', self.column, title)
-            for k in unc.keys():
+            for k, v in unc.items():
                 if not isinstance(k, str):
                     raise TypeError('Value %s: %s has invalid column name: %s', self.column, title, k)
+                if v not in self._valid_uncertainty_types:
+                    raise ValueError('Value %s: %s has wrong value: %s', self.column, title, v)
 
     @classmethod
-    def from_json(cls, json_data):
+    def from_json(cls, json_obj):
         # type: (Any)->ValueInfo
         """Initialize an instance from valid json data.
 
         Parameters
         ----------
-        json_data: Any
+        json_obj: typing.Any
             a valid json object.
+
+        Returns
+        -------
+        ValueInfo
+            Constructed instance.
 
         Raises
         ------
         ValueError
-            If :ar:`json_data` has invalid data.
+            If :ar:`json_obj` has invalid data.
         """
-        if not isinstance(json_data, Mapping):
-            raise TypeError('Entry of "values" must be a dict: %s', json_data)
-        if 'column' not in json_data:
-            raise KeyError('Entry of "values" must have a key "column": %s', json_data)
+        if not isinstance(json_obj, Mapping):
+            raise TypeError('Entry of "values" must be a dict: %s', json_obj)
+        if 'column' not in json_obj:
+            raise KeyError('Entry of "values" must have a key "column": %s', json_obj)
 
         obj = cls()
-        obj.column = json_data['column']
-        if ('unc' in json_data) and ('unc+' in json_data or 'unc-' in json_data):
+        obj.column = json_obj['column']
+        if ('unc' in json_obj) and ('unc+' in json_obj or 'unc-' in json_obj):
             raise ValueError('Invalid uncertainties (asymmetric and symmetric): %s', obj.column)
         for attr_name, key_name in [('unc_p', 'unc+'), ('unc_m', 'unc-')]:
-            u = json_data.get(key_name) or json_data.get('unc') or None
+            u = json_obj.get(key_name) or json_obj.get('unc') or None
             if u is None:
                 logger.warning('The uncertainty (%s) is missing in value "%s".', key_name, obj.column)
                 continue
@@ -365,103 +374,161 @@ class ValueInfo(object):
 
 
 class TableInfo(object):
-    """Stores annotations of a table.
+    """Stores table-wide annotations for general-purpose table data.
+
+    A table structure is given by `!columns`, while in semantics a table
+    consists of `!parameters` and `!values`. The information about them is
+    stored as lists of `ColumnInfo`, `ParameterInfo`, and `ValueInfo` objects.
+    In addition, `!reader_options` can be specified, which is directly passed
+    to :func:`pandas.read_csv`.
+
+    The attribute `!document` is provided just for documentation. The
+    information is guaranteed not to modify any functionality of codes or
+    packages, and thus can be anything.
+
+    Developers must not use `!document` information except for displaying them.
+    If one needs to interpret some information, one should extend this class to
+    provide other data-storage for such information, as is done in
+    `CrossSectionInfo` class.
 
     Attributes
     ----------
-    document : dict of (Any, Any)
-        Any information just for documentation, i.e., without physical
-        meanings.
+    document : dict(Any, Any)
+        Any information for documentation without physical meanings. meanings.
     columns : list of ColumnInfo
         The list of columns.
+    parameters: list of ParameterInfo
+        The list of parameters to define a data point.
+    values: list of ValueInfo
+        The list of values described in the table.
+    reader_options: dict(str, Any)
+        Options to read the CSV
+
+        The values are directly passed to :func:`pandas.read_csv` as keyword
+        arguments, so all the options of :func:`pandas.read_csv` are available.
     """
 
-    def __init__(self, document=None, columns=None, reader_options=None):
-        # type: (MutableMapping[Any, Any], List[ColumnInfo], MutableMapping[str, Any])->None
-        self.document = document or {}              # type: MutableMapping[Any, Any]
-        self.columns = columns or []                # type: List[ColumnInfo]
-        self.reader_options = reader_options or {}  # type: MutableMapping[str, Any]
+    def __init__(self,
+                 document=None,        # type: Mapping[Any, Any]
+                 columns=None,         # type: List[ColumnInfo]
+                 parameters=None,      # type: List[ParameterInfo]
+                 values=None,          # type: List[ValueInfo]
+                 reader_options=None,  # type: Mapping[str, Any]
+                 ):
+        # type: (...)->None
+        self.document = document or {}
+        self.columns = columns or []
+        self.parameters = parameters or []
+        self.values = values or []
+        self.reader_options = reader_options or {}
 
-    def validate(self):
+    def validate(self):  # noqa: C901
         # type: ()->None
         """Validate the content."""
         if not isinstance(self.document, MutableMapping):
             raise TypeError('document must be a dict.')
+        for name in ['columns', 'parameters', 'values']:
+            if not isinstance(getattr(self, name), List):
+                raise TypeError('TableInfo.%s must be a list', name)
+            for obj in getattr(self, name):
+                obj.validate()
+        if not isinstance(self.reader_options, MutableMapping):
+            raise TypeError('reader_options must be a dict(str, Any).')
+        if not all(isinstance(k, str) for k in self.reader_options.keys()):
+            raise TypeError('reader_options must be a dict(str, Any).')
 
-        if not isinstance(self.columns, List):
-            raise TypeError('columns must be list.')
         # validate columns (`index` matches actual index, names are unique)
         names_dict = {}  # type: MutableMapping[str, bool]
         for i, column in enumerate(self.columns):
-            column.validate()
             if column.index != i:
                 raise ValueError('Mismatched column index: %d has %d', i, column.index)
             if names_dict.get(column.name):
                 raise ValueError('Duplicated column name: %s', column.name)
             names_dict[column.name] = True
-        if not isinstance(self.reader_options, MutableMapping):
-            raise TypeError('reader_options must be a dict.')
-        if not all(k and isinstance(k, str) for k, v in self.reader_options.items()):
-            raise TypeError('keys of reader_options must be str.')
+
+        # validate params and values
+        for p in self.parameters:
+            if p.column not in names_dict:
+                raise ValueError('Unknown column name: %s', p.column)
+        for v in self.values:
+            for col in itertools.chain([v.column], v.unc_p.keys(), v.unc_m.keys()):
+                if col not in names_dict:
+                    raise ValueError('Unknown column name: %s', v.column)
 
     @classmethod
     def load(cls, source):
         # type: (Union[pathlib.Path, str])->TableInfo
-        """Load and construct TableInfo from a json file."""
+        """Load and construct TableInfo from a json file.
+
+        Parameters
+        ----------
+        source: pathlib.Path or str
+            Path to the json file.
+
+        Returns
+        -------
+        TableInfo
+            Constructed instance.
+        """
         obj = cls()
         with open(source.__str__()) as f:  # py2
-            try:
-                obj._load(**(json.load(f)))
-            except JSONDecodeError:  # type: ignore
-                logger.error('Invalid JSON file: %s', source)
-                exit(1)
+            obj._load(**(json.load(f)))
+        obj.validate()
         return obj
 
     def _load(self, **kw):
         # type: (Any)->None
-        """Construct TableInfo from a json data.
-
-        Since no type-check is performed here, developers must be sure on
-        validity of the information, e.g., by calling `validate` in this
-        method.
-        """
+        """Load and construct TableInfo from keyword arguments."""
         self.document = kw.get('document') or {}
         self.columns = [ColumnInfo(index=i, name=c.get('name'), unit=c.get('unit'))
-                        for i, c in enumerate(kw['columns'])
-                        ] if 'columns' in kw else []
+                        for i, c in enumerate(kw.get('columns') or [])]
+        self.parameters = [ParameterInfo.from_json(p) for p in kw.get('parameters') or []]
+        self.values = [ValueInfo.from_json(p) for p in kw.get('values') or []]
         self.reader_options = kw.get('reader_options') or {}
 
-        try:
-            self.validate()
-        except ValueError as e:
-            logger.error(*e.args)
-            exit(1)
-        except TypeError as e:
-            logger.error(*e.args)
-            exit(1)
-
+        # emit warnings
         if not self.document:
             logger.warning('No document is given.')
         for key in kw:
-            if key not in ['document', 'columns', 'reader_options']:
+            if key not in ['document', 'columns', 'parameters', 'values', 'reader_options']:
                 logger.warning('Unrecognized attribute "%s"', key)
 
     def get_column(self, name):
         # type: (str)->ColumnInfo
         """Return a column with specified name.
 
-        Search for a column with name `name` and returns it, or raise an error
-        if not found. Note that this method is slow.
+        Return `ColumnInfo` of a column with name :ar:`name`.
+
+        Arguments
+        ---------
+        name
+            The name of column to get.
+
+        Returns
+        -------
+        ColumnInfo
+            The column with name :ar:`name`.
+
+        Raises
+        ------
+        KeyError
+            If no column is found.
         """
         for c in self.columns:
             if c.name == name:
                 return c
         raise KeyError(name)
 
-    def get_column_safe(self, name):
-        # type: (str)->Union[ColumnInfo, None]
-        """Get a column with specified name if exists."""
-        try:
-            return self.get_column(name)
-        except KeyError:
-            return None
+    def dump(self):
+        # type: ()->str
+        """Return the formatted string.
+
+        Returns
+        -------
+        str
+            Dumped data.
+        """
+        results = ['[Document]']
+        for k, v in self.document.items():
+            results.append('  {}: {}'.format(k, v))
+        return '\n'.join(results)

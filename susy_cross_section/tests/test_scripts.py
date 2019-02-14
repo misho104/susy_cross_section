@@ -27,7 +27,10 @@ class TestScripts(unittest.TestCase):
         """Assert that command_get runs without error."""
         result = {}
         for mass in [300, 350]:
-            result[mass] = self.runner.invoke(command_get, ['13TeV.slepslep.ll', str(mass)])
+            result[mass] = self.runner.invoke(
+                command_get,
+                ['13TeV.slepslep.ll', mass.__str__()],
+            )  # py2
             if result[mass].exit_code:
                 logger.debug('%s', result[mass].__dict__)
             eq_(result[mass].exit_code, 0)
@@ -39,9 +42,12 @@ class TestScripts(unittest.TestCase):
         result = {}
         output = {}
         for mass in [450, 458, 475]:
-            result[mass] = self.runner.invoke(command_get, ['-1', '13TeV.n2x1+-.wino', str(mass)])
+            result[mass] = self.runner.invoke(
+                command_get,
+                ['-1', '13TeV.n2x1+-.wino', mass.__str__()],
+            )  # py2
             output[mass] = [float(x) for x in result[mass].output.strip().split(' ')]
-            logger.debug('Exit code %s with output: %s', result[mass].exit_code, output[mass])
+            logger.debug('Exit code %s: %s', result[mass].exit_code, output[mass])
             eq_(result[mass].exit_code, 0)
             eq_(len(output[mass]), 3)
         assert_almost_equals(output[450][0], 73.4361)
@@ -51,6 +57,6 @@ class TestScripts(unittest.TestCase):
         assert_almost_equals(output[475][1], 5.05005)
         assert_almost_equals(output[475][2], -5.05005)
 
-        assert(output[450][0] > output[458][0] > output[475][0])
-        assert(output[450][1] > output[458][1] > output[475][1])
-        assert(output[450][2] < output[458][2] < output[475][2])
+        assert output[450][0] > output[458][0] > output[475][0]
+        assert output[450][1] > output[458][1] > output[475][1]
+        assert output[450][2] < output[458][2] < output[475][2]
