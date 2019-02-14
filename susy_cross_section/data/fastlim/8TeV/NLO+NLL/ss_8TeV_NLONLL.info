@@ -11,7 +11,8 @@
     "processes": "??",
     "collider": "pp",
     "ecm": "8TeV",
-    "order": "NLO+NLL"
+    "order": "NLO+NLL",
+    "pdf_name": "??"
   },
   "columns": [
     { "name": "msq", "unit": "GeV" },
@@ -24,16 +25,14 @@
     "delim_whitespace": 1,
     "skiprows": 4
   },
-  "data": {
-    "parameters": [
-      { "column": "msq", "granularity": 1 },
-      { "column": "mgl", "granularity": 1 }
-    ],
-    "values": [
-      {
-        "column": "xsec",
-        "unc": [{ "column": "delta_xsec", "type": "absolute" }]
-      }
-    ]
-  }
+  "parameters": [
+    { "column": "msq", "granularity": 1 },
+    { "column": "mgl", "granularity": 1 }
+  ],
+  "values": [
+    {
+      "column": "xsec",
+      "unc": [{ "column": "delta_xsec", "type": "absolute" }]
+    }
+  ]
 }
