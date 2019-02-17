@@ -3,18 +3,31 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
+**********************************************
 Welcome to SUSY cross section's documentation!
-==============================================
+**********************************************
 
 .. toctree::
-   :maxdepth: 2
-   :caption: Contents:
+    :numbered:
+    :caption: Contents:
+
+    introduction
+    quick_start
+    susy_cross_section
 
 
+.. only:: html
 
-Indices and tables
-==================
+    Indices and tables
+    ==================
 
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
+    * :ref:`genindex`
+    * :ref:`modindex`
+    * :ref:`search`
+
+
+.. raw:: latex
+
+    \newpage
+    \section*{References}
+    \bibliography{susy_cross_section}

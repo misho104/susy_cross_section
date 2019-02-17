@@ -1,68 +1,61 @@
-susy\_cross\_section package
-============================
+API Reference: susy\_cross\_section
+===================================
 
 .. automodule:: susy_cross_section
-    :members:
-    :undoc-members:
-    :show-inheritance:
 
-Submodules
-----------
+susy\_cross\_section.base subpackage
+------------------------------------
 
-susy\_cross\_section.axes\_wrapper module
------------------------------------------
+.. automodule:: susy_cross_section.base
 
-.. automodule:: susy_cross_section.axes_wrapper
-    :members:
-    :undoc-members:
-    :show-inheritance:
+susy\_cross\_section.base.info module
+"""""""""""""""""""""""""""""""""""""
 
-susy\_cross\_section.config module
-----------------------------------
+.. automodule:: susy_cross_section.base.info
 
-.. automodule:: susy_cross_section.config
-    :members:
-    :undoc-members:
-    :show-inheritance:
+susy\_cross\_section.base.table module
+""""""""""""""""""""""""""""""""""""""
 
-susy\_cross\_section.cross\_section\_table module
--------------------------------------------------
+.. automodule:: susy_cross_section.base.table
 
-.. automodule:: susy_cross_section.cross_section_table
-    :members:
-    :undoc-members:
-    :show-inheritance:
 
-susy\_cross\_section.interpolator module
-----------------------------------------
+susy\_cross\_section.table module
+---------------------------------
 
-.. automodule:: susy_cross_section.interpolator
-    :members:
-    :undoc-members:
-    :show-inheritance:
+.. automodule:: susy_cross_section.table
 
-susy\_cross\_section.scripts module
------------------------------------
+susy\_cross\_section.interp subpackage
+--------------------------------------
 
-.. automodule:: susy_cross_section.scripts
-    :members:
-    :undoc-members:
-    :show-inheritance:
+.. automodule:: susy_cross_section.interp
 
-susy\_cross\_section.table\_info module
----------------------------------------
+susy\_cross\_section.interp.axes_wrapper module
+"""""""""""""""""""""""""""""""""""""""""""""""
 
-.. automodule:: susy_cross_section.table_info
-    :members:
-    :undoc-members:
-    :show-inheritance:
+.. automodule:: susy_cross_section.interp.axes_wrapper
+
+susy\_cross\_section.interp.interpolator module
+"""""""""""""""""""""""""""""""""""""""""""""""
+
+.. automodule:: susy_cross_section.interp.interpolator
 
 susy\_cross\_section.utility module
 -----------------------------------
 
 .. automodule:: susy_cross_section.utility
-    :members:
-    :undoc-members:
-    :show-inheritance:
 
+susy\_cross\_section.config module
+----------------------------------
+
+.. automodule:: susy_cross_section.config
+   :no-members:
+
+   .. autodata:: table_names
+      :annotation: = {name: data_path or Tuple[data_path, info_path], ...}
+
+
+susy\_cross\_section.scripts module
+-----------------------------------
+
+.. automodule:: susy_cross_section.scripts
 
