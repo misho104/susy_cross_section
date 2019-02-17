@@ -21,6 +21,8 @@ stages:
 
 script:
   - nosetests -s -d
+
+after_success:
   - coveralls
 
 jobs:

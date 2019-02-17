@@ -21,13 +21,11 @@
   "reader_options": {
     "skipinitialspace": 1
   },
-  "data": {
-    "parameters": [{ "column": "m_wino", "granularity": 1 }],
-    "values": [
-      {
-        "column": "xsec",
-        "unc": [{ "column": "uncertainty", "type": "absolute" }]
-      }
-    ]
-  }
+  "parameters": [{ "column": "m_wino", "granularity": 1 }],
+  "values": [
+    {
+      "column": "xsec",
+      "unc": [{ "column": "uncertainty", "type": "absolute" }]
+    }
+  ]
 }

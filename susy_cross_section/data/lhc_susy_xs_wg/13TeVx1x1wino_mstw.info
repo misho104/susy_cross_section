@@ -24,20 +24,18 @@
   "reader_options": {
     "skipinitialspace": 1
   },
-  "data": {
-    "parameters": [{ "column": "m_wino", "granularity": 1 }],
-    "values": [
-      {
-        "column": "xsec",
-        "unc-": [
-          { "column": "unc-_scale", "type": "relative" },
-          { "column": "unc-_pdf", "type": "relative" }
-        ],
-        "unc+": [
-          { "column": "unc+_scale", "type": "relative" },
-          { "column": "unc+_pdf", "type": "relative" }
-        ]
-      }
-    ]
-  }
+  "parameters": [{ "column": "m_wino", "granularity": 1 }],
+  "values": [
+    {
+      "column": "xsec",
+      "unc-": [
+        { "column": "unc-_scale", "type": "relative" },
+        { "column": "unc-_pdf", "type": "relative" }
+      ],
+      "unc+": [
+        { "column": "unc+_scale", "type": "relative" },
+        { "column": "unc+_pdf", "type": "relative" }
+      ]
+    }
+  ]
 }

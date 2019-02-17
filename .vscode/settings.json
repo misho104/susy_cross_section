@@ -1,9 +1,11 @@
 {
+  "editor.rulers": [79, 88] /* 79 for docstring, 88 for code */,
   "cSpell.words": [
     "bivariate",
     "bs",
     "chargino",
     "cteq",
+    "imul",
     "interp",
     "isnan",
     "issubdtype",
