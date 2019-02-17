@@ -34,7 +34,7 @@ __author__ = 'Sho Iwamoto'
 __copyright__ = 'Copyright (C) 2018-2019 Sho Iwamoto / Misho'
 __license__ = 'MIT'
 __packagename__ = 'susy_cross_section'
-__version__ = '0.0.3'
+__version__ = '0.0.4'
 
 if sys.version_info[0] < 3:  # py2
     str = basestring  # noqa: A001, F821
