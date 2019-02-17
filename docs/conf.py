@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
-# cSpell:words ifconfig ivar localtoc mathjax napoleon rtype toctree
+# cSpell:words undoc bysource ivar rtype mathjax ifconfig toctree localtoc
+# cSpell:words todos elsarticle utphys
 
 #
 # Configuration file for the Sphinx documentation builder.
@@ -13,14 +14,14 @@
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
-#
 import sys
 from pathlib import Path
 
+
 project_root_dir = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root_dir))
-import docs._themes.conf_bibtex  # noqa:
 
+from docs._themes.sphinx_customize import MyPyXRefRole  # noqa:
 
 # -- Project information -----------------------------------------------------
 
@@ -58,7 +59,11 @@ extensions = [
     'docs._themes.conf_bibtex',
     'sphinxcontrib.bibtex',
     'docs._themes.latex_writer',
+    'docs._themes.sphinx_customize',
 ]
+
+autodoc_default_flags = ['members', 'undoc-members', 'show-inheritance']
+autodoc_member_order = 'bysource'
 
 napoleon_numpy_docstring = True
 napoleon_include_init_with_doc = True
@@ -99,7 +104,7 @@ exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 # The name of the Pygments (syntax highlighting) style to use.
 pygments_style = None
 
-
+default_role = 'any'
 add_module_names = False
 
 rst_epilog = """
@@ -167,7 +172,7 @@ latex_documents = [
         'SUSY Cross Section Documentation',
         'Sho Iwamoto / Misho',
         'elsarticle',
-    )
+    ),
 ]
 
 latex_toplevel_sectioning = 'section'
@@ -177,9 +182,22 @@ latex_toplevel_sectioning = 'section'
 # -- Options for intersphinx extension ---------------------------------------
 
 # Example configuration for intersphinx: refer to the Python standard library.
-intersphinx_mapping = {'https://docs.python.org/': None}
+intersphinx_mapping = {
+    'python': ('https://docs.python.org/3.6/', None),
+    'pandas': ('http://pandas.pydata.org/pandas-docs/stable/', None),
+    'numpy': ('http://docs.scipy.org/doc/numpy', None),
+    'scipy': ('http://docs.scipy.org/doc/scipy/reference', None),
+    # 'matplotlib': ('http://matplotlib.sourceforge.net', None),
+}
 
 # -- Options for todo extension ----------------------------------------------
 
 # If true, `todo` and `todoList` produce output, else they produce nothing.
 todo_include_todos = True
+
+
+def setup(app):
+    if napoleon_use_ivar:
+        app.registry.domains['py'].roles['attr'] = MyPyXRefRole()
+    app.add_stylesheet('custom.css')
+    return {'parallel_read_safe': True, 'parallel_write_safe': True}
