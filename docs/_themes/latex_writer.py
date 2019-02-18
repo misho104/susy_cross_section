@@ -13,10 +13,10 @@ class MyTranslator(sphinx.writers.latex.LaTeXTranslator):
         if self.in_title:
             pass
         else:
-            self.body.append('\\cite{%s}' % (origref))
+            self.body.append("\\cite{%s}" % (origref))
             raise docutils.nodes.SkipNode
 
 
 def setup(app):
-    app.set_translator('latex', MyTranslator)
-    return {'parallel_read_safe': True, 'parallel_write_safe': True}
+    app.set_translator("latex", MyTranslator)
+    return {"parallel_read_safe": True, "parallel_write_safe": True}

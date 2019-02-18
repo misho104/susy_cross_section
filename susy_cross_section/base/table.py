@@ -84,7 +84,7 @@ class BaseTable(object):
         self.table_path = pathlib.Path(table_path)         # type: pathlib.Path
         self.info_path = pathlib.Path(
             info_path if info_path
-            else self.table_path.with_suffix('.info'))     # type: pathlib.Path
+            else self.table_path.with_suffix(".info"))     # type: pathlib.Path
 
         self.info = TableInfo.load(self.info_path)         # type: TableInfo
         self.raw_data = self._read_csv(self.table_path)    # type: pandas.DataFrame
@@ -104,8 +104,8 @@ class BaseTable(object):
         Internally, call :meth:`pandas.read_csv()` with `!reader_options`.
         """
         reader_options = {
-            'skiprows': [0],
-            'names': [c.name for c in self.info.columns],
+            "skiprows": [0],
+            "names": [c.name for c in self.info.columns],
         }  # default values
         reader_options.update(self.info.reader_options)
         return pandas.read_csv(path, **reader_options)
@@ -145,9 +145,9 @@ class BaseTable(object):
                 return self._combine_uncertainties(row, name, unc_sources, factors)
 
             self.data[name] = pandas.DataFrame()
-            self.data[name]['value'] = data[name]
-            self.data[name]['unc+'] = data.apply(unc_p, axis=1)
-            self.data[name]['unc-'] = data.apply(unc_m, axis=1)
+            self.data[name]["value"] = data[name]
+            self.data[name]["unc+"] = data.apply(unc_p, axis=1)
+            self.data[name]["unc-"] = data.apply(unc_m, axis=1)
             self.units[name] = value_unit
 
     def _uncertainty_factors(self, value_unit, uncertainty_info):
@@ -156,7 +156,7 @@ class BaseTable(object):
         factors = {}
         for source_name, source_type in uncertainty_info.items():
             unc_unit = Unit(self.info.get_column(source_name).unit)
-            if source_type == 'relative':
+            if source_type == "relative":
                 unc_unit *= value_unit
             # unc / unc_unit == "number in the table"
             # we want to get "unc / value_unit" = "number in the table"  * unc_unit / value_unit
@@ -170,7 +170,7 @@ class BaseTable(object):
         uncertainties = []
         for source_name, source_type in unc_sources.items():
             uncertainties.append(row[source_name] * factors[source_name] * (
-                row[value_name] if source_type == 'relative' else 1
+                row[value_name] if source_type == "relative" else 1
             ))
         return sum(x**2 for x in uncertainties) ** 0.5
 
@@ -180,9 +180,9 @@ class BaseTable(object):
         for key, data in self.data.items():
             duplication = data.index[data.index.duplicated()]
             for d in duplication:
-                raise ValueError('Found duplicated entries: %s, %s', key, d)
+                raise ValueError("Found duplicated entries: %s, %s", key, d)
                 if len(duplication) > 5:
-                    raise ValueError('Maybe parameter granularity is set too large?')
+                    raise ValueError("Maybe parameter granularity is set too large?")
 
     # ------------------ #
     # accessor functions #
@@ -219,12 +219,12 @@ class BaseTable(object):
             Dumped data.
         """
         results = []  # type: List[str]
-        line = '-' * 72
+        line = "-" * 72
         keys_to_show = self.data.keys() if keys is None else keys
         for k in keys_to_show:
             results.append(line)
             results.append('DATA "{}" (unit: {})'.format(k, self.units[k]))
             results.append(line)
             results.append(self.data[k].__str__())  # py2
-            results.append('')
-        return '\n'.join(results)
+            results.append("")
+        return "\n".join(results)

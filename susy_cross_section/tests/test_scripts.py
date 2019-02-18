@@ -20,7 +20,7 @@ class TestScripts(unittest.TestCase):
 
     def setUp(self):
         """Set up."""
-        self.data_dir = pathlib.Path(__file__).parent / 'data'
+        self.data_dir = pathlib.Path(__file__).parent / "data"
         self.runner = CliRunner()
 
     def test_get(self):
@@ -29,13 +29,13 @@ class TestScripts(unittest.TestCase):
         for mass in [300, 350]:
             result[mass] = self.runner.invoke(
                 command_get,
-                ['13TeV.slepslep.ll', mass.__str__()],
+                ["13TeV.slepslep.ll", mass.__str__()],
             )  # py2
             if result[mass].exit_code:
-                logger.debug('%s', result[mass].__dict__)
+                logger.debug("%s", result[mass].__dict__)
             eq_(result[mass].exit_code, 0)
-        eq_(result[300].output.strip(), '(4.43 +0.19 -0.24) fb')
-        eq_(result[350].output.strip(), '(2.33 +0.11 -0.14) fb')
+        eq_(result[300].output.strip(), "(4.43 +0.19 -0.24) fb")
+        eq_(result[350].output.strip(), "(2.33 +0.11 -0.14) fb")
 
     def test_get_simple(self):
         """Assert that command_get returns sensible interpolation results."""
@@ -44,10 +44,10 @@ class TestScripts(unittest.TestCase):
         for mass in [450, 458, 475]:
             result[mass] = self.runner.invoke(
                 command_get,
-                ['-1', '13TeV.n2x1+-.wino', mass.__str__()],
+                ["-1", "13TeV.n2x1+-.wino", mass.__str__()],
             )  # py2
-            output[mass] = [float(x) for x in result[mass].output.strip().split(' ')]
-            logger.debug('Exit code %s: %s', result[mass].exit_code, output[mass])
+            output[mass] = [float(x) for x in result[mass].output.strip().split(" ")]
+            logger.debug("Exit code %s: %s", result[mass].exit_code, output[mass])
             eq_(result[mass].exit_code, 0)
             eq_(len(output[mass]), 3)
         assert_almost_equals(output[450][0], 73.4361)

@@ -62,7 +62,7 @@ class CrossSectionAttributes(object):
         recommended.
     """
 
-    def __init__(self, processes='', collider='', ecm='', order='', pdf_name=''):
+    def __init__(self, processes="", collider="", ecm="", order="", pdf_name=""):
         # type: (Union[str, List[str]], str, str, str, str)->None
         if not processes:
             self.processes = []  # type: List[str]
@@ -88,18 +88,18 @@ class CrossSectionAttributes(object):
         ValueError
             If any attributes have invalid content.
         """
-        for attr, typ in [('processes', List),
-                          ('collider', str),
-                          ('ecm', str),
-                          ('order', str),
-                          ('pdf_name', str)]:
+        for attr, typ in [("processes", List),
+                          ("collider", str),
+                          ("ecm", str),
+                          ("order", str),
+                          ("pdf_name", str)]:
             value = getattr(self, attr)
             if not value:
-                raise ValueError('attributes: %s is empty.', attr)
+                raise ValueError("attributes: %s is empty.", attr)
             if not isinstance(value, typ):
-                raise TypeError('attributes: %s must be %s', attr, typ)
+                raise TypeError("attributes: %s must be %s", attr, typ)
         if not all(isinstance(s, str) and s for s in self.processes):
-            raise TypeError('attributes: processes must be a list of string.')
+            raise TypeError("attributes: processes must be a list of string.")
 
     def dump(self):
         # type: ()->str
@@ -111,14 +111,14 @@ class CrossSectionAttributes(object):
             Dumped data.
         """
         lines = [
-            'collider: {}-collider, ECM={}'.format(self.collider, self.ecm),
-            'calculation order: {}'.format(self.order),
-            'PDF: {}'.format(self.pdf_name),
-            'included processes:',
+            "collider: {}-collider, ECM={}".format(self.collider, self.ecm),
+            "calculation order: {}".format(self.order),
+            "PDF: {}".format(self.pdf_name),
+            "included processes:",
         ]
         for p in self.processes:
-            lines.append('  ' + p)
-        return '\n'.join(lines)
+            lines.append("  " + p)
+        return "\n".join(lines)
 
 
 class CrossSectionInfo(TableInfo):
@@ -168,8 +168,8 @@ class CrossSectionInfo(TableInfo):
         KeyError
             If json data lacks value for 'attributes'.
         """
-        attributes = CrossSectionAttributes(**kw['attributes'])
-        del kw['attributes']
+        attributes = CrossSectionAttributes(**kw["attributes"])
+        del kw["attributes"]
         super(CrossSectionInfo, self)._load(**kw)  # py2
         self.attributes = attributes
 
@@ -192,11 +192,11 @@ class CrossSectionInfo(TableInfo):
         str
             Dumped data.
         """
-        return '\n'.join([
+        return "\n".join([
             super(CrossSectionInfo, self).dump(),
-            '',
-            '[Cross section attributes]',
-            textwrap.indent(self.attributes.dump(), prefix='  '),
+            "",
+            "[Cross section attributes]",
+            textwrap.indent(self.attributes.dump(), prefix="  "),
         ])
 
 
@@ -226,7 +226,7 @@ class Table(BaseTable):
         # type: (Union[pathlib.Path, str], Union[pathlib.Path, str])->None
         self.table_path = pathlib.Path(table_path)  # type: pathlib.Path
         self.info_path = (
-            pathlib.Path(info_path) if info_path else self.table_path.with_suffix('.info')
+            pathlib.Path(info_path) if info_path else self.table_path.with_suffix(".info")
         )  # type: pathlib.Path
 
         self.info = CrossSectionInfo.load(self.info_path)  # type: TableInfo

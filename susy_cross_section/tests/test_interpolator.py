@@ -36,17 +36,17 @@ class TestInterpolator(unittest.TestCase):
         """Set up."""
         cwd = pathlib.Path(__file__).parent
         self.dirs = {
-            'lhc_wg': cwd / '..' / 'data' / 'lhc_susy_xs_wg',
-            'fastlim8': cwd / '..' / 'data' / 'fastlim' / '8TeV' / 'NLO+NLL',
-            'fastlim8mod': cwd / 'data',
+            "lhc_wg": cwd / ".." / "data" / "lhc_susy_xs_wg",
+            "fastlim8": cwd / ".." / "data" / "fastlim" / "8TeV" / "NLO+NLL",
+            "fastlim8mod": cwd / "data",
         }
 
     def test_scipy_1d_interpolator(self):
         """Verify Scipy1dInterpolator."""
-        table = Table(self.dirs['lhc_wg'] / '13TeVn2x1wino_cteq_pm.csv')
-        for kind in ['linear', 'akima', 'spline', 'pchip']:
-            for axes in ['linear', 'log', 'loglog', 'loglinear']:
-                fit = Scipy1dInterpolator(kind, axes).interpolate(table, 'xsec')
+        table = Table(self.dirs["lhc_wg"] / "13TeVn2x1wino_cteq_pm.csv")
+        for kind in ["linear", "akima", "spline", "pchip"]:
+            for axes in ["linear", "log", "loglog", "loglinear"]:
+                fit = Scipy1dInterpolator(kind, axes).interpolate(table, "xsec")
                 # on the grid points:
                 # 300.0: 379.23, -0.47, -4.8, 0.4, 4.7 == 379.23 -18.29 +17.89
                 # 325.0: 276.17, -0.44, -5.1, 0.4, 4.8 == 276.17 -14.14 +13.30
@@ -58,12 +58,12 @@ class TestInterpolator(unittest.TestCase):
                 # interpolation: for uncertainty, returns sensible results
                 ok_(13.30 < fit.unc_p_at(312.5) < 17.89)
                 ok_(14.14 < -fit.unc_m_at(312.5) < 18.29)
-                if kind == 'linear':
-                    if axes == 'linear':
+                if kind == "linear":
+                    if axes == "linear":
                         x, y = (300 + 325) / 2, (379.23 + 276.17) / 2
-                    elif axes == 'loglinear':
+                    elif axes == "loglinear":
                         x, y = (300 * 325) ** 0.5, (379.23 + 276.17) / 2
-                    elif axes == 'log':
+                    elif axes == "log":
                         x, y = (300 + 325) / 2, (379.23 * 276.17) ** 0.5
                     else:
                         x, y = (300 * 325) ** 0.5, (379.23 * 276.17) ** 0.5
@@ -73,12 +73,12 @@ class TestInterpolator(unittest.TestCase):
 
     def test_scipy_1d_interpolator_nonstandard_args(self):
         """Verify Scipy1dInterpolator accepts/refuses argument correctly."""
-        table = Table(self.dirs['lhc_wg'] / '13TeVn2x1wino_cteq_pm.csv')
-        fit = Scipy1dInterpolator().interpolate(table, 'xsec')
-        for m in ['f0', 'fp', 'fm', 'unc_p_at', 'unc_m_at', 'tuple_at']:
+        table = Table(self.dirs["lhc_wg"] / "13TeVn2x1wino_cteq_pm.csv")
+        fit = Scipy1dInterpolator().interpolate(table, "xsec")
+        for m in ["f0", "fp", "fm", "unc_p_at", "unc_m_at", "tuple_at"]:
             test_method = getattr(fit, m)
             value = test_method(333.3)
-            if m == 'tuple_at':
+            if m == "tuple_at":
                 # the output should be (3,) array (or 3-element tuple)
                 eq_(numpy.array(value).shape, (3,))
             else:
@@ -104,15 +104,15 @@ class TestInterpolator(unittest.TestCase):
 
     def test_scipy_grid_interpolator(self):
         """Verify ScipyGridInterpolator."""
-        table = Table(self.dirs['fastlim8mod'] / 'sg_8TeV_NLONLL_modified.xsec')
+        table = Table(self.dirs["fastlim8mod"] / "sg_8TeV_NLONLL_modified.xsec")
         midpoint = {
-            'linear': lambda x, y: (x + y) / 2,
-            'log': lambda x, y: (x * y) ** 0.5,
+            "linear": lambda x, y: (x + y) / 2,
+            "log": lambda x, y: (x * y) ** 0.5,
         }
-        for x1a, x2a, ya in itertools.product(['linear', 'log'], repeat=3):
-            for kind in ['linear', 'spline']:
+        for x1a, x2a, ya in itertools.product(["linear", "log"], repeat=3):
+            for kind in ["linear", "spline"]:
                 wrapper = AxesWrapper([x1a, x2a], ya)
-                fit = ScipyGridInterpolator(kind, wrapper).interpolate(table, 'xsec')
+                fit = ScipyGridInterpolator(kind, wrapper).interpolate(table, "xsec")
                 # on the grid points:
                 # 700    1400   0.0473379597888      0.00905940683923
                 # 700    1450   0.0382279746207      0.0075711349465
@@ -132,7 +132,7 @@ class TestInterpolator(unittest.TestCase):
                     x1 = midpoint[x1a](700, 750) if interp_axis == 1 else 700
                     x2 = midpoint[x2a](1400, 1450) if interp_axis == 2 else 1400
                     y_upperend = 0.0390134 if interp_axis == 1 else 0.03822797
-                    if kind == 'linear':
+                    if kind == "linear":
                         assert_almost_equals(
                             fit(x1, x2),
                             midpoint[ya](0.0473379, y_upperend),
@@ -148,14 +148,14 @@ class TestInterpolator(unittest.TestCase):
 
     def test_scipy_grid_interpolator_nonstandard_args(self):
         """Verify ScipyGridInterp accepts/refuses args correctly."""
-        table = Table(self.dirs['fastlim8mod'] / 'sg_8TeV_NLONLL_modified.xsec')
+        table = Table(self.dirs["fastlim8mod"] / "sg_8TeV_NLONLL_modified.xsec")
 
-        for kind in ['linear', 'spline']:
-            fit = ScipyGridInterpolator(kind).interpolate(table, 'xsec')
-            for m in ['f0', 'fp', 'fm', 'unc_p_at', 'unc_m_at', 'tuple_at']:
+        for kind in ["linear", "spline"]:
+            fit = ScipyGridInterpolator(kind).interpolate(table, "xsec")
+            for m in ["f0", "fp", "fm", "unc_p_at", "unc_m_at", "tuple_at"]:
                 test_method = getattr(fit, m)
                 value = test_method(777, 888)
-                if m == 'tuple_at':
+                if m == "tuple_at":
                     # the output should be (3,) array (or 3-element tuple)
                     eq_(numpy.array(value).shape, (3,))
                 else:

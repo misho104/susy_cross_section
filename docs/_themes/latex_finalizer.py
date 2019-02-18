@@ -15,9 +15,9 @@ def finalize(text):
     return text
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     if len(sys.argv) < 2:
-        print(f'Usage: {sys.argv[0]} [TEX_FILE]', file=sys.stderr)
+        print(f"Usage: {sys.argv[0]} [TEX_FILE]", file=sys.stderr)
         exit(1)
 
     target = pathlib.Path(sys.argv[1])

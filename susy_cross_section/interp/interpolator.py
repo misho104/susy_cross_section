@@ -87,7 +87,7 @@ class Interpolation:
                 xs = cast(List[float], args[0])
             elif isinstance(args[0], numpy.ndarray) and args[0].ndim == 0:
                 xs = cast(List[float], [args[0]])
-            elif hasattr(args[0], '__iter__'):
+            elif hasattr(args[0], "__iter__"):
                 xs = cast(List[float], args[0])
             else:
                 xs = cast(List[float], args)
@@ -105,9 +105,9 @@ class Interpolation:
                 x_list += [None for _ in range(len(x_list), index + 1)]
                 x_list[index] = value
             except KeyError:
-                raise TypeError('Unexpected param name: %s', key)
+                raise TypeError("Unexpected param name: %s", key)
         if any(v is None for v in x_list):
-            raise TypeError('Arguments insufficient: %s, %s', args, kwargs)
+            raise TypeError("Arguments insufficient: %s, %s", args, kwargs)
         return cast(List[float], x_list)
 
     def f0(self, *args, **kwargs):
@@ -234,9 +234,9 @@ class AbstractInterpolator:
         """
         df = cross_section_table.data[name]
         return Interpolation(
-            self._interpolate(df['value']),
-            self._interpolate(df['value'] + df['unc+']),
-            self._interpolate(df['value'] - abs(df['unc-'])),
+            self._interpolate(df["value"]),
+            self._interpolate(df["value"] + df["unc+"]),
+            self._interpolate(df["value"] - abs(df["unc-"])),
             param_names=df.index.names,
         )
 
@@ -317,36 +317,36 @@ class Scipy1dInterpolator(AbstractInterpolator):
        https://gist.github.com/misho104/46032fa730088a0cb4c2e0556c59260b
     """
 
-    def __init__(self, kind='linear', axes='linear'):
+    def __init__(self, kind="linear", axes="linear"):
         # type: (str, str)->None
         self.kind = kind.lower()  # type: str
         self.axes = axes.lower()  # type: str
 
     def _interpolate(self, df):
         # type: (pandas.DataFrame)->InterpType
-        if self.axes == 'linear':
-            wrapper = AxesWrapper(['linear'], 'linear')
-        elif self.axes == 'log':
-            wrapper = AxesWrapper(['linear'], 'log')
-        elif self.axes == 'loglinear':
-            wrapper = AxesWrapper(['log'], 'linear')
-        elif self.axes == 'loglog':
-            wrapper = AxesWrapper(['log'], 'log')
+        if self.axes == "linear":
+            wrapper = AxesWrapper(["linear"], "linear")
+        elif self.axes == "log":
+            wrapper = AxesWrapper(["linear"], "log")
+        elif self.axes == "loglinear":
+            wrapper = AxesWrapper(["log"], "linear")
+        elif self.axes == "loglog":
+            wrapper = AxesWrapper(["log"], "log")
         else:
-            raise ValueError('Invalid axes wrapper: %s', self.axes)
+            raise ValueError("Invalid axes wrapper: %s", self.axes)
 
         if df.index.nlevels != 1:
-            raise ValueError('Scipy1dInterpolator not handle multiindex data.')
+            raise ValueError("Scipy1dInterpolator not handle multiindex data.")
 
         # axes modification; note that the wrappers are numpy.vectorize()-ed.
         xs = wrapper.wx[0](df.index.to_numpy())
         ys = wrapper.wy(df.to_numpy())
 
-        if self.kind == 'spline':
-            f_bar = sci_interp.CubicSpline(xs, ys, bc_type='natural', extrapolate=False)
-        elif self.kind == 'pchip':
+        if self.kind == "spline":
+            f_bar = sci_interp.CubicSpline(xs, ys, bc_type="natural", extrapolate=False)
+        elif self.kind == "pchip":
             f_bar = sci_interp.PchipInterpolator(xs, ys, extrapolate=False)
-        elif self.kind == 'akima':
+        elif self.kind == "akima":
             f_bar = sci_interp.Akima1DInterpolator(xs, ys)
             f_bar.extrapolate = False
         else:
@@ -383,7 +383,7 @@ class ScipyGridInterpolator(AbstractInterpolator):
         Object for axes preprocess. If unspecified, no preprocess is performed.
     """
 
-    def __init__(self, kind='linear', axes_wrapper=None):
+    def __init__(self, kind="linear", axes_wrapper=None):
         # type: (str, Optional[AxesWrapper])->None
         self.kind = kind.lower()  # type: str
         self.axes_wrapper = axes_wrapper  # type: Optional[AxesWrapper]
@@ -399,7 +399,7 @@ class ScipyGridInterpolator(AbstractInterpolator):
         if self.axes_wrapper:
             if len(self.axes_wrapper.wx) != len(xs):
                 raise ValueError(
-                    'Axes wrapper for %d-dim is specified for %d-dim interp.',
+                    "Axes wrapper for %d-dim is specified for %d-dim interp.",
                     len(self.axes_wrapper.wx),
                     len(xs),
                 )
@@ -407,14 +407,14 @@ class ScipyGridInterpolator(AbstractInterpolator):
             ys = self.axes_wrapper.wy(ys)
 
         # call scipy
-        if self.kind == 'linear':
+        if self.kind == "linear":
             f_bar = self._interpolate_linear(xs, ys)
-        elif self.kind == 'spline':
+        elif self.kind == "spline":
             f_bar = self._interpolate_spline(xs, ys, 3, 3)
         elif re.match(r"\Aspline[1-5][1-5]\Z", self.kind):
             f_bar = self._interpolate_spline(xs, ys, int(self.kind[-2]), int(self.kind[-1]))
         else:
-            raise ValueError('Invalid kind: %s', self.kind)
+            raise ValueError("Invalid kind: %s", self.kind)
 
         if self.axes_wrapper:
             return self.axes_wrapper.wrapped_f(f_bar)
@@ -423,7 +423,7 @@ class ScipyGridInterpolator(AbstractInterpolator):
 
     def _interpolate_linear(self, xs, ys):
         # type: (Any, Any)->Callable[[Sequence[float]], float]
-        interp = sci_interp.RegularGridInterpolator(xs, ys, method='linear')
+        interp = sci_interp.RegularGridInterpolator(xs, ys, method="linear")
         interp.bounds_error = True
 
         def f_bar(x, _f_bar=interp):
@@ -435,10 +435,10 @@ class ScipyGridInterpolator(AbstractInterpolator):
     def _interpolate_spline(self, xs, ys, kx, ky):
         # type: (Any, Any, int, int)->Callable[[Sequence[float]], float]
         if len(xs) != 2:
-            raise ValueError('ScipyGridInterpolator with spline is only for 2d data.')
+            raise ValueError("ScipyGridInterpolator with spline is only for 2d data.")
 
         if numpy.isnan(xs).any() or numpy.isnan(ys).any():
-            raise ValueError('Spline interpolation does not allow missing grid points.')
+            raise ValueError("Spline interpolation does not allow missing grid points.")
         interp = sci_interp.RectBivariateSpline(xs[0], xs[1], ys, s=0, kx=kx, ky=ky)
 
         def f_bar(x, _f_bar=interp):

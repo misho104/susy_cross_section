@@ -45,9 +45,9 @@ class Unit:
     """
 
     definitions = {
-        '': [1],
-        '%': [0.01],
-        'pb': [1000, 'fb'],
+        "": [1],
+        "%": [0.01],
+        "pb": [1000, "fb"],
     }  # type: Mapping[str, List[Union[float, str]]]
     """:typ:`dict[str, list of (float or str)]`: The replacement rules of units.
 
@@ -117,7 +117,7 @@ class Unit:
                     try:
                         self._factor *= float(b)
                     except ValueError:
-                        raise TypeError('invalid unit: %s', other)
+                        raise TypeError("invalid unit: %s", other)
         return self
 
     def __mul__(self, other):
@@ -167,7 +167,7 @@ class Unit:
             If not dimension-less unit.
         """
         if any(v != 0 for v in self._units.values()):
-            raise ValueError('Unit conversion error: %s, %s', self._units, self._factor)
+            raise ValueError("Unit conversion error: %s, %s", self._units, self._factor)
         return float(self._factor)
 
 
@@ -192,24 +192,24 @@ def value_format(value, unc_p, unc_m, unit=None):
         Formatted string describing the given value.
     """
     delta = min(abs(unc_p), abs(unc_m))
-    suffix = ' {}'.format(unit) if unit else ''  # will be appended to the body.
+    suffix = " {}".format(unit) if unit else ""  # will be appended to the body.
 
     if delta == 0:
         # without uncertainty
-        body = '{:g} +0 -0'.format(value)
+        body = "{:g} +0 -0".format(value)
     else:
         v_order = int(numpy.log10(value))
         if abs(v_order) > 3:
             # force to use scientific notation
-            suffix = '*1e{:d}'.format(v_order) + suffix
+            suffix = "*1e{:d}".format(v_order) + suffix
             divider = 10 ** v_order
             digits_to_show = max(int(-numpy.log10(delta / value) - 0.005) + 2, 3)
         else:
             divider = 1
             digits_to_show = max(int(-numpy.log10(delta) - 0.005) + (1 if delta > 1 else 2), 0)
-        v_format = '{f} +{f} -{f}'.format(f='{{:.{}f}}'.format(digits_to_show))
+        v_format = "{f} +{f} -{f}".format(f="{{:.{}f}}".format(digits_to_show))
         body = v_format.format(value / divider, unc_p / divider, abs(unc_m / divider))
-    return '({}){}'.format(body, suffix) if suffix else body
+    return "({}){}".format(body, suffix) if suffix else body
 
 
 def get_paths(data_name, info_path=None):
@@ -251,17 +251,17 @@ def get_paths(data_name, info_path=None):
     info = pathlib.Path(info_path) if info_path else None  # type: Optional[pathlib.Path]
     if isinstance(data_name, pathlib.Path):
         data = data_name  # type: pathlib.Path
-        error_hint = 'specified file'
+        error_hint = "specified file"
     else:
         configured = susy_cross_section.config.table_names.get(data_name)
         if configured:
             # configured by default
-            error_hint = 'configured path'
+            error_hint = "configured path"
             if len(configured) == 2 and len(configured[0]) > 1:
                 # if config has (data_path, info_path)
                 data = pathlib.Path(configured[0])
                 if info:
-                    error_hint = 'configured path (with modified info_path)'
+                    error_hint = "configured path (with modified info_path)"
                 else:
                     info = pathlib.Path(configured[1])
             else:
@@ -270,11 +270,11 @@ def get_paths(data_name, info_path=None):
                 data = pathlib.Path(configured)
         else:
             # interpret the input as path to a file.
-            error_hint = 'specified file'
+            error_hint = "specified file"
             data = pathlib.Path(data_name)
 
     if not info:
-        info = data.with_suffix('.info')
+        info = data.with_suffix(".info")
 
     # made it absolute
     pwd = pathlib.Path(__file__).parent
@@ -283,9 +283,9 @@ def get_paths(data_name, info_path=None):
 
     for p in [abs_data, abs_info]:
         if not p.exists:
-            logger.error(error_hint + ' not found: %s', p)
+            logger.error(error_hint + " not found: %s", p)
             raise FileNotFoundError(p.__str__())  # py2
         if not p.is_file:
-            logger.error(error_hint + ' not a file: %s', p)
-            raise RuntimeError('Not a file: %s', p.__str__())  # py2
+            logger.error(error_hint + " not a file: %s", p)
+            raise RuntimeError("Not a file: %s", p.__str__())  # py2
     return abs_data, abs_info
