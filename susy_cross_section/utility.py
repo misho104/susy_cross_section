@@ -216,17 +216,19 @@ def get_paths(data_name, info_path=None):
     # type: (PathLike, Optional[PathLike])->Tuple[PathLike, PathLike]
     """Return paths to data file and info file.
 
-    Relative path is evaluted from the package directory (i.e., the directory
-    having this file).
-
     Parameters
     ----------
     data_name: pathlib.Path or str
         Path to data file or a table name found in configuration.
 
-        If the string is found in configuration's table_names, the configured
-        paths are returned. Otherwise, :ar:`data_name` is interpreted as a path
-        to the data file itself.
+        If a pre-defined table key is specified, this function returns the
+        configured path to the table. In configuration the path is defined
+        relative to this **package** directory, and this function returns the
+        absolute path.
+
+        If a path is specified, this function verifies that the file exists,
+        and returns the relative path itself, which should be relative to the
+        pwd, i.e., the current directory of the shell.
     info_path: pathlib.Path or str, optional
         Path to info file.
 
@@ -245,47 +247,36 @@ def get_paths(data_name, info_path=None):
     RuntimeError
         If one of the specified files are not a file.
     """
-    # Note to developers:
-    # To reduce confusion, this method should be in the directory
-    # where the default configuration file locates.
-    info = pathlib.Path(info_path) if info_path else None
-    if isinstance(data_name, pathlib.Path):
-        data = data_name  # type: pathlib.Path
-        error_hint = "specified file"
+    if isinstance(data_name, str):
+        config_data = susy_cross_section.config.table_names.get(data_name)
     else:
-        configured = susy_cross_section.config.table_names.get(data_name)
-        if configured:
-            # configured by default
-            error_hint = "configured path"
-            if len(configured) == 2 and len(configured[0]) > 1:
-                # if config has (data_path, info_path)
-                data = pathlib.Path(configured[0])
-                if info:
-                    error_hint = "configured path (with modified info_path)"
-                else:
-                    info = pathlib.Path(configured[1])
-            else:
-                # if config has data_path
-                assert isinstance(configured, str)
-                data = pathlib.Path(configured)
+        config_data = None
+
+    if config_data:
+        if len(config_data) == 2 and len(config_data[0]) > 1:
+            # if config has (data_path, info_path)
+            data_rel, info_rel = config_data  # type: str, Union[None, str]
         else:
-            # interpret the input as path to a file.
-            error_hint = "specified file"
-            data = pathlib.Path(data_name)
+            assert isinstance(config_data, str)
+            data_rel, info_rel = config_data, None
 
-    if not info:
-        info = data.with_suffix(".info")
+        # returns absolute path relative to this package
+        path_base = pathlib.Path(__file__).parent
+        data = path_base / data_rel
+        info = path_base / info_rel if info_rel else data.with_suffix(".info")
+        lookup_method = "configured path"
+    else:
+        # then data_name is a path.
+        data = pathlib.Path(data_name)
+        info = pathlib.Path(info_path) if info_path else data.with_suffix(".info")
+        # returns relative paths
+        lookup_method = "specified file"
 
-    # made it absolute
-    pwd = pathlib.Path(__file__).parent
-    abs_data = data if data.is_absolute() else pwd / data
-    abs_info = info if info.is_absolute() else pwd / info
-
-    for p in [abs_data, abs_info]:
+    for p in [data, info]:
         if not p.exists:
-            logger.error(error_hint + " not found: %s", p)
+            logger.error(lookup_method + " not found: %s", p)
             raise FileNotFoundError(p.__str__())  # py2
         if not p.is_file:
-            logger.error(error_hint + " not a file: %s", p)
+            logger.error(lookup_method + " not a file: %s", p)
             raise RuntimeError("Not a file: %s", p.__str__())  # py2
-    return abs_data, abs_info
+    return data, info
