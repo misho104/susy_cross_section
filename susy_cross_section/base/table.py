@@ -125,24 +125,21 @@ class BaseTable(object):
 
             # set index by the quantized values
             for p in parameters:
-                data[p.column] = (data[p.column] / p.granularity).apply(round) * p.granularity
+                if p.granularity:
+                    data[p.column] = (
+                        round(data[p.column] / p.granularity) * p.granularity
+                    )
             data.set_index([p.column for p in parameters], inplace=True)
 
             # define functions to apply to DataFrame to get uncertainty.
-            unc_p_factors = self._uncertainty_factors(Unit(value_unit), value_info.unc_p)
-            unc_m_factors = self._uncertainty_factors(Unit(value_unit), value_info.unc_m)
+            up_factors = self._uncertainty_factors(Unit(value_unit), value_info.unc_p)
+            um_factors = self._uncertainty_factors(Unit(value_unit), value_info.unc_m)
 
-            def unc_p(row,
-                      name=name,
-                      unc_sources=value_info.unc_p,
-                      factors=unc_p_factors):
+            def unc_p(row, name=name, unc_sources=value_info.unc_p, factors=up_factors):
                 # type: (Any, str, Mapping[str, str], Mapping[str, float])->float
                 return self._combine_uncertainties(row, name, unc_sources, factors)
 
-            def unc_m(row,
-                      name=name,
-                      unc_sources=value_info.unc_m,
-                      factors=unc_m_factors):
+            def unc_m(row, name=name, unc_sources=value_info.unc_m, factors=um_factors):
                 # type: (Any, str, Mapping[str, str], Mapping[str, float])->float
                 return self._combine_uncertainties(row, name, unc_sources, factors)
 
@@ -170,11 +167,15 @@ class BaseTable(object):
         # type: (Any, str, Mapping[str, str], Mapping[str, float])->float
         """Return absolute combined uncertainty."""
         uncertainties = []
-        for source_name, source_type in unc_sources.items():
-            uncertainties.append(row[source_name] * factors[source_name] * (
-                row[value_name] if source_type == "relative" else 1
-            ))
-        return sum(x**2 for x in uncertainties) ** 0.5
+        for name, typ in unc_sources.items():
+            if typ == "relative":
+                uncertainties.append(row[name] * factors[name] * row[value_name])
+            elif typ == "absolute":
+                uncertainties.append(row[name] * factors[name])
+            else:
+                raise ValueError(typ)
+
+        return sum(x ** 2 for x in uncertainties) ** 0.5
 
     def validate(self):
         # type: ()->None

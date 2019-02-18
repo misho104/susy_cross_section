@@ -233,7 +233,7 @@ class ParameterInfo(object):
         """
         json_obj = {"column": self.column}  # type: Dict[str, Union[str, float]]
         if self.granularity:
-            json_obj["unit"] = self.granularity
+            json_obj["granularity"] = self.granularity
         return json_obj
 
     def validate(self):
