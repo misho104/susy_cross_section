@@ -105,12 +105,14 @@ Official PDF documents may be released in \href{https://github.com/misho104/susy
 \author{<%= author %>}
 %\newcommand{\sphinxlogo}{<%= logo %>}
 \renewcommand{\releasename}{<%= releasename %>}
-<%= makeindex %>
-\begin{document}
-<%= shorthandoff %>
-<%= maketitle %>
-\clearpage
-\hrule\par\vspace{-54pt}<%= tableofcontents %>\vskip8pt\hrule
+\makeindex
+
+\def\maketitle{\sphinxmaketitle}
+\let\originalsphinxtoc\sphinxtableofcontents
+\def\sphinxtableofcontents{%
+   \clearpage\hrule\par\vspace{-54pt}\originalsphinxtoc\vskip8pt\hrule%
+}
+
 <%= body %>
 
 \preto\section{\relax}

@@ -160,7 +160,6 @@ htmlhelp_basename = "SUSYCrossSectiondoc"
 
 # -- Options for LaTeX output ------------------------------------------------
 latex_additional_files = [
-    "_themes/latex_preamble.txt",
     "_themes/mysphinx.sty",
     "_themes/utphys27mod.bst",
     "susy_cross_section.bib",
