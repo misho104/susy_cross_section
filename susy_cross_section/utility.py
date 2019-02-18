@@ -15,7 +15,7 @@ import pathlib
 import sys
 from typing import List, Mapping, MutableMapping, Optional, Tuple, Union  # noqa: F401
 
-import numpy
+from numpy import log10
 
 import susy_cross_section.config
 
@@ -77,8 +77,8 @@ class Unit:
 
     def __init__(self, *args):
         # type: (Union[float, str, Unit])->None
-        self._factor = 1   # type: float
-        self._units = {}   # type: MutableMapping[str, int]
+        self._factor = 1  # type: float
+        self._units = {}  # type: MutableMapping[str, int]
         for u in args:
             self *= u
 
@@ -198,16 +198,16 @@ def value_format(value, unc_p, unc_m, unit=None):
         # without uncertainty
         body = "{:g} +0 -0".format(value)
     else:
-        v_order = int(numpy.log10(value))
+        v_order = int(log10(value))
         if abs(v_order) > 3:
             # force to use scientific notation
             suffix = "*1e{:d}".format(v_order) + suffix
             divider = 10 ** v_order
-            digits_to_show = max(int(-numpy.log10(delta / value) - 0.005) + 2, 3)
+            disp_digits = max(int(-log10(delta / value) - 0.005) + 2, 3)
         else:
             divider = 1
-            digits_to_show = max(int(-numpy.log10(delta) - 0.005) + (1 if delta > 1 else 2), 0)
-        v_format = "{f} +{f} -{f}".format(f="{{:.{}f}}".format(digits_to_show))
+            disp_digits = max(int(-log10(delta) - 0.005) + (1 if delta > 1 else 2), 0)
+        v_format = "{f} +{f} -{f}".format(f="{{:.{}f}}".format(disp_digits))
         body = v_format.format(value / divider, unc_p / divider, abs(unc_m / divider))
     return "({}){}".format(body, suffix) if suffix else body
 
@@ -248,7 +248,7 @@ def get_paths(data_name, info_path=None):
     # Note to developers:
     # To reduce confusion, this method should be in the directory
     # where the default configuration file locates.
-    info = pathlib.Path(info_path) if info_path else None  # type: Optional[pathlib.Path]
+    info = pathlib.Path(info_path) if info_path else None
     if isinstance(data_name, pathlib.Path):
         data = data_name  # type: pathlib.Path
         error_hint = "specified file"

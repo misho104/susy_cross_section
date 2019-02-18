@@ -20,15 +20,17 @@ import json
 import logging
 import pathlib  # noqa: F401
 import sys
-from typing import Any, List, Mapping, MutableMapping, Optional, Sequence, Union
+from typing import Any, Dict, List, Mapping, MutableMapping, Optional, Sequence, Union
 
 if sys.version_info[0] < 3:  # py2
-    str = basestring          # noqa: A001, F821
+    str = basestring  # noqa: A001, F821
+    JSONDecodeError = Exception
+else:
+    JSONDecodeError = json.decoder.JSONDecodeError
+
 
 logging.basicConfig(level=logging.WARNING)
 logger = logging.getLogger(__name__)
-
-JSONDecodeError = Exception if sys.version_info[0] < 3 else json.decoder.JSONDecodeError   # py2
 
 
 class ColumnInfo(object):
@@ -63,9 +65,9 @@ class ColumnInfo(object):
 
     def __init__(self, index, name, unit=""):
         # type: (int, str, str)->None
-        self.index = index       # type: int
-        self.name = name         # type: str
-        self.unit = unit or ""   # type: str
+        self.index = index  # type: int
+        self.name = name  # type: str
+        self.unit = unit or ""  # type: str
 
     @classmethod
     def from_json(cls, json_obj):
@@ -88,9 +90,11 @@ class ColumnInfo(object):
             If :ar:`json_obj` has invalid data.
         """
         try:
-            obj = cls(index=json_obj["index"],
-                      name=json_obj["name"],
-                      unit=json_obj.get("unit", ""))
+            obj = cls(
+                index=json_obj["index"],
+                name=json_obj["name"],
+                unit=json_obj.get("unit", ""),
+            )
         except (TypeError, AttributeError) as e:
             logger.error("ColumnInfo.from_json: %s", e)
             raise ValueError("Invalid data passed to ColumnInfo.from_json: %s")
@@ -114,7 +118,10 @@ class ColumnInfo(object):
         dict(str, str or int)
             The json data describing the object.
         """
-        json_obj = {"index": self.index, "name": self.name}  # type: MutableMapping[str, Union[str, int]]
+        json_obj = {
+            "index": self.index,
+            "name": self.name,
+        }  # type: MutableMapping[str, Union[str, int]]
         if self.unit:
             json_obj["unit"] = self.unit
         return json_obj
@@ -135,11 +142,11 @@ class ColumnInfo(object):
         if not self.index >= 0:
             raise ValueError("ColumnInfo.index must be non-negative: %s", self.index)
         if not isinstance(self.name, str):
-            raise TypeError("Column %d: `name` must be string: %s", self.index, self.name)
+            raise TypeError("Col %d: `name` must be string: %s", self.index, self.name)
         if not self.name:
             raise ValueError("Column %d: `name` missing", self.index)
         if not isinstance(self.unit, str):
-            raise TypeError("Column %d: `unit` must be string: %s", self.index, self.unit)
+            raise TypeError("Col %d: `unit` must be string: %s", self.index, self.unit)
 
 
 class ParameterInfo(object):
@@ -174,7 +181,7 @@ class ParameterInfo(object):
 
     def __init__(self, column="", granularity=None):
         # type: (str, float)->None
-        self.column = column                    # type: str
+        self.column = column  # type: str
         self.granularity = granularity or None  # type: Optional[float]
 
     @classmethod
@@ -198,8 +205,9 @@ class ParameterInfo(object):
             If :ar:`json_obj` has invalid data.
         """
         try:
-            obj = cls(column=json_obj["column"],
-                      granularity=json_obj.get("granularity"))
+            obj = cls(
+                column=json_obj["column"], granularity=json_obj.get("granularity")
+            )
         except (TypeError, AttributeError) as e:
             logger.error("ParameterInfo.from_json: %s", e)
             raise ValueError("Invalid data passed to ParameterInfo.from_json: %s")
@@ -223,7 +231,7 @@ class ParameterInfo(object):
         dict(str, str or float)
             The json data describing the object.
         """
-        json_obj = {"column": self.column}  # type: MutableMapping[str, Union[str, float]]
+        json_obj = {"column": self.column}  # type: Dict[str, Union[str, float]]
         if self.granularity:
             json_obj["unit"] = self.granularity
         return json_obj
@@ -246,9 +254,14 @@ class ParameterInfo(object):
         if self.granularity is not None:
             try:
                 if not float(self.granularity) > 0:
-                    raise ValueError("ParameterInfo.granularity is not positive: %s", self.granularity)
+                    raise ValueError(
+                        "ParameterInfo.granularity is not positive: %s",
+                        self.granularity,
+                    )
             except TypeError:
-                raise TypeError("ParameterInfo.granularity is not a number: %s", self.granularity)
+                raise TypeError(
+                    "ParameterInfo.granularity is not a number: %s", self.granularity
+                )
 
 
 class ValueInfo(object):
@@ -292,8 +305,8 @@ class ValueInfo(object):
     def __init__(self, column="", unc_p=None, unc_m=None, **kw):
         # type: (str, MutableMapping[str, str], MutableMapping[str, str], Any)->None
         self.column = column
-        self.unc_p = unc_p or {}   # type: MutableMapping[str, str]
-        self.unc_m = unc_m or {}   # type: MutableMapping[str, str]
+        self.unc_p = unc_p or {}  # type: MutableMapping[str, str]
+        self.unc_m = unc_m or {}  # type: MutableMapping[str, str]
 
     def validate(self):
         # type: ()->None
@@ -307,9 +320,16 @@ class ValueInfo(object):
                 raise TypeError("Value %s: %s must be dict", self.column, title)
             for k, v in unc.items():
                 if not isinstance(k, str):
-                    raise TypeError("Value %s: %s has invalid column name: %s", self.column, title, k)
+                    raise TypeError(
+                        "Value %s: %s has invalid column name: %s",
+                        self.column,
+                        title,
+                        k,
+                    )
                 if v not in self._valid_uncertainty_types:
-                    raise ValueError("Value %s: %s has wrong value: %s", self.column, title, v)
+                    raise ValueError(
+                        "Value %s: %s has wrong value: %s", self.column, title, v
+                    )
 
     @classmethod
     def from_json(cls, json_obj):
@@ -339,20 +359,24 @@ class ValueInfo(object):
         obj = cls()
         obj.column = json_obj["column"]
         if ("unc" in json_obj) and ("unc+" in json_obj or "unc-" in json_obj):
-            raise ValueError("Invalid uncertainties (asymmetric and symmetric): %s", obj.column)
+            raise ValueError("Uncertainty duplicates: %s", obj.column)
         for attr_name, key_name in [("unc_p", "unc+"), ("unc_m", "unc-")]:
-            u = json_obj.get(key_name) or json_obj.get("unc") or None
-            if u is None:
-                logger.warning('The uncertainty (%s) is missing in value "%s".', key_name, obj.column)
+            unc_def = json_obj.get(key_name) or json_obj.get("unc") or None
+            if unc_def is None:
+                logger.warning("Uncertainty (%s) missing for %s.", key_name, obj.column)
                 continue
-            if not isinstance(u, Sequence) or not all(isinstance(source, Mapping) for source in u):
-                raise TypeError('Entry of "%s" in "%s" must be a list of dicts.', key_name, obj.column)
+            if not (
+                isinstance(unc_def, Sequence)
+                and all(isinstance(source, Mapping) for source in unc_def)
+            ):
+                raise TypeError("%s (%s) is not a list of dicts.", key_name, obj.column)
             try:
-                setattr(obj, attr_name, {source["column"]: source["type"] for source in u})
+                unc_dict = {source["column"]: source["type"] for source in unc_def}
+                setattr(obj, attr_name, unc_dict)
             except KeyError as e:
-                raise ValueError('Entry of "%s" in "%s" has a missing key: %s', key_name, obj.column, *e.args)
+                raise ValueError("%s missing in %s (%s)", key_name, obj.column, *e.args)
 
-        if not(obj.unc_p and obj.unc_m):
+        if not (obj.unc_p and obj.unc_m):
             logger.warning("Value %s lacks uncertainties.", obj.column)
 
         return obj
@@ -368,8 +392,8 @@ class ValueInfo(object):
         """
         return {
             "column": self.column,
-            "unc+": [{"column": key, "type": value} for key, value in self.unc_p.items()],
-            "unc-": [{"column": key, "type": value} for key, value in self.unc_m.items()],
+            "unc+": [{"column": k, "type": v} for k, v in self.unc_p.items()],
+            "unc-": [{"column": k, "type": v} for k, v in self.unc_m.items()],
         }
 
 
@@ -408,13 +432,14 @@ class TableInfo(object):
         arguments, so all the options of :func:`pandas.read_csv` are available.
     """
 
-    def __init__(self,
-                 document=None,        # type: Mapping[Any, Any]
-                 columns=None,         # type: List[ColumnInfo]
-                 parameters=None,      # type: List[ParameterInfo]
-                 values=None,          # type: List[ValueInfo]
-                 reader_options=None,  # type: Mapping[str, Any]
-                 ):
+    def __init__(
+        self,
+        document=None,  # type: Mapping[Any, Any]
+        columns=None,  # type: List[ColumnInfo]
+        parameters=None,  # type: List[ParameterInfo]
+        values=None,  # type: List[ValueInfo]
+        reader_options=None,  # type: Mapping[str, Any]
+    ):
         # type: (...)->None
         self.document = document or {}
         self.columns = columns or []
@@ -480,9 +505,13 @@ class TableInfo(object):
         # type: (Any)->None
         """Load and construct TableInfo from keyword arguments."""
         self.document = kw.get("document") or {}
-        self.columns = [ColumnInfo(index=i, name=c.get("name"), unit=c.get("unit"))
-                        for i, c in enumerate(kw.get("columns") or [])]
-        self.parameters = [ParameterInfo.from_json(p) for p in kw.get("parameters") or []]
+        self.columns = [
+            ColumnInfo(index=i, name=c.get("name"), unit=c.get("unit"))
+            for i, c in enumerate(kw.get("columns") or [])
+        ]
+        self.parameters = [
+            ParameterInfo.from_json(p) for p in kw.get("parameters") or []
+        ]
         self.values = [ValueInfo.from_json(p) for p in kw.get("values") or []]
         self.reader_options = kw.get("reader_options") or {}
 
@@ -490,7 +519,13 @@ class TableInfo(object):
         if not self.document:
             logger.warning("No document is given.")
         for key in kw:
-            if key not in ["document", "columns", "parameters", "values", "reader_options"]:
+            if key not in [
+                "document",
+                "columns",
+                "parameters",
+                "values",
+                "reader_options",
+            ]:
                 logger.warning('Unrecognized attribute "%s"', key)
 
     def get_column(self, name):

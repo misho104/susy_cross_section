@@ -28,8 +28,7 @@ class TestScripts(unittest.TestCase):
         result = {}
         for mass in [300, 350]:
             result[mass] = self.runner.invoke(
-                command_get,
-                ["13TeV.slepslep.ll", mass.__str__()],
+                command_get, ["13TeV.slepslep.ll", mass.__str__()]
             )  # py2
             if result[mass].exit_code:
                 logger.debug("%s", result[mass].__dict__)
@@ -43,8 +42,7 @@ class TestScripts(unittest.TestCase):
         output = {}
         for mass in [450, 458, 475]:
             result[mass] = self.runner.invoke(
-                command_get,
-                ["-1", "13TeV.n2x1+-.wino", mass.__str__()],
+                command_get, ["-1", "13TeV.n2x1+-.wino", mass.__str__()]
             )  # py2
             output[mass] = [float(x) for x in result[mass].output.strip().split(" ")]
             logger.debug("Exit code %s: %s", result[mass].exit_code, output[mass])

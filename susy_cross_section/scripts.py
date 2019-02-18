@@ -57,17 +57,23 @@ def _display_usage_for_table(context, table_obj, **kw):
         table=arg_table,
         args=" ".join(p.column.upper() for p in table_obj.info.parameters),
     )
-    params_lines = ["    {title:11} {name}   [unit: {unit}]".format(
-        title="Parameters:" if i == 0 else "",
-        name=p.column.upper(),
-        unit=table_obj.info.get_column(p.column).unit,
-    ) for i, p in enumerate(table_obj.info.parameters)]
-    values_lines = ["    {title:17} --name={name}   [unit: {unit}]  {default}".format(
-        title="Table-specific options:" if i == 0 else "",
-        name=name,
-        unit=unit,
-        default="(default)" if name == _DEFAULT_VALUE_NAME else "",
-    ) for i, (name, unit) in enumerate(table_obj.units.items())]
+    params_lines = [
+        "    {title:11} {name}   [unit: {unit}]".format(
+            title="Parameters:" if i == 0 else "",
+            name=p.column.upper(),
+            unit=table_obj.info.get_column(p.column).unit,
+        )
+        for i, p in enumerate(table_obj.info.parameters)
+    ]
+    values_lines = [
+        "    {title:17} --name={name}   [unit: {unit}]  {default}".format(
+            title="Table-specific options:" if i == 0 else "",
+            name=name,
+            unit=unit,
+            default="(default)" if name == _DEFAULT_VALUE_NAME else "",
+        )
+        for i, (name, unit) in enumerate(table_obj.units.items())
+    ]
 
     click.echo(usage_line)
     click.echo()
@@ -90,9 +96,14 @@ def _display_usage_for_table(context, table_obj, **kw):
 @click.option("--unit/--no-unit", help="display unit", default=True, show_default=True)
 # @click.option('--config', type=click.Path(exists=True, dir_okay=False),
 #              help='path of config json file for extra name dictionary')
-@click.option("--info", type=click.Path(exists=True, dir_okay=False),
-              help="path of table-info file if non-standard file name")
-@click.version_option(__version__, "-V", "--version", prog_name=__packagename__ + " interpolator")
+@click.option(
+    "--info",
+    type=click.Path(exists=True, dir_okay=False),
+    help="path of table-info file if non-standard file name",
+)
+@click.version_option(
+    __version__, "-V", "--version", prog_name=__packagename__ + " interpolator"
+)
 @click.pass_context
 def command_get(context, **kw):
     # type: (Any, Any)->None
@@ -119,20 +130,22 @@ def command_get(context, **kw):
 
     # data evaluation
     if len(args) == 1:
-        interp = Scipy1dInterpolator(axes="loglog", kind="linear")  # type: AbstractInterpolator
+        interp = Scipy1dInterpolator(
+            axes="loglog", kind="linear"
+        )  # type: AbstractInterpolator
     else:
         wrapper = AxesWrapper(["log" for _ in args], "log")
         interp = ScipyGridInterpolator(axes_wrapper=wrapper, kind="linear")
-    central, unc_p, unc_m = interp.interpolate(table, name=value_name).tuple_at(*kw["args"])
+    cent, u_p, u_m = interp.interpolate(table, name=value_name).tuple_at(*kw["args"])
 
     # display
     if kw["simplest"]:
-        click.echo(central)
+        click.echo(cent)
     elif kw["simple"]:
-        click.echo("{} +{} -{}".format(central, unc_p, abs(unc_m)))
+        click.echo("{} +{} -{}".format(cent, u_p, abs(u_m)))
     else:
-        click.echo(Util.value_format(central, unc_p, unc_m,
-                                     unit=table.units[value_name] if kw["unit"] else None))
+        unit = table.units[value_name] if kw["unit"] else None
+        click.echo(Util.value_format(cent, u_p, u_m, unit))
     exit(0)
 
 
@@ -143,9 +156,14 @@ def command_get(context, **kw):
 @click.argument("table", required=True, type=click.Path(exists=False))
 # @click.option('--config', type=click.Path(exists=True, dir_okay=False),
 #              help='path of config json file for extra name dictionary')
-@click.option("--info", type=click.Path(exists=True, dir_okay=False),
-              help="path of table-info file if non-standard file name")
-@click.version_option(__version__, "-V", "--version", prog_name=__packagename__ + " table viewer")
+@click.option(
+    "--info",
+    type=click.Path(exists=True, dir_okay=False),
+    help="path of table-info file if non-standard file name",
+)
+@click.version_option(
+    __version__, "-V", "--version", prog_name=__packagename__ + " table viewer"
+)
 def command_show(**kw):
     # type: (Any)->None
     """Script for cross-section interpolation."""

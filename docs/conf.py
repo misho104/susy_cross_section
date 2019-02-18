@@ -159,7 +159,7 @@ latex_additional_files = [
 latex_elements = {
     "papersize": "a4paper",
     "pointsize": "compress,sort,final,10pt,3p",
-    "preamble": r'\input{latex_preamble.txt}',
+    "preamble": r"\input{latex_preamble.txt}",
     "figure_align": "ht",
 }
 
@@ -172,7 +172,7 @@ latex_documents = [
         "SUSY Cross Section Documentation",
         "Sho Iwamoto / Misho",
         "elsarticle",
-    ),
+    )
 ]
 
 latex_toplevel_sectioning = "section"

@@ -64,7 +64,7 @@ class MyStyle(UnsrtStyle):
             ],
             optional[
                 join[
-                    journal_text, " [", href[arxiv_url, field("eprint", raw=True)], "]",
+                    journal_text, " [", href[arxiv_url, field("eprint", raw=True)], "]"
                 ]
             ],
             optional[href[doi_url, journal_text]],

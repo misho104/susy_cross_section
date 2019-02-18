@@ -29,12 +29,14 @@ from susy_cross_section.base.info import TableInfo
 from susy_cross_section.utility import Unit
 
 if sys.version_info[0] < 3:  # py2
-    str = basestring          # noqa: A001, F821
+    str = basestring  # noqa: A001, F821
+    JSONDecodeError = Exception
+else:
+    JSONDecodeError = json.decoder.JSONDecodeError
+
 
 logging.basicConfig(level=logging.WARNING)
 logger = logging.getLogger(__name__)
-
-JSONDecodeError = Exception if sys.version_info[0] < 3 else json.decoder.JSONDecodeError   # py2
 
 
 class BaseTable(object):
@@ -81,16 +83,16 @@ class BaseTable(object):
 
     def __init__(self, table_path, info_path=None):
         # type: (Union[pathlib.Path, str], Union[pathlib.Path, str])->None
-        self.table_path = pathlib.Path(table_path)         # type: pathlib.Path
+        self.table_path = pathlib.Path(table_path)  # type: pathlib.Path
         self.info_path = pathlib.Path(
-            info_path if info_path
-            else self.table_path.with_suffix(".info"))     # type: pathlib.Path
+            info_path if info_path else self.table_path.with_suffix(".info")
+        )  # type: pathlib.Path
 
-        self.info = TableInfo.load(self.info_path)         # type: TableInfo
-        self.raw_data = self._read_csv(self.table_path)    # type: pandas.DataFrame
+        self.info = TableInfo.load(self.info_path)  # type: TableInfo
+        self.raw_data = self._read_csv(self.table_path)  # type: pandas.DataFrame
 
         # contents are filled in _load_data
-        self.data = {}   # type: MutableMapping[str, pandas.DataFrame]
+        self.data = {}  # type: MutableMapping[str, pandas.DataFrame]
         self.units = {}  # type: MutableMapping[str, str]
 
         self.info.validate()  # validate annotation before actual load
@@ -113,7 +115,7 @@ class BaseTable(object):
     def _load_data(self):
         # type: ()->None
         """Load and prepare data from the specified paths."""
-        self.data = {}   # type: MutableMapping[str, pandas.DataFrame]
+        self.data = {}  # type: MutableMapping[str, pandas.DataFrame]
         self.units = {}  # type: MutableMapping[str, str]
         for value_info in self.info.values:
             name = value_info.column

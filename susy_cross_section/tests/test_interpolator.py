@@ -119,9 +119,7 @@ class TestInterpolator(unittest.TestCase):
                 # 750    1400   0.0390134257995      0.00768847466247
                 # 750    1450   0.0316449395656      0.0065050745643
                 self._assert_all_close(
-                    fit.tuple_at(700, 1400),
-                    (0.04734, 0.00906, -0.00906),
-                    decimal=5,
+                    fit.tuple_at(700, 1400), (0.04734, 0.00906, -0.00906), decimal=5
                 )
                 assert_almost_equals(fit(700, 1400), 0.04734, 5)
                 assert_almost_equals(fit.unc_p_at(700, 1400), +0.00906, 5)
@@ -134,9 +132,7 @@ class TestInterpolator(unittest.TestCase):
                     y_upperend = 0.0390134 if interp_axis == 1 else 0.03822797
                     if kind == "linear":
                         assert_almost_equals(
-                            fit(x1, x2),
-                            midpoint[ya](0.0473379, y_upperend),
-                            5,
+                            fit(x1, x2), midpoint[ya](0.0473379, y_upperend), 5
                         )
                     else:
                         ok_(y_upperend < fit(x1, x2) < 0.047337959)

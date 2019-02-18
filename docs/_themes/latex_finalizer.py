@@ -4,13 +4,13 @@ import pathlib
 import re
 import sys
 
-re_doubled_cite = re.compile(r'\\cite\{(.*?)\}\\cite\{(.*?)\}')
+re_doubled_cite = re.compile(r"\\cite\{(.*?)\}\\cite\{(.*?)\}")
 
 
 def finalize(text):
     doubled_cite_match = re_doubled_cite.search(text)
     if doubled_cite_match:
-        text = re_doubled_cite.sub(r'\\cite{\1,\2}', text)
+        text = re_doubled_cite.sub(r"\\cite{\1,\2}", text)
         text = finalize(text)
     return text
 

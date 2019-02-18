@@ -412,7 +412,8 @@ class ScipyGridInterpolator(AbstractInterpolator):
         elif self.kind == "spline":
             f_bar = self._interpolate_spline(xs, ys, 3, 3)
         elif re.match(r"\Aspline[1-5][1-5]\Z", self.kind):
-            f_bar = self._interpolate_spline(xs, ys, int(self.kind[-2]), int(self.kind[-1]))
+            kx, ky = int(self.kind[-2]), int(self.kind[-1])
+            f_bar = self._interpolate_spline(xs, ys, kx, ky)
         else:
             raise ValueError("Invalid kind: %s", self.kind)
 

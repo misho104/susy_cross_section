@@ -32,7 +32,7 @@ from susy_cross_section.base.info import TableInfo
 from susy_cross_section.base.table import BaseTable
 
 if sys.version_info[0] < 3:  # py2
-    str = basestring          # noqa: A001, F821
+    str = basestring  # noqa: A001, F821
 
 logging.basicConfig(level=logging.WARNING)
 logger = logging.getLogger(__name__)
@@ -88,11 +88,13 @@ class CrossSectionAttributes(object):
         ValueError
             If any attributes have invalid content.
         """
-        for attr, typ in [("processes", List),
-                          ("collider", str),
-                          ("ecm", str),
-                          ("order", str),
-                          ("pdf_name", str)]:
+        for attr, typ in [
+            ("processes", List),
+            ("collider", str),
+            ("ecm", str),
+            ("order", str),
+            ("pdf_name", str),
+        ]:
             value = getattr(self, attr)
             if not value:
                 raise ValueError("attributes: %s is empty.", attr)
@@ -139,7 +141,9 @@ class CrossSectionInfo(TableInfo):
 
     def __init__(self, attributes=None, **kw):
         # type: (CrossSectionAttributes, Any)->None
-        self.attributes = attributes or CrossSectionAttributes()   # type: CrossSectionAttributes
+        self.attributes = (
+            attributes or CrossSectionAttributes()
+        )  # type: CrossSectionAttributes
         super(CrossSectionInfo, self).__init__(**kw)  # py2
 
     @classmethod
@@ -192,12 +196,14 @@ class CrossSectionInfo(TableInfo):
         str
             Dumped data.
         """
-        return "\n".join([
-            super(CrossSectionInfo, self).dump(),
-            "",
-            "[Cross section attributes]",
-            textwrap.indent(self.attributes.dump(), prefix="  "),
-        ])
+        return "\n".join(
+            [
+                super(CrossSectionInfo, self).dump(),
+                "",
+                "[Cross section attributes]",
+                textwrap.indent(self.attributes.dump(), prefix="  "),
+            ]
+        )
 
 
 class Table(BaseTable):
@@ -226,7 +232,9 @@ class Table(BaseTable):
         # type: (Union[pathlib.Path, str], Union[pathlib.Path, str])->None
         self.table_path = pathlib.Path(table_path)  # type: pathlib.Path
         self.info_path = (
-            pathlib.Path(info_path) if info_path else self.table_path.with_suffix(".info")
+            pathlib.Path(info_path)
+            if info_path
+            else self.table_path.with_suffix(".info")
         )  # type: pathlib.Path
 
         self.info = CrossSectionInfo.load(self.info_path)  # type: TableInfo

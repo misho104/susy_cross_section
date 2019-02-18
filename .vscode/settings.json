@@ -6,6 +6,7 @@
     "chargino",
     "cteq",
     "imul",
+    "inplace",
     "interp",
     "isnan",
     "issubdtype",

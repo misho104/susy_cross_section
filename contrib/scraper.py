@@ -18,7 +18,7 @@ __scriptname__ = "XS scraper"
 __version__ = "0.2.0"
 
 
-CrossSectionValueType = Union[float, str]   # because '10.0%' may be included in the data....
+CrossSectionValueType = Union[float, str]  # because '10.0%' may be in the data
 CrossSectionTableType = List[List[CrossSectionValueType]]
 
 
@@ -26,7 +26,9 @@ class CrossSectionTableWriter:
     """Describe the CSV writer used in this package."""
 
     def __init__(self, f):
-        self.writer = csv.writer(f, dialect="excel", strict="True", quoting=csv.QUOTE_MINIMAL)
+        self.writer = csv.writer(
+            f, dialect="excel", strict="True", quoting=csv.QUOTE_MINIMAL
+        )
 
     def _format_float(self, v):
         # type: (CrossSectionValueType)->CrossSectionValueType
@@ -107,11 +109,23 @@ script_help = """Parse various cross - section data to CSV file.
 For data containing multiple tables, `index` option is required to choose the data to parse."""
 
 
-@click.command(help=script_help, context_settings={"help_option_names": ["-h", "--help"]})
+@click.command(
+    help=script_help, context_settings={"help_option_names": ["-h", "--help"]}
+)
 @click.version_option(__version__, "-V", "--version", prog_name=__scriptname__)
-@click.option("--input-type", type=click.Choice(["html-table"]), default="html-table", show_default=True,
-              help="Input-data format.")
-@click.option("--index", type=int, default=-1, help="The index of data parsed if multiple entries are found.")
+@click.option(
+    "--input-type",
+    type=click.Choice(["html-table"]),
+    default="html-table",
+    show_default=True,
+    help="Input-data format.",
+)
+@click.option(
+    "--index",
+    type=int,
+    default=-1,
+    help="The index of data parsed if multiple entries are found.",
+)
 def call_scrape(input_type="html-table", index=-1):
     # type: (str, int)->None
     """Handle command - line arguments and IO and call scrape method.
@@ -120,9 +134,9 @@ def call_scrape(input_type="html-table", index=-1):
     ----------
     input_type: input format.
     """
-    input_string = io.TextIOWrapper(sys.stdin.buffer, encoding="utf-8", errors="ignore").read()
+    text = io.TextIOWrapper(sys.stdin.buffer, encoding="utf-8", errors="ignore").read()
     if input_type == "html-table":
-        data_tables = parse_html_table(input_string)
+        data_tables = parse_html_table(text)
     else:
         raise RuntimeError  # never come here as far as called with Click
 
@@ -133,7 +147,8 @@ def call_scrape(input_type="html-table", index=-1):
     elif index > 0:
         data = data_tables[index - 1]
     else:
-        raise click.ClickException("Multiple data tables are found; specify --index option.")
+        click.echo("Multiple data tables are found; specify --index option.")
+        exit(1)
 
     CrossSectionTableWriter(sys.stdout).writerows(data)
     exit(0)

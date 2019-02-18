@@ -35,10 +35,10 @@ class typ_role_class:
 
     def __call__(self, name, rawtext, text, lineno, inliner, options={}, content=[]):
         set_classes(options)
-        parsed = re.findall(r'([A-Za-z_.]+|[^A-Za-z_.]+)', text)
+        parsed = re.findall(r"([A-Za-z_.]+|[^A-Za-z_.]+)", text)
         children = [
             addnodes.pending_xref(
-                "", nodes.Text(t, ""), **(typ_role_options(t, options)),
+                "", nodes.Text(t, ""), **(typ_role_options(t, options))
             )
             if t[0].isalpha()
             else nodes.Text(t, "")
@@ -65,7 +65,7 @@ def math_if_latex_role(name, rawtext, text, lineno, inliner, options={}, content
 
 class MyPyXRefRole(PyXRefRole):
     re_target_exp = re.compile(
-        r'\A(?P<prefix>\W+)?(?P<context>\w.+)\.(?P<target>[^.]+)\Z',
+        r"\A(?P<prefix>\W+)?(?P<context>\w.+)\.(?P<target>[^.]+)\Z"
     )
 
     def process_link(self, env, refnode, has_explicit_title, title, target):
@@ -75,11 +75,11 @@ class MyPyXRefRole(PyXRefRole):
             refnode["reftype"] = "class"
             new_target = (m.group("prefix") or "") + m.group("context")
             return super().process_link(
-                env, refnode, has_explicit_title, title, new_target,
+                env, refnode, has_explicit_title, title, new_target
             )
         else:  # this class' attribute; no link.
             processed = super().process_link(
-                env, refnode, has_explicit_title, title, target,
+                env, refnode, has_explicit_title, title, target
             )
             return processed[0], ""
 
@@ -115,7 +115,7 @@ class MyTocTreeCollector(TocTreeCollector):  # noqa: D101
                     pass
                 elif not isinstance(sectionnode, nodes.section):
                     for toctreenode in traverse_in_section(
-                        sectionnode, addnodes.toctree,
+                        sectionnode, addnodes.toctree
                     ):
                         item = toctreenode.copy()
                         entries.append(item)
@@ -193,7 +193,7 @@ class ReturnTypeAddRole(transforms.Transform):
                     if isinstance(node.children[0], nodes.emphasis):
                         orig = node.children[0]
                         node.children[0] = typ_role(
-                            None, orig.rawsource, orig.astext(), None, None,
+                            None, orig.rawsource, orig.astext(), None, None
                         )[0][0]
 
 
@@ -213,7 +213,7 @@ class MyHtmlTranslator(HTMLTranslator):
                 orig_text = n.children[0].astext()
                 try:
                     strip = orig_text.split(" ")[0].rindex(".")
-                    n.children[0] = nodes.Text(orig_text[strip + 1:], orig_text)
+                    n.children[0] = nodes.Text(orig_text[strip + 1 :], orig_text)
                 except ValueError:
                     pass
         return super().visit_bullet_list(node)
