@@ -181,12 +181,12 @@ latex_preamble = r"""
 \hspace{0.1\textwidth} \begin{minipage}{0.89\textwidth}\noindent
 {\bfseries\sffamily\@author}
 {\par\vskip8pt\par}
-Dipartimento di Fisica e Astronomia, Universit\`a degli Studi di Padova
+Dipartimento di Fisica e Astronomia, Universit\`a degli Studi di Padova\\
 Via Marzolo~8, I-35131 Padova, Italia
 {\par\vskip8pt\par}
 \href{mailto:sho.iwamoto@pd.infn.it}{\texttt{sho.iwamoto@pd.infn.it}}
 {\par\vskip24pt\par}
-package \texttt{\bfseries susy\_cross\_section} for Python 2.7, 3.5 +\\
+package \texttt{\bfseries susy\_cross\_section} for Python 2.7, 3.5+\\
 version: \texttt{<<RELEASE>>}\\
 repository: \url{<<GITHUB>>}\\
 document: \url{<<DOC_URL>>}\\
