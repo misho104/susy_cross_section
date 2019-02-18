@@ -24,10 +24,3 @@ Welcome to SUSY cross section's documentation!
     * :ref:`genindex`
     * :ref:`modindex`
     * :ref:`search`
-
-
-.. raw:: latex
-
-    \newpage
-    \section*{References}
-    \bibliography{susy_cross_section}

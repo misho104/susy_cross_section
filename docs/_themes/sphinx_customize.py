@@ -44,7 +44,7 @@ class typ_role_class:
             else nodes.Text(t, "")
             for t in parsed
         ]
-        return [nodes.emphasis(rawtext, "", *children)], []
+        return [nodes.emphasis(rawtext, "", *children, refclass="type")], []
 
 
 typ_role = typ_role_class()

@@ -1,8 +1,0 @@
-\let\sphinxmaketitle\maketitle
-\journal{Computer Physics Communications}
-
-% remove sphinx bibliography
-\usepackage{versions}
-\excludeversion{sphinxthebibliography}
-
-\bibliographystyle{utphys27mod}
