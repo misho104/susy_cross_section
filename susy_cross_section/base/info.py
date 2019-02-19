@@ -5,12 +5,12 @@ two-dimensional table and represents functions over a parameter space. Some
 columns represent parameters and others do values. Each row represents a single
 data point and corresponding value.
 
-Two structural annotations and two semantic annotations are defined.
-`TableInfo` and `ColumnInfo` are structural, which respectively annotate the
-whole table and each columns. For semantics, `ParameterInfo` collects the
-information of parameters, each of which is a column, and `ValueInfo` is for a
-value. A value may be given by multiple columns if, for example, the value has
-uncertainties or the value is given by the average of two columns.
+Two structural annotations and two semantic annotations are defined. `FileInfo`
+and `ColumnInfo` are structural, which respectively annotate the whole file and
+each columns. For semantics, `ParameterInfo` collects the information of
+parameters, each of which is a column, and `ValueInfo` is for a value. A value
+may be given by multiple columns if, for example, the value has uncertainties
+or the value is given by the average of two columns.
 """
 
 from __future__ import absolute_import, division, print_function  # py2
@@ -45,12 +45,12 @@ class ColumnInfo(object):
     index : int
         The zero-based index of column.
 
-        The columns of a table should have valid `!index`, i.e., no overlap, no
+        The columns of a file should have valid `!index`, i.e., no overlap, no
         gap, and starting from zero.
     name : str
         The human-readable and machine-readable name of the column.
 
-        As it is used as the identifier, it should be unique in one table.
+        As it is used as the identifier, it should be unique in one file.
     unit : str
         The unit of column, or empty string if the column has no unit.
 
@@ -153,8 +153,8 @@ class ParameterInfo(object):
     """Stores information of a parameter.
 
     A parameter set defines a data point for the functions described by the
-    table. A parameter set has one or more parameters, each of which
-    corresponds to a column of the table. The `!column` attribute has
+    file. A parameter set has one or more parameters, each of which
+    corresponds to a column of the file. The `!column` attribute has
     :attr:`ColumnInfo.name` of the column.
 
     Since the parameter value is read from an ASCII file, :typ:`float` values
@@ -278,7 +278,9 @@ class ValueInfo(object):
     column: str
         Name of the column that stores this value.
 
-        This must be match one of the :attr:`ColumnInfo.name` in the table.
+        This must be match one of the :attr:`ColumnInfo.name` in the file.
+    attributes: dict (str, Any)
+        Physical information annotated to this value.
     unc_p : dict (str, str)
         The sources of "plus" uncertainties.
 
@@ -302,11 +304,27 @@ class ValueInfo(object):
 
     _valid_uncertainty_types = ["relative", "absolute"]  # type: List[str]
 
-    def __init__(self, column="", unc_p=None, unc_m=None, **kw):
-        # type: (str, MutableMapping[str, str], MutableMapping[str, str], Any)->None
+    def __init__(
+        self,
+        column="",  # type: str
+        attributes=None,  # type:MutableMapping[str, Any]
+        unc_p=None,  # type: MutableMapping[str, str]
+        unc_m=None,  # type: MutableMapping[str, str]
+    ):
+        # type: (...)->None
         self.column = column
-        self.unc_p = unc_p or {}  # type: MutableMapping[str, str]
-        self.unc_m = unc_m or {}  # type: MutableMapping[str, str]
+        self.attributes = attributes or {}
+        self.unc_p = unc_p or {}
+        self.unc_m = unc_m or {}
+
+    @staticmethod
+    def _is_dict_with_str_keys(obj):
+        # type: (Any)->bool
+        if not isinstance(obj, MutableMapping):
+            return False
+        if all(isinstance(k, str) for k in obj.keys()):
+            return True
+        return False
 
     def validate(self):
         # type: ()->None
@@ -315,21 +333,14 @@ class ValueInfo(object):
             raise TypeError("ValueInfo.column must be string: %s", self.column)
         if not self.column:
             raise ValueError("ValueInfo.column is missing")
+        if not self._is_dict_with_str_keys(self.attributes):
+            raise TypeError("%s.attributes must be dict with str keys.", self.column)
         for title, unc in [("unc+", self.unc_p), ("unc-", self.unc_m)]:
-            if not isinstance(unc, MutableMapping):
-                raise TypeError("Value %s: %s must be dict", self.column, title)
-            for k, v in unc.items():
-                if not isinstance(k, str):
-                    raise TypeError(
-                        "Value %s: %s has invalid column name: %s",
-                        self.column,
-                        title,
-                        k,
-                    )
+            if not self._is_dict_with_str_keys(unc):
+                raise TypeError("%s.%s must be dict with str keys", self.column, title)
+            for v in unc.values():
                 if v not in self._valid_uncertainty_types:
-                    raise ValueError(
-                        "Value %s: %s has wrong value: %s", self.column, title, v
-                    )
+                    raise ValueError("%s.%s has wrong value: %s", self.column, title, v)
 
     @classmethod
     def from_json(cls, json_obj):
@@ -358,6 +369,7 @@ class ValueInfo(object):
 
         obj = cls()
         obj.column = json_obj["column"]
+        obj.attributes = json_obj.get("attributes", {})
         if ("unc" in json_obj) and ("unc+" in json_obj or "unc-" in json_obj):
             raise ValueError("Uncertainty duplicates: %s", obj.column)
         for attr_name, key_name in [("unc_p", "unc+"), ("unc_m", "unc-")]:
@@ -382,7 +394,7 @@ class ValueInfo(object):
         return obj
 
     def to_json(self):
-        # type: ()->MutableMapping[str, Union[str, List[MutableMapping[str, str]]]]
+        # type: ()->MutableMapping[str, Any]
         """Serialize the object to a json data.
 
         Returns
@@ -392,13 +404,14 @@ class ValueInfo(object):
         """
         return {
             "column": self.column,
+            "attributes": self.attributes,
             "unc+": [{"column": k, "type": v} for k, v in self.unc_p.items()],
             "unc-": [{"column": k, "type": v} for k, v in self.unc_m.items()],
         }
 
 
-class TableInfo(object):
-    """Stores table-wide annotations for general-purpose table data.
+class FileInfo(object):
+    """Stores file-wide annotations.
 
     A table structure is given by `!columns`, while in semantics a table
     consists of `!parameters` and `!values`. The information about them is
@@ -418,13 +431,13 @@ class TableInfo(object):
     Attributes
     ----------
     document : dict(Any, Any)
-        Any information for documentation without physical meanings. meanings.
+        Any information for documentation without physical meanings.
     columns : list of ColumnInfo
         The list of columns.
     parameters: list of ParameterInfo
         The list of parameters to define a data point.
     values: list of ValueInfo
-        The list of values described in the table.
+        The list of values described in the file.
     reader_options: dict(str, Any)
         Options to read the CSV
 
@@ -454,7 +467,7 @@ class TableInfo(object):
             raise TypeError("document must be a dict.")
         for name in ["columns", "parameters", "values"]:
             if not isinstance(getattr(self, name), List):
-                raise TypeError("TableInfo.%s must be a list", name)
+                raise TypeError("FileInfo.%s must be a list", name)
             for obj in getattr(self, name):
                 obj.validate()
         if not isinstance(self.reader_options, MutableMapping):
@@ -482,8 +495,8 @@ class TableInfo(object):
 
     @classmethod
     def load(cls, source):
-        # type: (Union[pathlib.Path, str])->TableInfo
-        """Load and construct TableInfo from a json file.
+        # type: (Union[pathlib.Path, str])->FileInfo
+        """Load and construct FileInfo from a json file.
 
         Parameters
         ----------
@@ -492,7 +505,7 @@ class TableInfo(object):
 
         Returns
         -------
-        TableInfo
+        FileInfo
             Constructed instance.
         """
         obj = cls()
@@ -503,8 +516,13 @@ class TableInfo(object):
 
     def _load(self, **kw):
         # type: (Any)->None
-        """Load and construct TableInfo from keyword arguments."""
+        """Load and construct FileInfo from keyword arguments.
+
+        Note that file-level "attributes" are passed to each `ValueInfo` object
+        as the default values and overwritten by value-level "attributes".
+        """
         self.document = kw.get("document") or {}
+        self.reader_options = kw.get("reader_options") or {}
         self.columns = [
             ColumnInfo(index=i, name=c.get("name"), unit=c.get("unit"))
             for i, c in enumerate(kw.get("columns") or [])
@@ -513,7 +531,13 @@ class TableInfo(object):
             ParameterInfo.from_json(p) for p in kw.get("parameters") or []
         ]
         self.values = [ValueInfo.from_json(p) for p in kw.get("values") or []]
-        self.reader_options = kw.get("reader_options") or {}
+        # re-set values.attributes using the default attributes.
+        default_attributes = kw.get("attributes") or {}
+        for v in self.values:
+            # py2
+            orig = v.attributes
+            v.attributes = default_attributes.copy()
+            v.attributes.update(orig)
 
         # emit warnings
         if not self.document:
@@ -525,6 +549,7 @@ class TableInfo(object):
                 "parameters",
                 "values",
                 "reader_options",
+                "attributes",
             ]:
                 logger.warning('Unrecognized attribute "%s"', key)
 
@@ -554,7 +579,7 @@ class TableInfo(object):
                 return c
         raise KeyError(name)
 
-    def dump(self):
+    def formatted_str(self):
         # type: ()->str
         """Return the formatted string.
 

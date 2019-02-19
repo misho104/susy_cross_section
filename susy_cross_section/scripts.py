@@ -45,7 +45,7 @@ logger = logging.getLogger(__name__)
 _DEFAULT_VALUE_NAME = "xsec"
 
 
-def _display_usage_for_table(context, table_obj, **kw):
+def _display_usage_for_file(context, data_file, **kw):
     # type: (click.Context, File, Any)->None
     """Display usage of the specified table."""
     arg_zero = context.info_name  # program name
@@ -55,24 +55,24 @@ def _display_usage_for_table(context, table_obj, **kw):
     usage_line = "Usage: {a0} [OPTIONS] {table} {args}".format(
         a0=arg_zero,
         table=arg_table,
-        args=" ".join(p.column.upper() for p in table_obj.info.parameters),
+        args=" ".join(p.column.upper() for p in data_file.info.parameters),
     )
     params_lines = [
         "    {title:11} {name}   [unit: {unit}]".format(
             title="Parameters:" if i == 0 else "",
             name=p.column.upper(),
-            unit=table_obj.info.get_column(p.column).unit,
+            unit=data_file.info.get_column(p.column).unit,
         )
-        for i, p in enumerate(table_obj.info.parameters)
+        for i, p in enumerate(data_file.info.parameters)
     ]
     values_lines = [
         "    {title:17} --name={name}   [unit: {unit}]  {default}".format(
             title="Table-specific options:" if i == 0 else "",
             name=name,
-            unit=unit,
+            unit=table.unit,
             default="(default)" if name == _DEFAULT_VALUE_NAME else "",
         )
-        for i, (name, unit) in enumerate(table_obj.units.items())
+        for i, (name, table) in enumerate(data_file.tables.items())
     ]
 
     click.echo(usage_line)
@@ -118,14 +118,19 @@ def command_get(context, **kw):
         exit(1)
 
     try:
-        table = File(table_path, info_path)
+        data_file = File(table_path, info_path)
     except (ValueError, TypeError) as e:
         click.echo(e.__str__())  # py2
         exit(1)
+    try:
+        table = data_file.tables[value_name]
+    except KeyError:
+        click.echo("Data file does not contain specified table.")
+        exit(1)
 
     # without arguments or with invalid number of arguments, show the table information.
-    if len(args) != len(table.info.parameters):
-        _display_usage_for_table(context, table, **kw)
+    if len(args) != len(data_file.info.parameters):
+        _display_usage_for_file(context, data_file, **kw)
         exit(1)
 
     # data evaluation
@@ -136,7 +141,7 @@ def command_get(context, **kw):
     else:
         wrapper = AxesWrapper(["log" for _ in args], "log")
         interp = ScipyGridInterpolator(axes_wrapper=wrapper, kind="linear")
-    cent, u_p, u_m = interp.interpolate(table, name=value_name).tuple_at(*kw["args"])
+    cent, u_p, u_m = interp.interpolate(table).tuple_at(*kw["args"])
 
     # display
     if kw["simplest"]:
@@ -144,7 +149,7 @@ def command_get(context, **kw):
     elif kw["simple"]:
         click.echo("{} +{} -{}".format(cent, u_p, abs(u_m)))
     else:
-        unit = table.units[value_name] if kw["unit"] else None
+        unit = table.unit if kw["unit"] else None
         click.echo(Util.value_format(cent, u_p, u_m, unit))
     exit(0)
 
@@ -175,11 +180,10 @@ def command_show(**kw):
         exit(1)
 
     try:
-        table = File(table_path, info_path)
+        data_file = File(table_path, info_path)
     except (ValueError, TypeError) as e:
         click.echo(e.__str__())  # py2
         exit(1)
 
-    click.echo(table.dump())
-    click.echo(table.info.dump())
+    click.echo(data_file.dump())
     exit(0)

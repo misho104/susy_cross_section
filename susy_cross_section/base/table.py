@@ -3,7 +3,7 @@
 This module provides a class to handle CSV-like table data representing values
 with asymmetric uncertainties. Such tables are provided in various format; for
 example, the uncertainty may be relative or absolute, or with multiple sources.
-The class :class:`BaseFile` interprets such tables based on `TableInfo`
+The class :class:`BaseFile` interprets such tables based on `FileInfo`
 annotations.
 """
 
@@ -21,11 +21,12 @@ from typing import (  # noqa: F401
     Optional,
     Sequence,
     Union,
+    cast,
 )
 
 import pandas
 
-from susy_cross_section.base.info import TableInfo
+from susy_cross_section.base.info import FileInfo
 from susy_cross_section.utility import Unit
 
 if sys.version_info[0] < 3:  # py2
@@ -39,11 +40,57 @@ logging.basicConfig(level=logging.WARNING)
 logger = logging.getLogger(__name__)
 
 
-class BaseFile(object):
-    """Table data with information.
+class BaseTable(object):
+    """Table object with annotations.
 
-    A table object has two main attributes: `!info` (:typ:`TableInfo`) as the
-    annotation and `!data` (:typ:`dict` of :typ:`pandas.DataFrame`) as the data
+    This is a wrapper class of :class:`pandas.DataFrame`. Any methods except
+    for read/write of `!file_info` are delegated to the DataFrame object.
+
+    Attributes
+    ----------
+    file_info: FileInfo, optional
+        Info-data used to parse this table.
+    name: str, optional
+        Name of this table.
+
+        This is provided so that `ValueInfo` can be obtained from `!file_info`.
+    """
+
+    def __init__(self, obj=None, file_info=None, name=None):
+        # type:(pandas.DataFrame, Optional[FileInfo], Optional[str])->None
+        if isinstance(obj, pandas.DataFrame):
+            self._df = obj  # type: pandas.DataFrame
+        else:
+            self._df = pandas.DataFrame()
+        self.file_info = file_info  # type: Optional[FileInfo]
+        self.name = name  # type: Optional[str]
+
+    def __getattr__(self, name):
+        # type: (str)->Any
+        """Fall-back method to delegate any operations to the DataFrame."""
+        return self._df.__getattr__(name)
+
+    def __setitem__(self, name, obj):
+        # type: (str, Any)->Any
+        """Perform DataFrame.__setitem__."""
+        return self._df.__setitem__(name, obj)
+
+    def __getitem__(self, name):
+        # type: (str)->Any
+        """Perform DataFrame.__getitem__."""
+        return self._df.__getitem__(name)
+
+    def __str__(self):
+        # type: ()->str
+        """Dump the data-frame."""
+        return cast(str, self._df.__str__())
+
+
+class BaseFile(object):
+    """File with table data-sets and annotations.
+
+    An instance has two main attributes: `!info` (:typ:`FileInfo`) as the
+    annotation and `!tables` (:typ:`dict` of :typ:`BaseTable`) as the data
     tables.
 
     Arguments
@@ -64,21 +111,16 @@ class BaseFile(object):
         Path to the info file.
     raw_data: pandas.DataFrame
         the content of `!table_path`.
-    info: TableInfo
+    info: FileInfo
         the content of `!info_path`.
-    data: dict(str, pandas.DataFrame)
+    tables: dict(str, BaseTable)
         The table parsed according to the annotation.
 
-        Keys are the name of data, and values are `pandas.DataFrame` objects.
-        Each DataFrame object is indexed according to the parameter specified
-        in `!info` and has exactly three value-columns: ``"value"``,
-        ``"unc+"``, and ``"unc-"``, which stores the central value and
-        positive- and negative- directed **absolute** uncertainty,
+        Each value is practically a `pandas.DataFrame` object and indexed
+        according to the parameter specified in `!info`, having exactly three
+        value-columns: ``"value"``, ``"unc+"``, and ``"unc-"`` for the central
+        value and positive- and negative- directed **absolute** uncertainty,
         respectively. The content of ``"unc-"`` is non-positive.
-    units: dict(str, Utility.Unit)
-        The unit of values.
-
-        Note that ``"value"``, ``"unc+"``, and ``"unc-"`` have the same unit.
     """
 
     def __init__(self, table_path, info_path=None):
@@ -88,15 +130,13 @@ class BaseFile(object):
             info_path if info_path else self.table_path.with_suffix(".info")
         )  # type: pathlib.Path
 
-        self.info = TableInfo.load(self.info_path)  # type: TableInfo
+        self.info = FileInfo.load(self.info_path)  # type: FileInfo
         self.raw_data = self._read_csv(self.table_path)  # type: pandas.DataFrame
 
-        # contents are filled in _load_data
-        self.data = {}  # type: MutableMapping[str, pandas.DataFrame]
-        self.units = {}  # type: MutableMapping[str, str]
-
-        self.info.validate()  # validate annotation before actual load
-        self._load_data()
+        # validate annotation before actual load
+        self.info.validate()
+        # and do actual loading
+        self.tables = self._parse_data()  # type: MutableMapping[str, BaseTable]
         self.validate()
 
     def _read_csv(self, path):
@@ -112,11 +152,10 @@ class BaseFile(object):
         reader_options.update(self.info.reader_options)
         return pandas.read_csv(path, **reader_options)
 
-    def _load_data(self):
-        # type: ()->None
+    def _parse_data(self):
+        # type: ()->MutableMapping[str, BaseTable]
         """Load and prepare data from the specified paths."""
-        self.data = {}  # type: MutableMapping[str, pandas.DataFrame]
-        self.units = {}  # type: MutableMapping[str, str]
+        tables = {}  # type: MutableMapping[str, BaseTable]
         for value_info in self.info.values:
             name = value_info.column
             value_unit = self.info.get_column(name).unit
@@ -146,11 +185,11 @@ class BaseFile(object):
                 # type: (Any, str, Mapping[str, str], Mapping[str, float])->float
                 return self._combine_uncertainties(row, name, unc_sources, factors)
 
-            self.data[name] = pandas.DataFrame()
-            self.data[name]["value"] = data[name]
-            self.data[name]["unc+"] = data.apply(unc_p, axis=1)
-            self.data[name]["unc-"] = data.apply(unc_m, axis=1)
-            self.units[name] = value_unit
+            tables[name] = BaseTable(file_info=self.info, name=name)
+            tables[name]["value"] = data[name]
+            tables[name]["unc+"] = data.apply(unc_p, axis=1)
+            tables[name]["unc-"] = data.apply(unc_m, axis=1)
+        return tables
 
     def _uncertainty_factors(self, value_unit, uncertainty_info):
         # type: (Unit, Mapping[str, str])->Mapping[str, float]
@@ -183,8 +222,8 @@ class BaseFile(object):
     def validate(self):
         # type: ()->None
         """Validate the Table data."""
-        for key, data in self.data.items():
-            duplication = data.index[data.index.duplicated()]
+        for key, table in self.tables.items():
+            duplication = table.index[table.index.duplicated()]
             for d in duplication:
                 raise ValueError("Found duplicated entries: %s, %s", key, d)
                 if len(duplication) > 5:
@@ -195,7 +234,7 @@ class BaseFile(object):
     # ------------------ #
 
     def __getitem__(self, key):
-        # type: (str)->pandas.DataFrame
+        # type: (str)->BaseTable
         """Return the specied table data.
 
         Arguments
@@ -208,7 +247,7 @@ class BaseFile(object):
         pandas.DataFrame
             One of the data tables specified by :ar:`key`.
         """
-        return self.data[key]
+        return self.tables[key]
 
     def dump(self, keys=None):
         # type: (Optional[List[str]])->str
@@ -226,11 +265,11 @@ class BaseFile(object):
         """
         results = []  # type: List[str]
         line = "-" * 72
-        keys_to_show = self.data.keys() if keys is None else keys
+        keys_to_show = self.tables.keys() if keys is None else keys
         for k in keys_to_show:
             results.append(line)
-            results.append('DATA "{}" (unit: {})'.format(k, self.units[k]))
+            results.append('TABLE "{}" (unit: {})'.format(k, self.tables[k].unit))
             results.append(line)
-            results.append(self.data[k].__str__())  # py2
+            results.append(self.tables[k].__str__())  # py2
             results.append("")
         return "\n".join(results)
