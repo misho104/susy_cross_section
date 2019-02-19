@@ -12,7 +12,7 @@ from nose.tools import assert_almost_equals, assert_raises, eq_, ok_  # noqa: F4
 
 from susy_cross_section.interp import Scipy1dInterpolator, ScipyGridInterpolator
 from susy_cross_section.interp.axes_wrapper import AxesWrapper
-from susy_cross_section.table import Table
+from susy_cross_section.table import File
 
 logging.basicConfig(level=logging.WARNING)
 logger = logging.getLogger(__name__)
@@ -43,7 +43,7 @@ class TestInterpolator(unittest.TestCase):
 
     def test_scipy_1d_interpolator(self):
         """Verify Scipy1dInterpolator."""
-        table = Table(self.dirs["lhc_wg"] / "13TeVn2x1wino_cteq_pm.csv")
+        table = File(self.dirs["lhc_wg"] / "13TeVn2x1wino_cteq_pm.csv")
         for kind in ["linear", "akima", "spline", "pchip"]:
             for axes in ["linear", "log", "loglog", "loglinear"]:
                 fit = Scipy1dInterpolator(kind, axes).interpolate(table, "xsec")
@@ -73,7 +73,7 @@ class TestInterpolator(unittest.TestCase):
 
     def test_scipy_1d_interpolator_nonstandard_args(self):
         """Verify Scipy1dInterpolator accepts/refuses argument correctly."""
-        table = Table(self.dirs["lhc_wg"] / "13TeVn2x1wino_cteq_pm.csv")
+        table = File(self.dirs["lhc_wg"] / "13TeVn2x1wino_cteq_pm.csv")
         fit = Scipy1dInterpolator().interpolate(table, "xsec")
         for m in ["f0", "fp", "fm", "unc_p_at", "unc_m_at", "tuple_at"]:
             test_method = getattr(fit, m)
@@ -104,7 +104,7 @@ class TestInterpolator(unittest.TestCase):
 
     def test_scipy_grid_interpolator(self):
         """Verify ScipyGridInterpolator."""
-        table = Table(self.dirs["fastlim8mod"] / "sg_8TeV_NLONLL_modified.xsec")
+        table = File(self.dirs["fastlim8mod"] / "sg_8TeV_NLONLL_modified.xsec")
         midpoint = {
             "linear": lambda x, y: (x + y) / 2,
             "log": lambda x, y: (x * y) ** 0.5,
@@ -144,7 +144,7 @@ class TestInterpolator(unittest.TestCase):
 
     def test_scipy_grid_interpolator_nonstandard_args(self):
         """Verify ScipyGridInterp accepts/refuses args correctly."""
-        table = Table(self.dirs["fastlim8mod"] / "sg_8TeV_NLONLL_modified.xsec")
+        table = File(self.dirs["fastlim8mod"] / "sg_8TeV_NLONLL_modified.xsec")
 
         for kind in ["linear", "spline"]:
             fit = ScipyGridInterpolator(kind).interpolate(table, "xsec")

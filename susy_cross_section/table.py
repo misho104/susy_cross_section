@@ -3,7 +3,7 @@
 ====================== ================================================
 CrossSectionAttributes physical property of cross section.
 CrossSectionInfo       `TableInfo` with `CrossSectionAttributes`.
-Table                  grid data with `CrossSectionInfo`.
+File                   grid data with `CrossSectionInfo`.
 ====================== ================================================
 """
 
@@ -29,7 +29,7 @@ from typing import (  # noqa: F401
 import pandas  # noqa: F401
 
 from susy_cross_section.base.info import TableInfo
-from susy_cross_section.base.table import BaseTable
+from susy_cross_section.base.table import BaseFile
 
 if sys.version_info[0] < 3:  # py2
     str = basestring  # noqa: A001, F821
@@ -206,7 +206,7 @@ class CrossSectionInfo(TableInfo):
         )
 
 
-class Table(BaseTable):
+class File(BaseFile):
     """Data of a cross section with parameters, read from a table file.
 
     Arguments

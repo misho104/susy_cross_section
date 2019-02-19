@@ -28,7 +28,7 @@ from susy_cross_section.interp.interpolator import (
     Scipy1dInterpolator,
     ScipyGridInterpolator,
 )
-from susy_cross_section.table import Table
+from susy_cross_section.table import File
 
 __author__ = "Sho Iwamoto"
 __copyright__ = "Copyright (C) 2018-2019 Sho Iwamoto / Misho"
@@ -46,7 +46,7 @@ _DEFAULT_VALUE_NAME = "xsec"
 
 
 def _display_usage_for_table(context, table_obj, **kw):
-    # type: (click.Context, Table, Any)->None
+    # type: (click.Context, File, Any)->None
     """Display usage of the specified table."""
     arg_zero = context.info_name  # program name
     arg_table = kw["table"]
@@ -118,7 +118,7 @@ def command_get(context, **kw):
         exit(1)
 
     try:
-        table = Table(table_path, info_path)
+        table = File(table_path, info_path)
     except (ValueError, TypeError) as e:
         click.echo(e.__str__())  # py2
         exit(1)
@@ -175,7 +175,7 @@ def command_show(**kw):
         exit(1)
 
     try:
-        table = Table(table_path, info_path)
+        table = File(table_path, info_path)
     except (ValueError, TypeError) as e:
         click.echo(e.__str__())  # py2
         exit(1)

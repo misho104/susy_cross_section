@@ -3,7 +3,7 @@
 This module provides a class to handle CSV-like table data representing values
 with asymmetric uncertainties. Such tables are provided in various format; for
 example, the uncertainty may be relative or absolute, or with multiple sources.
-The class :class:`BaseTable` interprets such tables based on `TableInfo`
+The class :class:`BaseFile` interprets such tables based on `TableInfo`
 annotations.
 """
 
@@ -39,7 +39,7 @@ logging.basicConfig(level=logging.WARNING)
 logger = logging.getLogger(__name__)
 
 
-class BaseTable(object):
+class BaseFile(object):
     """Table data with information.
 
     A table object has two main attributes: `!info` (:typ:`TableInfo`) as the

@@ -24,7 +24,7 @@ import numpy
 import pandas  # noqa: F401
 import scipy.interpolate as sci_interp
 
-from susy_cross_section.table import Table
+from susy_cross_section.table import File
 
 from .axes_wrapper import AxesWrapper
 
@@ -217,12 +217,12 @@ class AbstractInterpolator:
     """
 
     def interpolate(self, cross_section_table, name):
-        # type: (Table, str)->Interpolation
+        # type: (File, str)->Interpolation
         """Perform interpolation for values with uncertainties.
 
         Arguments
         ---------
-        cross_section_table: Table
+        cross_section_table: File
             A cross-section data table.
         name: str
             Value name of the table to interpolate.
