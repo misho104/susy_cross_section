@@ -124,11 +124,14 @@ class BaseTable(object):
             data = self.raw_data.copy()
 
             # set index by the quantized values
+            def quantize(data_frame, granularity):
+                # type: (pandas.DataFrame, float)->pandas.DataFrame
+                return (data_frame / granularity).apply(round) * granularity
+
             for p in parameters:
                 if p.granularity:
-                    data[p.column] = (
-                        round(data[p.column] / p.granularity) * p.granularity
-                    )
+                    data[p.column] = quantize(data[p.column], p.granularity)
+
             data.set_index([p.column for p in parameters], inplace=True)
 
             # define functions to apply to DataFrame to get uncertainty.
