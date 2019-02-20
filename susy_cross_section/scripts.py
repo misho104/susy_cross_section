@@ -93,6 +93,7 @@ def _display_usage_for_file(context, data_file, **kw):
 @click.option("--name", default="xsec", help="name of a table")
 @click.option("-0", "simplest", is_flag=True, help="show in simplest format")
 @click.option("-1", "simple", is_flag=True, help="show in simple format")
+@click.option("-2", "relative", is_flag=True, help="show relative uncertainties")
 @click.option("--unit/--no-unit", help="display unit", default=True, show_default=True)
 # @click.option('--config', type=click.Path(exists=True, dir_okay=False),
 #              help='path of config json file for extra name dictionary')
@@ -149,8 +150,9 @@ def command_get(context, **kw):
     elif kw["simple"]:
         click.echo("{} +{} -{}".format(cent, u_p, abs(u_m)))
     else:
+        relative = bool(kw.get("relative", False))
         unit = table.unit if kw["unit"] else None
-        click.echo(Util.value_format(cent, u_p, u_m, unit))
+        click.echo(Util.value_format(cent, u_p, u_m, unit, relative))
     exit(0)
 
 

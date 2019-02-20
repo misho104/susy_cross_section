@@ -171,8 +171,8 @@ class Unit:
         return float(self._factor)
 
 
-def value_format(value, unc_p, unc_m, unit=None):
-    # type: (float, float, float, Optional[str])->str
+def value_format(value, unc_p, unc_m, unit=None, relative=False):
+    # type: (float, float, float, Optional[str], bool)->str
     """Return human-friendly text of an uncertainty-accompanied value.
 
     Parameters
@@ -185,6 +185,8 @@ def value_format(value, unc_p, unc_m, unit=None):
         Negative-direction absolute uncertainty.
     unit: str, optional
         Unit of the value and the uncertainties.
+    relative: bool
+        Whether to show the uncertainties in relative.
 
     Returns
     -------
@@ -193,6 +195,11 @@ def value_format(value, unc_p, unc_m, unit=None):
     """
     delta = min(abs(unc_p), abs(unc_m))
     suffix = " {}".format(unit) if unit else ""  # will be appended to the body.
+
+    if relative:
+        return "{:g}{} +{:.2%} -{:.2%}".format(
+            value, suffix, unc_p / value, abs(unc_m) / value
+        )
 
     if delta == 0:
         # without uncertainty
