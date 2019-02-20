@@ -1,0 +1,82 @@
+{
+  "document": {
+    "title": "Gluino-pair production cross-section with decoupled squarks at 7TeV LHC",
+    "authors": "Wim Beenakker, Silja Brensing-Thewes, Christoph Borschensky, Michael Krämer, Anna Kulesza, Leszek Motyka, Eric Laenen, and Irene Niessen",
+    "calculator": "NLL-fast",
+    "source": "https://www.uni-muenster.de/Physik.TP/~akule_01/nnllfast/doku.php?id=nllfast",
+    "version": "1.21"
+  },
+  "attributes": {
+    "processes": "p p > go go",
+    "collider": "pp",
+    "ecm": "7TeV"
+  },
+  "columns": [
+    { "name": "process", "unit": "" },
+    { "name": "ms_dummy", "unit": "" },
+    { "name": "mgl", "unit": "GeV" },
+    { "name": "xsec_lo", "unit": "pb" },
+    { "name": "unc+_scale_lo", "unit": "pb" },
+    { "name": "unc-_scale_lo", "unit": "pb" },
+    { "name": "xsec_nlo", "unit": "pb" },
+    { "name": "unc+_scale_nlo", "unit": "pb" },
+    { "name": "unc-_scale_nlo", "unit": "pb" },
+    { "name": "unc+_pdf", "unit": "%" },
+    { "name": "unc-_pdf", "unit": "%" },
+    { "name": "unc+_alphas", "unit": "%" },
+    { "name": "unc-_alphas", "unit": "%" },
+    { "name": "xsec", "unit": "pb" },
+    { "name": "unc+_scale_nlonll", "unit": "pb" },
+    { "name": "unc-_scale_nlonll", "unit": "pb" }
+  ],
+  "reader_options": {
+    "skipinitialspace": 1,
+    "delim_whitespace": 1,
+    "skiprows": 1
+  },
+  "parameters": [{ "column": "mgl", "granularity": 1 }],
+  "values": [
+    {
+      "column": "xsec_lo",
+      "unc+": [
+        { "column": "unc+_scale_lo", "type": "absolute" },
+        { "column": "unc+_pdf", "type": "relative" },
+        { "column": "unc+_alphas", "type": "relative" }
+      ],
+      "unc-": [
+        { "column": "unc-_scale_lo", "type": "absolute" },
+        { "column": "unc-_pdf", "type": "relative" },
+        { "column": "unc-_alphas", "type": "relative" }
+      ],
+      "attributes": { "order": "LO", "pdf_name": "cteq6l1" }
+    },
+    {
+      "column": "xsec_nlo",
+      "unc+": [
+        { "column": "unc+_scale_nlo", "type": "absolute" },
+        { "column": "unc+_pdf", "type": "relative" },
+        { "column": "unc+_alphas", "type": "relative" }
+      ],
+      "unc-": [
+        { "column": "unc-_scale_nlo", "type": "absolute" },
+        { "column": "unc-_pdf", "type": "relative" },
+        { "column": "unc-_alphas", "type": "relative" }
+      ],
+      "attributes": { "order": "NLO", "pdf_name": "cteq66" }
+    },
+    {
+      "column": "xsec",
+      "unc+": [
+        { "column": "unc+_scale_nlonll", "type": "absolute" },
+        { "column": "unc+_pdf", "type": "relative" },
+        { "column": "unc+_alphas", "type": "relative" }
+      ],
+      "unc-": [
+        { "column": "unc-_scale_nlonll", "type": "absolute" },
+        { "column": "unc-_pdf", "type": "relative" },
+        { "column": "unc-_alphas", "type": "relative" }
+      ],
+      "attributes": { "order": "NLO+NLL", "pdf_name": "cteq66" }
+    }
+  ]
+}
