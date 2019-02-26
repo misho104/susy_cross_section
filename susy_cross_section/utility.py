@@ -13,11 +13,11 @@ import itertools
 import logging
 import pathlib
 import sys
-from typing import List, Mapping, MutableMapping, Optional, Tuple, Union  # noqa: F401
+from typing import List, Mapping, MutableMapping, Optional, Sequence, Tuple, Union
 
 from numpy import log10
 
-import susy_cross_section.config
+from susy_cross_section.config import table_paths
 
 if sys.version_info[0] < 3:  # py2
     str = basestring  # noqa: A001, F821
@@ -220,27 +220,21 @@ def value_format(value, unc_p, unc_m, unit=None, relative=False):
 
 
 def get_paths(data_name, info_path=None):
-    # type: (PathLike, Optional[PathLike])->Tuple[PathLike, PathLike]
+    # type: (PathLike, Optional[PathLike])->Tuple[pathlib.Path, pathlib.Path]
     """Return paths to data file and info file.
 
     Parameters
     ----------
     data_name: pathlib.Path or str
-        Path to data file or a table name found in configuration.
+        Path to grid-data file or a table name predefined in configuration.
 
-        If a pre-defined table key is specified, this function returns the
-        configured path to the table. In configuration the path is defined
-        relative to this **package** directory, and this function returns the
-        absolute path.
-
-        If a path is specified, this function verifies that the file exists,
-        and returns the relative path itself, which should be relative to the
-        pwd, i.e., the current directory of the shell.
+        If a file with :ar:`data_name` is found, the file is used. Otherwise,
+        :ar:`data_name` must be a pre-defined table key, or raises KeyError.
     info_path: pathlib.Path or str, optional
-        Path to info file.
+        Path to info file, which overrides the default setting.
 
-        If not given, the path to data file with suffix changed to ".info" is
-        returned.
+        The default setting is the grid-file path with suffix changed to
+        ".info".
 
     Returns
     -------
@@ -250,40 +244,69 @@ def get_paths(data_name, info_path=None):
     Raises
     ------
     FileNotFoundError
-        If one of the specified files are not found.
-    RuntimeError
-        If one of the specified files are not a file.
+        If one of the specified files is not found.
     """
-    if isinstance(data_name, str):
-        config_data = susy_cross_section.config.table_names.get(data_name)
+    # check preconfigured grid- and info-paths
+    if isinstance(data_name, pathlib.Path):
+        # if path is specified, do not see the configuration.
+        configured_grid, configured_info = None, None
+        specified_grid = data_name
+        specified_info = pathlib.Path(info_path) if info_path else None
     else:
-        config_data = None
+        configured_grid, configured_info = table_paths(data_name)
+        specified_grid = pathlib.Path(data_name)
+        specified_info = pathlib.Path(info_path) if info_path else None
 
-    if config_data:
-        if len(config_data) == 2 and len(config_data[0]) > 1:
-            # if config has (data_path, info_path)
-            data_rel, info_rel = config_data  # type: str, Union[None, str]
-        else:
-            assert isinstance(config_data, str)
-            data_rel, info_rel = config_data, None
+    def check_file(path, err_message, err_info=None):
+        # type: (pathlib.Path, str, Optional[Sequence[str]])->None
+        if not path.is_file():
+            logger.critical(err_message, path.__str__())
+            for i in err_info or []:
+                logger.info(i)
+            raise FileNotFoundError(path.__str__())
 
-        # returns absolute path relative to this package
-        path_base = pathlib.Path(__file__).parent
-        data = path_base / data_rel
-        info = path_base / info_rel if info_rel else data.with_suffix(".info")
-        lookup_method = "configured path"
+    if specified_grid.is_file():  # use specified path.
+        if configured_grid:
+            # warn if the same key found in config.
+            logger.warn(
+                "The file %s is used, ignoring the predefined table %s.",
+                specified_grid.absolute().__str__(),
+                data_name,
+            )
+        specified_info = specified_info or specified_grid.with_suffix(".info")
+        check_file(
+            specified_info,
+            "Info file %s not found.",
+            (
+                "It seems that you specified a wrong path for info file."
+                if info_path
+                else "If info-file has a different name, it must be specified."
+            ),
+        )
+        return specified_grid, specified_info
+
+    elif configured_grid:
+        # check grid-file
+        check_file(
+            configured_grid,
+            "The preconfigured grid file %s not found.",
+            ["Maybe the susy-cross-section package is broken?"],
+        )
+        # check info-file; if specified, use it.
+        if specified_info:
+            check_file(specified_info, "The specified info file %s not found.")
+            return configured_grid, specified_info
+        configured_info = configured_info or configured_grid.with_suffix(".info")
+        check_file(
+            configured_info,
+            "The preconfigured info file %s not found.",
+            ["Maybe the susy-cross-section package is broken?"],
+        )
+        return configured_grid, configured_info
+
     else:
-        # then data_name is a path.
-        data = pathlib.Path(data_name)
-        info = pathlib.Path(info_path) if info_path else data.with_suffix(".info")
-        # returns relative paths
-        lookup_method = "specified file"
-
-    for p in [data, info]:
-        if not p.exists:
-            logger.error(lookup_method + " not found: %s", p)
-            raise FileNotFoundError(p.__str__())  # py2
-        if not p.is_file:
-            logger.error(lookup_method + " not a file: %s", p)
-            raise RuntimeError("Not a file: %s", p.__str__())  # py2
-    return data, info
+        # grid file not found.
+        logger.critical('The grid file for "%s" not found.', data_name.__str__())
+        logger.info("For a preconfigured table, double-check the key of the table.")
+        logger.info("If you specified a file-path, verify it exists as a file.")
+        raise FileNotFoundError(data_name.__str__())

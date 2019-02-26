@@ -20,6 +20,7 @@ import sys
 from typing import Any  # noqa: F401
 
 import click
+import coloredlogs
 
 import susy_cross_section.utility as Util
 from susy_cross_section.interp.axes_wrapper import AxesWrapper
@@ -43,6 +44,14 @@ logging.basicConfig(level=logging.WARNING)
 logger = logging.getLogger(__name__)
 
 _DEFAULT_VALUE_NAME = "xsec"
+
+
+def _configure_logger():
+    # type: ()->None
+    """Configure logger so that proper logs are shown on console."""
+    coloredlogs.install(
+        level=logging.INFO, logger=logging.getLogger(), fmt="%(levelname)8s %(message)s"
+    )
 
 
 def _display_usage_for_file(context, data_file, **kw):
@@ -109,24 +118,22 @@ def _display_usage_for_file(context, data_file, **kw):
 def command_get(context, **kw):
     # type: (Any, Any)->None
     """Script for cross-section interpolation."""
+    _configure_logger()
     # handle arguments
     args = kw["args"] or []
     value_name = kw["name"] or _DEFAULT_VALUE_NAME
     try:
         table_path, info_path = Util.get_paths(kw["table"], kw["info"])
-    except (FileNotFoundError, RuntimeError) as e:
-        click.echo(e.__str__())  # py2
+        data_file = File(table_path, info_path)
+    except (FileNotFoundError, RuntimeError, ValueError, TypeError) as e:
+        click.echo(repr(e))
         exit(1)
 
     try:
-        data_file = File(table_path, info_path)
-    except (ValueError, TypeError) as e:
-        click.echo(e.__str__())  # py2
-        exit(1)
-    try:
         table = data_file.tables[value_name]
-    except KeyError:
-        click.echo("Data file does not contain specified table.")
+    except KeyError as e:
+        logger.critical("Data file does not contain specified table.")
+        click.echo(repr(e))
         exit(1)
 
     # without arguments or with invalid number of arguments, show the table information.
@@ -174,17 +181,18 @@ def command_get(context, **kw):
 def command_show(**kw):
     # type: (Any)->None
     """Script for cross-section interpolation."""
+    _configure_logger()
     # handle arguments
     try:
         table_path, info_path = Util.get_paths(kw["table"], kw["info"])
     except (FileNotFoundError, RuntimeError) as e:
-        click.echo(e.__str__())  # py2
+        click.echo(e.__repr__())  # py2
         exit(1)
 
     try:
         data_file = File(table_path, info_path)
     except (ValueError, TypeError) as e:
-        click.echo(e.__str__())  # py2
+        click.echo(e.__repr__())  # py2
         exit(1)
 
     click.echo(data_file.dump())

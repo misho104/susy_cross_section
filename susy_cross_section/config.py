@@ -2,47 +2,56 @@
 
 from __future__ import absolute_import, division, print_function  # py2
 
+import pathlib
 import sys
-from typing import Mapping, Tuple, Union  # noqa: F401
+from typing import Mapping, Optional, Tuple, Union  # noqa: F401
 
 if sys.version_info[0] < 3:  # py2
     str = basestring  # noqa: A001, F821
 
+table_dir = "susy_cross_section/data"
+"""
+Base directory for table data, relative to the package directory.
+
+:Type:
+    :typ: str
+"""
+
 table_names = {
     # gluino
-    "7TeV.gg.decoup": "data/nllfast/7TeV/gdcpl_nllnlo_mstw2008.grid",
-    "7TeV.gg": "data/nllfast/7TeV/gg_nllnlo_mstw2008.grid",
-    "7TeV.gg.high": "data/nllfast/7TeV/gg_nllnlo_hm_mstw2008.grid",
-    "8TeV.gg.decoup": "data/nllfast/8TeV/gdcpl_nllnlo_mstw2008.grid",
-    "8TeV.gg": "data/nllfast/8TeV/gg_nllnlo_mstw2008.grid",
-    "8TeV.gg.high": "data/nllfast/8TeV/gg_nllnlo_hm_mstw2008.grid",
-    "13TeV.gg.decoup": "data/nnllfast/13TeV/gdcpl_nnlonnll_pdf4lhc15_13TeV_wpresc.grid",
-    "13TeV.gg": "data/nnllfast/13TeV/gg_nnlonnll_pdf4lhc15_13TeV_wpresc.grid",
-    "7TeV.sg": "data/nllfast/7TeV/sg_nllnlo_mstw2008.grid",
-    "7TeV.sg.high": "data/nllfast/7TeV/sg_nllnlo_hm_mstw2008.grid",
-    "8TeV.sg": "data/nllfast/8TeV/sg_nllnlo_mstw2008.grid",
-    "8TeV.sg.high": "data/nllfast/8TeV/sg_nllnlo_hm_mstw2008.grid",
-    "13TeV.sg": "data/nnllfast/13TeV/sg_nnlonnll_pdf4lhc15_13TeV_wpresc.grid",
+    "7TeV.gg.decoup": "nllfast/7TeV/gdcpl_nllnlo_mstw2008.grid",
+    "7TeV.gg": "nllfast/7TeV/gg_nllnlo_mstw2008.grid",
+    "7TeV.gg.high": "nllfast/7TeV/gg_nllnlo_hm_mstw2008.grid",
+    "8TeV.gg.decoup": "nllfast/8TeV/gdcpl_nllnlo_mstw2008.grid",
+    "8TeV.gg": "nllfast/8TeV/gg_nllnlo_mstw2008.grid",
+    "8TeV.gg.high": "nllfast/8TeV/gg_nllnlo_hm_mstw2008.grid",
+    "13TeV.gg.decoup": "nnllfast/13TeV/gdcpl_nnlonnll_pdf4lhc15_13TeV_wpresc.grid",
+    "13TeV.gg": "nnllfast/13TeV/gg_nnlonnll_pdf4lhc15_13TeV_wpresc.grid",
+    "7TeV.sg": "nllfast/7TeV/sg_nllnlo_mstw2008.grid",
+    "7TeV.sg.high": "nllfast/7TeV/sg_nllnlo_hm_mstw2008.grid",
+    "8TeV.sg": "nllfast/8TeV/sg_nllnlo_mstw2008.grid",
+    "8TeV.sg.high": "nllfast/8TeV/sg_nllnlo_hm_mstw2008.grid",
+    "13TeV.sg": "nnllfast/13TeV/sg_nnlonnll_pdf4lhc15_13TeV_wpresc.grid",
     # squark (10 squarks)
-    "7TeV.sb10.decoup": "data/nllfast/7TeV/sdcpl_nllnlo_mstw2008.grid",
-    "7TeV.sb10": "data/nllfast/7TeV/sb_nllnlo_mstw2008.grid",
-    "7TeV.ss10": "data/nllfast/7TeV/ss_nllnlo_mstw2008.grid",
-    "8TeV.sb10.decoup": "data/nllfast/8TeV/sdcpl_nllnlo_mstw2008.grid",
-    "8TeV.sb10": "data/nllfast/8TeV/sb_nllnlo_mstw2008.grid",
-    "8TeV.ss10": "data/nllfast/8TeV/ss_nllnlo_mstw2008.grid",
-    "13TeV.sb10.decoup": "data/nnllfast/13TeV/sdcpl_nnlonnll_pdf4lhc15_13TeV_wpresc.grid",
+    "7TeV.sb10.decoup": "nllfast/7TeV/sdcpl_nllnlo_mstw2008.grid",
+    "7TeV.sb10": "nllfast/7TeV/sb_nllnlo_mstw2008.grid",
+    "7TeV.ss10": "nllfast/7TeV/ss_nllnlo_mstw2008.grid",
+    "8TeV.sb10.decoup": "nllfast/8TeV/sdcpl_nllnlo_mstw2008.grid",
+    "8TeV.sb10": "nllfast/8TeV/sb_nllnlo_mstw2008.grid",
+    "8TeV.ss10": "nllfast/8TeV/ss_nllnlo_mstw2008.grid",
+    "13TeV.sb10.decoup": "nnllfast/13TeV/sdcpl_nnlonnll_pdf4lhc15_13TeV_wpresc.grid",
     # stop
-    "7TeV.st": "data/nllfast/7TeV/st_nllnlo_mstw2008.grid",
-    "8TeV.st": "data/nllfast/8TeV/st_nllnlo_mstw2008.grid",
-    "13TeV.st": "data/nnllfast/13TeV/st_nnlonnll_pdf4lhc15_13TeV_wpresc.grid",
+    "7TeV.st": "nllfast/7TeV/st_nllnlo_mstw2008.grid",
+    "8TeV.st": "nllfast/8TeV/st_nllnlo_mstw2008.grid",
+    "13TeV.st": "nnllfast/13TeV/st_nnlonnll_pdf4lhc15_13TeV_wpresc.grid",
     # EWKino
-    "13TeV.n2x1-.wino": "data/lhc_susy_xs_wg/13TeVn2x1wino_envelope_m.csv",
-    "13TeV.n2x1+.wino": "data/lhc_susy_xs_wg/13TeVn2x1wino_envelope_p.csv",
-    "13TeV.n2x1+-.wino": "data/lhc_susy_xs_wg/13TeVn2x1wino_envelope_pm.csv",
-    "13TeV.x1x1.wino": "data/lhc_susy_xs_wg/13TeVx1x1wino_envelope.csv",
-    "13TeV.slepslep.ll": "data/lhc_susy_xs_wg/13TeVslepslep_ll.csv",
-    "13TeV.slepslep.rr": "data/lhc_susy_xs_wg/13TeVslepslep_rr.csv",
-    "13TeV.slepslep.maxmix": "data/lhc_susy_xs_wg/13TeVslepslep_maxmix.csv",
+    "13TeV.n2x1-.wino": "lhc_susy_xs_wg/13TeVn2x1wino_envelope_m.csv",
+    "13TeV.n2x1+.wino": "lhc_susy_xs_wg/13TeVn2x1wino_envelope_p.csv",
+    "13TeV.n2x1+-.wino": "lhc_susy_xs_wg/13TeVn2x1wino_envelope_pm.csv",
+    "13TeV.x1x1.wino": "lhc_susy_xs_wg/13TeVx1x1wino_envelope.csv",
+    "13TeV.slepslep.ll": "lhc_susy_xs_wg/13TeVslepslep_ll.csv",
+    "13TeV.slepslep.rr": "lhc_susy_xs_wg/13TeVslepslep_rr.csv",
+    "13TeV.slepslep.maxmix": "lhc_susy_xs_wg/13TeVslepslep_maxmix.csv",
 }  # type: Mapping[str, Union[str, Tuple[str, str]]]
 """
 Preset table names and paths to files.
@@ -50,9 +59,44 @@ Preset table names and paths to files.
 A :typ:`dict` object, where the values show the paths to table and info files.
 Values are a tuple `!(table_file_path, info_file_path)`, or `!table_file_path`
 if info_file_path is given by replacing the extension of table_file_path to
-`!.info`. Relative paths are interpreted from this package directory (i.e.,
-the directory having this file).
+`!.info`. The path is calculated relative to `table_base_path`.
 
 :Type:
     :typ:`dict[str, str or tuple[str, str]]`
 """
+
+
+def table_paths(key):
+    # type: (str)->Tuple[Optional[pathlib.Path], Optional[pathlib.Path]]
+    """Return the relative paths to table file and info file.
+
+    Argument
+    --------
+    key: str
+        The key of cross-section table.
+
+    Returns
+    -------
+    Tuple[pathlib.Path, pathlib.Path]
+        The relative path to the grid file and the info file.
+
+        The path for info file is returned only if it is configured. The paths
+        are calculated relative to the package directory.
+    """
+    value = table_names.get(key)
+    if not value:
+        return None, None
+
+    if isinstance(value, tuple):
+        assert 0 < len(value) <= 2
+        if len(value) == 2:
+            grid, info = value  # type: str, Optional[str]
+        else:
+            grid, info = value[0], None
+    else:
+        grid, info = value, None
+
+    base_dir = pathlib.Path(table_dir)
+    grid_path = base_dir / grid
+    info_path = base_dir / info if info else None
+    return grid_path, info_path

@@ -4,6 +4,7 @@
     "bivariate",
     "bs",
     "chargino",
+    "coloredlogs",
     "cteq",
     "imul",
     "inplace",
