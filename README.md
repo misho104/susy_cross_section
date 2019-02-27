@@ -19,9 +19,9 @@ Install simply via PyPI and use a script as:
 
 ```console
 $ pip install susy-cross-section
-$ susy-xs-get 13TeV.n2x1+.wino 500
+$ susy-xs get 13TeV.n2x1+.wino 500
 (32.9 +2.7 -2.7) fb
-$ susy-xs-get 13TeV.n2x1+.wino 513.3
+$ susy-xs get 13TeV.n2x1+.wino 513.3
 (29.4 +2.5 -2.5) fb
 ```
 
@@ -51,7 +51,7 @@ However, their results as well as results provided in other references are not i
 This package provides a module `susy_cross_section` to handle those data.
 Any table-like files can be interpreted and read as a [https://pandas.pydata.org/](pandas) DataFrame object, once an annotation file (`info` files in JSON format) is provided, so that one can easily interpolate the grid by, e.g., [scipy.interpolate](https://docs.scipy.org/doc/scipy/reference/interpolate.html).
 
-For simpler use-case, a command-line script `susy-xs-get` is provided, with which one can get the cross section in several simple scenarios.
+For simpler use-case, a command-line script `susy-xs` is provided, with which one can get the cross section in several simple scenarios.
 
 Several data tables are included in this package, which is taken from, e.g., [LHC SUSY Cross Section Working Group](https://twiki.cern.ch/twiki/bin/view/LHCPhysics/SUSYCrossSections).
 In addition, one can use their own files by writing annotations, so that they interpolate their data with pre-installed interpolator.
@@ -59,13 +59,18 @@ In addition, one can use their own files by writing annotations, so that they in
 More information to use as a Python package will be given in API references (to be written), and to use as a script can be found in their help:
 
 ```console
-$ susy-xs-get --help
-Usage: susy-xs-get [OPTIONS] TABLE ARGS...
+$ susy-xs --help
+Usage: susy-xs [OPTIONS] COMMAND [ARGS]...
 
-  Interpolate cross-section data using the standard scipy interpolator (with
-  log-log axes).
+  Handle cross-section grid tables with uncertainties.
 
 Options:
+  -V, --version  Show the version and exit.
+  -h, --help     Show this message and exit.
+
+Commands:
+  get   Get cross-section value using interpolation.
+  show  Show the cross-section table with combined uncertainties.
   ...
 ```
 

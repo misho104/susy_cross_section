@@ -1,14 +1,12 @@
 """Scripts for user's ease of handling the data.
 
-Two command-line scripts are provided:
+The main command ``susy-xs`` may invoke the follwoing subcommands:
 
-susy-xs-get:
+get:
     Interpolate cross-section grid table and return the cross section.
-    This script corresponds to `!scripts.command_get` method.
 
-susy-xs-show:
+show:
     Display cross-section grid table with information.
-    This script corresponds to `!scripts.command_show` method.
 
 For details, see the manual or try to execute with ``--help`` option.
 """
@@ -93,10 +91,15 @@ def _display_usage_for_file(context, data_file, **kw):
         click.echo(line)
 
 
-@click.command(
-    help="Interpolate cross-section data using the standard scipy interpolator (with log-log axes).",
-    context_settings={"help_option_names": ["-h", "--help"]},
-)
+@click.group(context_settings={"help_option_names": ["-h", "--help"]})
+@click.version_option(__version__, "-V", "--version", prog_name=__packagename__)
+def main():
+    # type: ()->None
+    """Handle cross-section grid tables with uncertainties."""
+    pass
+
+
+@main.command(context_settings={"help_option_names": ["-h", "--help"]})
 @click.argument("table", required=True, type=click.Path(exists=False))
 @click.argument("args", type=float, nargs=-1)
 @click.option("--name", default="xsec", help="name of a table")
@@ -111,13 +114,10 @@ def _display_usage_for_file(context, data_file, **kw):
     type=click.Path(exists=True, dir_okay=False),
     help="path of table-info file if non-standard file name",
 )
-@click.version_option(
-    __version__, "-V", "--version", prog_name=__packagename__ + " interpolator"
-)
 @click.pass_context
-def command_get(context, **kw):
+def get(context, **kw):
     # type: (Any, Any)->None
-    """Script for cross-section interpolation."""
+    """Get cross-section value using interpolation."""
     _configure_logger()
     # handle arguments
     args = kw["args"] or []
@@ -163,10 +163,7 @@ def command_get(context, **kw):
     exit(0)
 
 
-@click.command(
-    help="Show the interpreted cross-section table with positive and negative uncertainties.",
-    context_settings={"help_option_names": ["-h", "--help"]},
-)
+@main.command(context_settings={"help_option_names": ["-h", "--help"]})
 @click.argument("table", required=True, type=click.Path(exists=False))
 # @click.option('--config', type=click.Path(exists=True, dir_okay=False),
 #              help='path of config json file for extra name dictionary')
@@ -175,12 +172,9 @@ def command_get(context, **kw):
     type=click.Path(exists=True, dir_okay=False),
     help="path of table-info file if non-standard file name",
 )
-@click.version_option(
-    __version__, "-V", "--version", prog_name=__packagename__ + " table viewer"
-)
-def command_show(**kw):
+def show(**kw):
     # type: (Any)->None
-    """Script for cross-section interpolation."""
+    """Show the cross-section table with combined uncertainties."""
     _configure_logger()
     # handle arguments
     try:

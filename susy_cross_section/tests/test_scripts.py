@@ -9,7 +9,7 @@ import unittest
 from click.testing import CliRunner
 from nose.tools import assert_almost_equals, eq_, ok_, raises  # noqa: F401
 
-from susy_cross_section.scripts import command_get
+from susy_cross_section import scripts
 
 logging.basicConfig(level=logging.WARNING)
 logger = logging.getLogger(__name__)
@@ -28,7 +28,7 @@ class TestScripts(unittest.TestCase):
         result = {}
         for mass in [300, 350]:
             result[mass] = self.runner.invoke(
-                command_get, ["13TeV.slepslep.ll", mass.__str__()]
+                scripts.get, ["13TeV.slepslep.ll", mass.__str__()]
             )  # py2
             if result[mass].exit_code:
                 logger.debug("%s", result[mass].__dict__)
@@ -42,7 +42,7 @@ class TestScripts(unittest.TestCase):
         output = {}
         for mass in [450, 458, 475]:
             result[mass] = self.runner.invoke(
-                command_get, ["-1", "13TeV.n2x1+-.wino", mass.__str__()]
+                scripts.get, ["-1", "13TeV.n2x1+-.wino", mass.__str__()]
             )  # py2
             output[mass] = [float(x) for x in result[mass].output.strip().split(" ")]
             logger.debug("Exit code %s: %s", result[mass].exit_code, output[mass])
