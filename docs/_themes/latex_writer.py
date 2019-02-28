@@ -2,11 +2,36 @@
 
 import docutils.nodes
 import sphinx.writers.latex
+import re
 
 
 class MyTranslator(sphinx.writers.latex.LaTeXTranslator):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+
+        self.bibcache_dict = self.gen_bibcache_dict()
+
+    def gen_bibcache_dict(self):
+        bibcache = self.builder.env.bibtex_cache
+        result = {}
+        for cite_key in bibcache.get_all_cited_keys():
+            # cited_docnames = bibcache.get_cited_docnames(cite_key)
+            label = bibcache.get_label_from_key(cite_key)
+            result[label] = cite_key
+        return result
+
+    re_uri = re.compile("%(.+?)#(.+?)")
+
+    def visit_reference(self, node):
+        if node.get("internal") and self.re_uri.match(node.get("refuri", "")):
+            label = node.astext().lstrip("[").rstrip("]")
+            key = self.bibcache_dict.get(label)
+            if key:
+                # special treatment for cite
+                self.body.append(r'\cite{' + key + "}")
+                raise docutils.nodes.SkipNode
+        # otherwise usual treatment
+        super().visit_reference(node)
 
     def visit_citation_reference(self, node):
         origref = str(node.children[0])[1:-1]
