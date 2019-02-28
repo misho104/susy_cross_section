@@ -116,8 +116,7 @@ default_role = "any"
 add_module_names = False
 
 rst_epilog = """
-.. only:: html
-.. bibliography:: susy_cross_section.bib
+.. bibliography:: references.bib cross_section_references.bib
     :filter: docname in docnames
     :style: default
 """
@@ -162,7 +161,8 @@ htmlhelp_basename = "SUSYCrossSectiondoc"
 latex_additional_files = [
     "_themes/mysphinx.sty",
     "_themes/utphys27mod.bst",
-    "susy_cross_section.bib",
+    "references.bib",
+    "cross_section_references.bib",
 ]
 
 latex_abstract = r"""
