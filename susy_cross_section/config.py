@@ -66,6 +66,20 @@ if info_file_path is given by replacing the extension of table_file_path to
 """
 
 
+def parse_table_value(obj):
+    # type: (Union[str, Tuple[str, str]])->Tuple[str, Optional[str]]
+    """Parse the table values, which might be str or tuple, to a tuple."""
+    if not obj:
+        raise ValueError("Table value must not be empty.")
+    elif len(obj) < 2:
+        # having one or two elements must be a tuple.
+        return obj[0], obj[1] if len(obj) == 2 else None
+    else:
+        # otherwise it seems a string.
+        assert isinstance(obj, str)
+        return obj, None
+
+
 def table_paths(key):
     # type: (str)->Tuple[Optional[pathlib.Path], Optional[pathlib.Path]]
     """Return the relative paths to table file and info file.
@@ -87,14 +101,7 @@ def table_paths(key):
     if not value:
         return None, None
 
-    if isinstance(value, tuple):
-        assert 0 < len(value) <= 2
-        if len(value) == 2:
-            grid, info = value  # type: str, Optional[str]
-        else:
-            grid, info = value[0], None
-    else:
-        grid, info = value, None
+    grid, info = parse_table_value(value)
 
     base_dir = pathlib.Path(table_dir)
     grid_path = base_dir / grid

@@ -14,12 +14,15 @@ For details, see the manual or try to execute with ``--help`` option.
 from __future__ import absolute_import, division, print_function  # py2
 
 import logging
+import pathlib
 import sys
-from typing import Any  # noqa: F401
+from typing import Any, List, MutableMapping, Optional, Tuple  # noqa: F401
 
 import click
+import colorama
 import coloredlogs
 
+import susy_cross_section.config
 import susy_cross_section.utility as Util
 from susy_cross_section.interp.axes_wrapper import AxesWrapper
 from susy_cross_section.interp.interpolator import (
@@ -190,4 +193,66 @@ def show(**kw):
         exit(1)
 
     click.echo(data_file.dump())
+    exit(0)
+
+
+@main.command(name="list", context_settings={"help_option_names": ["-h", "--help"]})
+@click.argument("substr", nargs=-1)
+@click.option("--all", "-a", is_flag=True, help="List all the tables in this package.")
+@click.option("--full", "-f", is_flag=True, help="List full paths")
+def cmd_list(**kw):
+    # type: (Any)->None
+    """List the predefined tables, containing SUBSTR if specified."""
+    colorama.init()
+    _configure_logger()
+
+    base_dir = pathlib.Path(susy_cross_section.config.table_dir)
+    substr_list = [s.lower() for s in kw["substr"]]  # case insensitive
+
+    def to_show(key, grid, info):
+        # type: (Optional[str], str, Optional[str])->bool
+        """Check if all the substr are in (any of) the arguments."""
+        return all(
+            any(v is not None and substr in v.lower() for v in [key, grid, info])
+            for substr in substr_list
+        )
+
+    def str_to_pathstr(s):
+        # type: (str)->str
+        return (base_dir / s).absolute().__str__() if kw["full"] else s
+
+    # predefined paths
+    lines = []  # type: List[Tuple[Optional[str], str, Optional[str]]]
+    checked = {}  # type: MutableMapping[str, bool]
+    for key, value in susy_cross_section.config.table_names.items():
+        grid, info = susy_cross_section.config.parse_table_value(value)
+        checked[grid.__str__()] = True
+        if to_show(key, grid, info):
+            lines.append((key, grid, info))
+
+    # list all the grid even without predefined keys
+    if kw["all"]:
+        for f in sorted(base_dir.glob("**/*")):
+            rel_path = f.relative_to(base_dir).__str__()
+            if all(
+                [
+                    not rel_path.endswith(".info"),
+                    to_show(None, rel_path, None),
+                    not checked.get(rel_path),
+                    f.is_file(),
+                    f.with_suffix(".info").is_file(),
+                ]
+            ):
+                lines.append((None, rel_path, None))
+
+    for k, grid, info in sorted(lines, key=lambda x: x[1]):
+        click.echo(
+            "{key}\t{dim}{grid}{info}{reset}".format(
+                key=k or "",
+                grid=str_to_pathstr(grid),
+                info=" " + str_to_pathstr(info) if info else "",
+                dim=colorama.Style.DIM,
+                reset=colorama.Style.RESET_ALL,
+            )
+        )
     exit(0)
