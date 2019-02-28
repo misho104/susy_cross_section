@@ -14,7 +14,7 @@ table_dir = "susy_cross_section/data"
 Base directory for table data, relative to the package directory.
 
 :Type:
-    :typ: str
+    :typ:`str`
 """
 
 table_names = {
@@ -59,7 +59,7 @@ Preset table names and paths to files.
 A :typ:`dict` object, where the values show the paths to table and info files.
 Values are a tuple `!(table_file_path, info_file_path)`, or `!table_file_path`
 if info_file_path is given by replacing the extension of table_file_path to
-`!.info`. The path is calculated relative to `table_base_path`.
+`!.info`. The path is calculated relative to :data:`table_dir`.
 
 :Type:
     :typ:`dict[str, str or tuple[str, str]]`
@@ -68,7 +68,18 @@ if info_file_path is given by replacing the extension of table_file_path to
 
 def parse_table_value(obj):
     # type: (Union[str, Tuple[str, str]])->Tuple[str, Optional[str]]
-    """Parse the table values, which might be str or tuple, to a tuple."""
+    """Parse the table values, which might be str or tuple, to a tuple.
+
+    Parameters
+    ----------
+    obj: str or tuple[str, str]
+        The value of :data:`table_names`.
+
+    Returns
+    -------
+    tuple[str, str or None]
+        The path to grid file and (if specified) to info file.
+    """
     if not obj:
         raise ValueError("Table value must not be empty.")
     elif len(obj) < 2:
@@ -84,8 +95,8 @@ def table_paths(key):
     # type: (str)->Tuple[Optional[pathlib.Path], Optional[pathlib.Path]]
     """Return the relative paths to table file and info file.
 
-    Argument
-    --------
+    Parameters
+    ----------
     key: str
         The key of cross-section table.
 

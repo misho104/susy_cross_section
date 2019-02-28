@@ -1,13 +1,5 @@
 """Scripts for user's ease of handling the data.
 
-The main command ``susy-xs`` may invoke the follwoing subcommands:
-
-get:
-    Interpolate cross-section grid table and return the cross section.
-
-show:
-    Display cross-section grid table with information.
-
 For details, see the manual or try to execute with ``--help`` option.
 """
 

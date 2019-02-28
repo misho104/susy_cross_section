@@ -1,11 +1,12 @@
 """Table of values with asymmetric uncertainties.
 
-`BaseFile` carries data and the table-level annotation `TableInfo`. The
-`TableInfo` class contains the other three classes as sub-information.
+`BaseFile` carries grid tables as `BaseTable` and annotations as `FileInfo`.
+The `FileInfo` class contains the other three classes as sub-information.
 
 ========================= =============================================
-`base.table.BaseFile`     contains data and `TableInfo`
-`base.info.TableInfo`     has table-wide properties and `ColumnInfo`,
+`base.table.BaseFile`     contains `FileInfo` and multiple `BaseTable`
+`base.table.BaseTable`    represents the grid data for cross section.
+`base.info.FileInfo`      has file-wide properties and `ColumnInfo`,
                           `ParameterInfo`, and `ValueInfo`
 `base.info.ColumnInfo`    has properties of each column
 `base.info.ParameterInfo` annotates a column as a parameter

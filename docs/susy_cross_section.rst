@@ -48,7 +48,7 @@ susy\_cross\_section.config module
 ----------------------------------
 
 .. automodule:: susy_cross_section.config
-   :no-members:
+   :exclude-members: table_names
 
    .. autodata:: table_names
       :annotation: = {name: data_path or Tuple[data_path, info_path], ...}

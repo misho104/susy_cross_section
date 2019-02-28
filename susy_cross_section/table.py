@@ -1,9 +1,10 @@
 """Classes for annotations to a table.
 
 ====================== ================================================
-CrossSectionAttributes physical property of cross section.
-CrossSectionInfo       `TableInfo` with `CrossSectionAttributes`.
-File                   grid data with `CrossSectionInfo`.
+CrossSectionAttributes represents physical property of cross section.
+Table                  extends `BaseTable` to handle cross-section
+                       specific attributes
+File                   extends `BaseFile` to carry `Table` objects.
 ====================== ================================================
 """
 

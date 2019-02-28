@@ -425,8 +425,7 @@ class FileInfo(object):
 
     Developers must not use `!document` information except for displaying them.
     If one needs to interpret some information, one should extend this class to
-    provide other data-storage for such information, as is done in
-    `CrossSectionInfo` class.
+    provide other data-storage for such information.
 
     Attributes
     ----------
