@@ -268,18 +268,6 @@ flake8 = "*"
 
 [[package]]
 category = "dev"
-description = "Python docstring reStructuredText (RST) validator"
-name = "flake8-rst-docstrings"
-optional = false
-python-versions = "*"
-version = "0.0.8"
-
-[package.dependencies]
-flake8 = ">=3.0.0"
-restructuredtext_lint = "*"
-
-[[package]]
-category = "dev"
 description = "Backport of the functools module from Python 3.2.3 for use on 2.7 and PyPy."
 marker = "python_version < \"3.2\""
 name = "functools32"
