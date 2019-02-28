@@ -96,15 +96,15 @@ class ColumnInfo(object):
                 unit=json_obj.get("unit", ""),
             )
         except (TypeError, AttributeError) as e:
-            logger.error("ColumnInfo.from_json: %s", e)
+            logger.critical("ColumnInfo.from_json caught an exception.", exc_info=e)
             raise ValueError("Invalid data passed to ColumnInfo.from_json: %s")
         except KeyError as e:
-            logger.error("ColumnInfo.from_json: %s", e)
+            logger.critical("ColumnInfo.from_json caught an exception.", exc_info=e)
             raise ValueError("ColumnInfo data missing: %s", e)
 
         for k in json_obj.keys():
             if k not in ["index", "name", "unit"]:
-                logger.warn("Unknown data for ColumnInfo.from_json: %s", k)
+                logger.warning("Unknown data for ColumnInfo.from_json: %s", k)
 
         obj.validate()
         return obj
@@ -209,15 +209,15 @@ class ParameterInfo(object):
                 column=json_obj["column"], granularity=json_obj.get("granularity")
             )
         except (TypeError, AttributeError) as e:
-            logger.error("ParameterInfo.from_json: %s", e)
+            logger.critical("ParameterInfo.from_json caught an exception.", exc_info=e)
             raise ValueError("Invalid data passed to ParameterInfo.from_json: %s")
         except KeyError as e:
-            logger.error("ParameterInfo.from_json: %s", e)
+            logger.critical("ParameterInfo.from_json caught an exception.", exc_info=e)
             raise ValueError("ColumnInfo data missing: %s", e)
 
         for k in json_obj.keys():
             if k not in ["column", "granularity"]:
-                logger.warn("Unknown data for ParameterInfo.from_json: %s", k)
+                logger.warning("Unknown data for ParameterInfo.from_json: %s", k)
 
         obj.validate()
         return obj

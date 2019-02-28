@@ -268,7 +268,7 @@ def get_paths(data_name, info_path=None):
     if specified_grid.is_file():  # use specified path.
         if configured_grid:
             # warn if the same key found in config.
-            logger.warn(
+            logger.warning(
                 "The file %s is used, ignoring the predefined table %s.",
                 specified_grid.absolute().__str__(),
                 data_name,
