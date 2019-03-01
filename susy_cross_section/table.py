@@ -147,7 +147,7 @@ class Table(BaseTable):
         return "\n\n".join(
             [
                 super(Table, self).__str__(),
-                self.cross_section_attributes.formatted_str(),
+                self.attributes.formatted_str(),
             ]
         )
 
@@ -161,7 +161,7 @@ class Table(BaseTable):
             raise RuntimeError("No information is given for this table.")
 
     @property
-    def cross_section_attributes(self):
+    def attributes(self):
         # type: ()->CrossSectionAttributes
         """Return the information associated to this table."""
         if self.file_info and self.name:
