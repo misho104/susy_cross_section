@@ -1,3 +1,9 @@
+.. raw:: latex
+
+      \clearpage
+      \appendix
+      \changefontsizes{10pt}
+
 API Reference: susy\_cross\_section
 ===================================
 

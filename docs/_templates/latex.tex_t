@@ -115,7 +115,7 @@ Official PDF documents may be released in \href{https://github.com/misho104/susy
 
 <%= body %>
 
-\preto\section{\relax}
+\preto\section{\clearpage}
 \bibliography{cross_section_references,references}
 
 <%= atendofbody %>
