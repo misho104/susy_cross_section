@@ -37,27 +37,28 @@ def finalize_section_tt(text):
 
 
 def finalize_index_tt(text):
-    re1 = re.compile(r"\A(susy\\_cross\\_section\..+) class method\Z")
-    re2 = re.compile(r"\A(.+) (method|static method)\Z")
-    re3 = re.compile(r"\A(class in|in module) (susy\\_cross\\_section\.[^ ]+)\Z")
-
-    def t(text):
-        return "\\finalizedspxextra{" + text + "}"
+    regexps = [
+        [r"\A([^{]+)\(\) \(([^{]+) (class|static) method\)\Z",
+         r"\\texttt{\1()} {\\color{darkgray}(\\texttt{\2} \3 method)}"],
+        [r"\A([^{]+)\(\) \(([^{]+) method\)\Z",
+         r"\\texttt{\1()} {\\color{darkgray}(\\texttt{\2} method)}"],
+        [r"\A([^{]+) \(in module ([^{]+)\)\Z",
+         r"\\texttt{\1} {\\color{darkgray}(in module \\texttt{\2})}"],
+        [r"\A([^{]+) \(class in ([^{]+)\)\Z",
+         r"\\texttt{\1} {\\color{darkgray}(class in \\texttt{\2})}"],
+        [r"\A([^{]+) \(([^{]+) attribute\)\Z",
+         r"\\texttt{\1} {\\color{darkgray}(\\texttt{\2} attribute)}"],
+        [r"\A([^{]+) \(module\)\Z",
+         r"\\texttt{\1} {\\color{darkgray}(module)}"],
+    ]
 
     def sub(match):
-        b = match.group(1)
-        m1 = re1.match(b)
-        if m1:
-            return t("\\texttt{" + m1.group(1) + "} class method")
-        m2 = re2.match(b)
-        if m2:
-            return t("\\texttt{" + m2.group(1) + "} " + m2.group(2))
-        m3 = re3.match(b)
-        if m3:
-            return t(m3.group(1) + " \\texttt{" + m3.group(2) + "}")
-        return t(b)
+        b = b0 = match.group(1)
+        for exp, rep in regexps:
+            b = re.sub(exp, rep, b)
+        return "\\index{" + b0 + "@" + b + "}"
 
-    return re.sub(r"\\spxextra\{(.*?)\}", sub, text)
+    return re.sub(r"\\index\{(.*?)\}", sub, text)
 
 
 if __name__ == "__main__":

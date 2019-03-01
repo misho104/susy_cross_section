@@ -1,4 +1,4 @@
-\documentclass[a4paper,11pt]{scrartcl}
+\documentclass[a4paper,11pt,parskip=half-]{scrartcl}
 \pdfoutput=1
 \hyphenpenalty=10000
 
@@ -110,7 +110,7 @@ Official PDF documents may be released in \href{https://github.com/misho104/susy
 \def\maketitle{\sphinxmaketitle}
 \let\originalsphinxtoc\sphinxtableofcontents
 \def\sphinxtableofcontents{%
-   \clearpage\hrule\par\vspace{-54pt}\originalsphinxtoc\vskip8pt\hrule%
+   \clearpage\hrule\par\vspace{-24pt}\originalsphinxtoc\vskip8pt\hrule%
 }
 
 <%= body %>
