@@ -4,4 +4,5 @@ pandas==0.24.0
 scipy==1.2.0
 pybtex==0.22.2
 sphinxcontrib-bibtex==0.4.2
-
+colorama==0.4.1
+coloredlogs==10.0
