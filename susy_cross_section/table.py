@@ -1,9 +1,10 @@
 """Classes for annotations to a table.
 
 ====================== ================================================
-CrossSectionAttributes physical property of cross section.
-CrossSectionInfo       `TableInfo` with `CrossSectionAttributes`.
-Table                  grid data with `CrossSectionInfo`.
+CrossSectionAttributes represents physical property of cross section.
+Table                  extends `BaseTable` to handle cross-section
+                       specific attributes
+File                   extends `BaseFile` to carry `Table` objects.
 ====================== ================================================
 """
 
@@ -12,7 +13,6 @@ from __future__ import absolute_import, division, print_function  # py2
 import logging
 import pathlib
 import sys
-import textwrap
 from typing import (  # noqa: F401
     Any,
     List,
@@ -28,11 +28,11 @@ from typing import (  # noqa: F401
 
 import pandas  # noqa: F401
 
-from susy_cross_section.base.info import TableInfo
-from susy_cross_section.base.table import BaseTable
+from susy_cross_section.base.info import FileInfo
+from susy_cross_section.base.table import BaseFile, BaseTable
 
 if sys.version_info[0] < 3:  # py2
-    str = basestring          # noqa: A001, F821
+    str = basestring  # noqa: A001, F821
 
 logging.basicConfig(level=logging.WARNING)
 logger = logging.getLogger(__name__)
@@ -62,7 +62,7 @@ class CrossSectionAttributes(object):
         recommended.
     """
 
-    def __init__(self, processes='', collider='', ecm='', order='', pdf_name=''):
+    def __init__(self, processes="", collider="", ecm="", order="", pdf_name=""):
         # type: (Union[str, List[str]], str, str, str, str)->None
         if not processes:
             self.processes = []  # type: List[str]
@@ -88,20 +88,22 @@ class CrossSectionAttributes(object):
         ValueError
             If any attributes have invalid content.
         """
-        for attr, typ in [('processes', List),
-                          ('collider', str),
-                          ('ecm', str),
-                          ('order', str),
-                          ('pdf_name', str)]:
+        for attr, typ in [
+            ("processes", List),
+            ("collider", str),
+            ("ecm", str),
+            ("order", str),
+            ("pdf_name", str),
+        ]:
             value = getattr(self, attr)
             if not value:
-                raise ValueError('attributes: %s is empty.', attr)
+                raise ValueError("attributes: %s is empty.", attr)
             if not isinstance(value, typ):
-                raise TypeError('attributes: %s must be %s', attr, typ)
+                raise TypeError("attributes: %s must be %s", attr, typ)
         if not all(isinstance(s, str) and s for s in self.processes):
-            raise TypeError('attributes: processes must be a list of string.')
+            raise TypeError("attributes: processes must be a list of string.")
 
-    def dump(self):
+    def formatted_str(self):
         # type: ()->str
         """Return the formatted string.
 
@@ -111,107 +113,68 @@ class CrossSectionAttributes(object):
             Dumped data.
         """
         lines = [
-            'collider: {}-collider, ECM={}'.format(self.collider, self.ecm),
-            'calculation order: {}'.format(self.order),
-            'PDF: {}'.format(self.pdf_name),
-            'included processes:',
+            "collider: {}-collider, ECM={}".format(self.collider, self.ecm),
+            "calculation order: {}".format(self.order),
+            "PDF: {}".format(self.pdf_name),
+            "included processes:",
         ]
         for p in self.processes:
-            lines.append('  ' + p)
-        return '\n'.join(lines)
-
-
-class CrossSectionInfo(TableInfo):
-    """Stores annotations of a cross section table.
-
-    Annotation for cross section tables are `TableInfo` plus one
-    `CrossSectionAttributes` object.
-
-    Attributes
-    ----------
-    attributes: CrossSectionAttributes
-        Information provided particularly for the cross section.
-
-        General information intended to the users should be stored in
-        `!document`, while the content of `!attributes` should be neat,
-        standardized, and easy-to-parse objects.
-    """
-
-    def __init__(self, attributes=None, **kw):
-        # type: (CrossSectionAttributes, Any)->None
-        self.attributes = attributes or CrossSectionAttributes()   # type: CrossSectionAttributes
-        super(CrossSectionInfo, self).__init__(**kw)  # py2
-
-    @classmethod
-    def load(cls, source):
-        # type: (Union[pathlib.Path, str])->CrossSectionInfo
-        """Load and construct CrossSectionInfo from a json file.
-
-        Parameters
-        ----------
-        source: pathlib.Path or str
-            Path to the json file.
-
-        Returns
-        -------
-        CrossSectionInfo
-            Constructed instance.
-        """
-        return cast(CrossSectionInfo, super(CrossSectionInfo, cls).load(source))  # py2
-
-    def _load(self, **kw):
-        # type: (Any)->None
-        """Construct CrossSectionInfo from json data.
-
-        Raises
-        ------
-        KeyError
-            If json data lacks value for 'attributes'.
-        """
-        attributes = CrossSectionAttributes(**kw['attributes'])
-        del kw['attributes']
-        super(CrossSectionInfo, self)._load(**kw)  # py2
-        self.attributes = attributes
-
-    def validate(self):
-        # type: ()->None
-        """Validate the content.
-
-        This method calls children's and superclass' `!validate()` method, so
-        exceptions are raised from them.
-        """
-        super(CrossSectionInfo, self).validate()  # py2
-        self.attributes.validate()
-
-    def dump(self):
-        # type: ()->str
-        """Return the formatted string.
-
-        Returns
-        -------
-        str
-            Dumped data.
-        """
-        return '\n'.join([
-            super(CrossSectionInfo, self).dump(),
-            '',
-            '[Cross section attributes]',
-            textwrap.indent(self.attributes.dump(), prefix='  '),
-        ])
+            lines.append("  " + p)
+        return "\n".join(lines)
 
 
 class Table(BaseTable):
+    """Table object with annotations."""
+
+    def __init__(self, obj=None, file_info=None, name=None):
+        # type: (Any, Optional[FileInfo], Optional[str])->None
+        if isinstance(obj, BaseTable):
+            self._df = obj._df  # type: pandas.DataFrame
+            self.file_info = file_info or obj.file_info  # type: Optional[FileInfo]
+            self.name = name or obj.name
+        elif isinstance(obj, pandas.DataFrame):
+            self._df = obj
+            self.file_info = file_info
+            self.name = name
+        else:
+            self._df = pandas.DataFrame()
+            self.file_info = file_info
+            self.name = name
+
+    def __str__(self):
+        # type: ()->str
+        """Dump the data-frame with information."""
+        return "\n\n".join(
+            [super(Table, self).__str__(), self.attributes.formatted_str()]
+        )
+
+    @property
+    def unit(self):
+        # type: ()->str
+        """Return the unit of table values."""
+        if self.file_info and self.name:
+            return self.file_info.get_column(self.name).unit
+        else:
+            raise RuntimeError("No information is given for this table.")
+
+    @property
+    def attributes(self):
+        # type: ()->CrossSectionAttributes
+        """Return the information associated to this table."""
+        if self.file_info and self.name:
+            value_info = [v for v in self.file_info.values if v.column == self.name]
+            if not value_info:
+                raise RuntimeError("Value-info lookup failed.")
+            return CrossSectionAttributes(**value_info[0].attributes)
+        else:
+            raise RuntimeError("No information is given for this table.")
+
+
+class File(BaseFile):
     """Data of a cross section with parameters, read from a table file.
 
-    Arguments
-    ---------
-    table_path: str or pathlib.Path
-        Path to the csv data file.
-    info_path: str or pathlib.Path, optional
-        Path to the corresponding info file.
-
-        If unspecified, `!table_path` with suffix changed to ``".info"`` is
-        used.
+    Contents are the same as superclass but each table is extended from
+    `BaseTable` to `Table` class.
 
     Attributes
     ----------
@@ -219,23 +182,15 @@ class Table(BaseTable):
         Path to the csv data file.
     info_path: pathlib.Path
         Path to the info file.
-    self.
+    raw_data: pandas.DataFrame
+        the content of `!table_path`.
+    info: FileInfo
+        the content of `!info_path`.
+    tables: dict(str, Table)
+        The cross-section table parsed according to the annotation.
     """
 
     def __init__(self, table_path, info_path=None):
         # type: (Union[pathlib.Path, str], Union[pathlib.Path, str])->None
-        self.table_path = pathlib.Path(table_path)  # type: pathlib.Path
-        self.info_path = (
-            pathlib.Path(info_path) if info_path else self.table_path.with_suffix('.info')
-        )  # type: pathlib.Path
-
-        self.info = CrossSectionInfo.load(self.info_path)  # type: TableInfo
-        self.raw_data = self._read_csv(self.table_path)  # type: pandas.DataFrame
-
-        # contents are filled in _load_data
-        self.data = {}  # type: MutableMapping[str, pandas.DataFrame]
-        self.units = {}  # type: MutableMapping[str, str]
-
-        self.info.validate()  # validate annotation before actual load
-        self._load_data()
-        self.validate()
+        super(File, self).__init__(table_path, info_path)
+        self.tables = {k: Table(v) for k, v in self.tables.items()}

@@ -13,11 +13,11 @@ import itertools
 import logging
 import pathlib
 import sys
-from typing import List, Mapping, MutableMapping, Optional, Tuple, Union  # noqa: F401
+from typing import List, Mapping, MutableMapping, Optional, Sequence, Tuple, Union
 
-import numpy
+from numpy import log10
 
-import susy_cross_section.config
+from susy_cross_section.config import table_paths
 
 if sys.version_info[0] < 3:  # py2
     str = basestring  # noqa: A001, F821
@@ -45,9 +45,9 @@ class Unit:
     """
 
     definitions = {
-        '': [1],
-        '%': [0.01],
-        'pb': [1000, 'fb'],
+        "": [1],
+        "%": [0.01],
+        "pb": [1000, "fb"],
     }  # type: Mapping[str, List[Union[float, str]]]
     """:typ:`dict[str, list of (float or str)]`: The replacement rules of units.
 
@@ -77,8 +77,8 @@ class Unit:
 
     def __init__(self, *args):
         # type: (Union[float, str, Unit])->None
-        self._factor = 1   # type: float
-        self._units = {}   # type: MutableMapping[str, int]
+        self._factor = 1  # type: float
+        self._units = {}  # type: MutableMapping[str, int]
         for u in args:
             self *= u
 
@@ -117,7 +117,7 @@ class Unit:
                     try:
                         self._factor *= float(b)
                     except ValueError:
-                        raise TypeError('invalid unit: %s', other)
+                        raise TypeError("invalid unit: %s", other)
         return self
 
     def __mul__(self, other):
@@ -167,12 +167,12 @@ class Unit:
             If not dimension-less unit.
         """
         if any(v != 0 for v in self._units.values()):
-            raise ValueError('Unit conversion error: %s, %s', self._units, self._factor)
+            raise ValueError("Unit conversion error: %s, %s", self._units, self._factor)
         return float(self._factor)
 
 
-def value_format(value, unc_p, unc_m, unit=None):
-    # type: (float, float, float, Optional[str])->str
+def value_format(value, unc_p, unc_m, unit=None, relative=False):
+    # type: (float, float, float, Optional[str], bool)->str
     """Return human-friendly text of an uncertainty-accompanied value.
 
     Parameters
@@ -185,6 +185,8 @@ def value_format(value, unc_p, unc_m, unit=None):
         Negative-direction absolute uncertainty.
     unit: str, optional
         Unit of the value and the uncertainties.
+    relative: bool
+        Whether to show the uncertainties in relative.
 
     Returns
     -------
@@ -192,46 +194,47 @@ def value_format(value, unc_p, unc_m, unit=None):
         Formatted string describing the given value.
     """
     delta = min(abs(unc_p), abs(unc_m))
-    suffix = ' {}'.format(unit) if unit else ''  # will be appended to the body.
+    suffix = " {}".format(unit) if unit else ""  # will be appended to the body.
+
+    if relative:
+        return "{:g}{} +{:.2%} -{:.2%}".format(
+            value, suffix, unc_p / value, abs(unc_m) / value
+        )
 
     if delta == 0:
         # without uncertainty
-        body = '{:g} +0 -0'.format(value)
+        body = "{:g} +0 -0".format(value)
     else:
-        v_order = int(numpy.log10(value))
+        v_order = int(log10(value))
         if abs(v_order) > 3:
             # force to use scientific notation
-            suffix = '*1e{:d}'.format(v_order) + suffix
+            suffix = "*1e{:d}".format(v_order) + suffix
             divider = 10 ** v_order
-            digits_to_show = max(int(-numpy.log10(delta / value) - 0.005) + 2, 3)
+            disp_digits = max(int(-log10(delta / value) - 0.005) + 2, 3)
         else:
             divider = 1
-            digits_to_show = max(int(-numpy.log10(delta) - 0.005) + (1 if delta > 1 else 2), 0)
-        v_format = '{f} +{f} -{f}'.format(f='{{:.{}f}}'.format(digits_to_show))
+            disp_digits = max(int(-log10(delta) - 0.005) + (1 if delta > 1 else 2), 0)
+        v_format = "{f} +{f} -{f}".format(f="{{:.{}f}}".format(disp_digits))
         body = v_format.format(value / divider, unc_p / divider, abs(unc_m / divider))
-    return '({}){}'.format(body, suffix) if suffix else body
+    return "({}){}".format(body, suffix) if suffix else body
 
 
 def get_paths(data_name, info_path=None):
-    # type: (PathLike, Optional[PathLike])->Tuple[PathLike, PathLike]
+    # type: (PathLike, Optional[PathLike])->Tuple[pathlib.Path, pathlib.Path]
     """Return paths to data file and info file.
-
-    Relative path is evaluted from the package directory (i.e., the directory
-    having this file).
 
     Parameters
     ----------
     data_name: pathlib.Path or str
-        Path to data file or a table name found in configuration.
+        Path to grid-data file or a table name predefined in configuration.
 
-        If the string is found in configuration's table_names, the configured
-        paths are returned. Otherwise, :ar:`data_name` is interpreted as a path
-        to the data file itself.
+        If a file with :ar:`data_name` is found, the file is used. Otherwise,
+        :ar:`data_name` must be a pre-defined table key, or raises KeyError.
     info_path: pathlib.Path or str, optional
-        Path to info file.
+        Path to info file, which overrides the default setting.
 
-        If not given, the path to data file with suffix changed to ".info" is
-        returned.
+        The default setting is the grid-file path with suffix changed to
+        ".info".
 
     Returns
     -------
@@ -241,51 +244,69 @@ def get_paths(data_name, info_path=None):
     Raises
     ------
     FileNotFoundError
-        If one of the specified files are not found.
-    RuntimeError
-        If one of the specified files are not a file.
+        If one of the specified files is not found.
     """
-    # Note to developers:
-    # To reduce confusion, this method should be in the directory
-    # where the default configuration file locates.
-    info = pathlib.Path(info_path) if info_path else None  # type: Optional[pathlib.Path]
+    # check preconfigured grid- and info-paths
     if isinstance(data_name, pathlib.Path):
-        data = data_name  # type: pathlib.Path
-        error_hint = 'specified file'
+        # if path is specified, do not see the configuration.
+        configured_grid, configured_info = None, None
+        specified_grid = data_name
+        specified_info = pathlib.Path(info_path) if info_path else None
     else:
-        configured = susy_cross_section.config.table_names.get(data_name)
-        if configured:
-            # configured by default
-            error_hint = 'configured path'
-            if len(configured) == 2 and len(configured[0]) > 1:
-                # if config has (data_path, info_path)
-                data = pathlib.Path(configured[0])
-                if info:
-                    error_hint = 'configured path (with modified info_path)'
-                else:
-                    info = pathlib.Path(configured[1])
-            else:
-                # if config has data_path
-                assert isinstance(configured, str)
-                data = pathlib.Path(configured)
-        else:
-            # interpret the input as path to a file.
-            error_hint = 'specified file'
-            data = pathlib.Path(data_name)
+        configured_grid, configured_info = table_paths(data_name)
+        specified_grid = pathlib.Path(data_name)
+        specified_info = pathlib.Path(info_path) if info_path else None
 
-    if not info:
-        info = data.with_suffix('.info')
+    def check_file(path, err_message, err_info=None):
+        # type: (pathlib.Path, str, Optional[Sequence[str]])->None
+        if not path.is_file():
+            logger.critical(err_message, path.__str__())
+            for i in err_info or []:
+                logger.info(i)
+            raise FileNotFoundError(path.__str__())
 
-    # made it absolute
-    pwd = pathlib.Path(__file__).parent
-    abs_data = data if data.is_absolute() else pwd / data
-    abs_info = info if info.is_absolute() else pwd / info
+    if specified_grid.is_file():  # use specified path.
+        if configured_grid:
+            # warn if the same key found in config.
+            logger.warning(
+                "The file %s is used, ignoring the predefined table %s.",
+                specified_grid.absolute().__str__(),
+                data_name,
+            )
+        specified_info = specified_info or specified_grid.with_suffix(".info")
+        check_file(
+            specified_info,
+            "Info file %s not found.",
+            (
+                "It seems that you specified a wrong path for info file."
+                if info_path
+                else "If info-file has a different name, it must be specified."
+            ),
+        )
+        return specified_grid, specified_info
 
-    for p in [abs_data, abs_info]:
-        if not p.exists:
-            logger.error(error_hint + ' not found: %s', p)
-            raise FileNotFoundError(p.__str__())  # py2
-        if not p.is_file:
-            logger.error(error_hint + ' not a file: %s', p)
-            raise RuntimeError('Not a file: %s', p.__str__())  # py2
-    return abs_data, abs_info
+    elif configured_grid:
+        # check grid-file
+        check_file(
+            configured_grid,
+            "The preconfigured grid file %s not found.",
+            ["Maybe the susy-cross-section package is broken?"],
+        )
+        # check info-file; if specified, use it.
+        if specified_info:
+            check_file(specified_info, "The specified info file %s not found.")
+            return configured_grid, specified_info
+        configured_info = configured_info or configured_grid.with_suffix(".info")
+        check_file(
+            configured_info,
+            "The preconfigured info file %s not found.",
+            ["Maybe the susy-cross-section package is broken?"],
+        )
+        return configured_grid, configured_info
+
+    else:
+        # grid file not found.
+        logger.critical('The grid file for "%s" not found.', data_name.__str__())
+        logger.info("For a preconfigured table, double-check the key of the table.")
+        logger.info("If you specified a file-path, verify it exists as a file.")
+        raise FileNotFoundError(data_name.__str__())

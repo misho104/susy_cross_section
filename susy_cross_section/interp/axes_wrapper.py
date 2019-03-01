@@ -75,7 +75,7 @@ def _is_number(obj):
     # type: (Any)->bool
     """Return whether obj is a number (int, float, dim-0 numpy array)."""
     if isinstance(obj, numpy.ndarray):
-        return bool(obj.ndim == 0 and obj.dtype.kind in 'fiub')
+        return bool(obj.ndim == 0 and obj.dtype.kind in "fiub")
     else:
         return isinstance(obj, float) or isinstance(obj, int)
 
@@ -84,7 +84,7 @@ def _is_number_sequence(obj, length):
     # type: (Any, int)->bool
     """Return whether obj is a sequence of numbers with specified length."""
     if isinstance(obj, numpy.ndarray):
-        return obj.shape == (length,) and obj.dtype.kind in 'fiub'
+        return obj.shape == (length,) and obj.dtype.kind in "fiub"
     try:
         return len(obj) == length and all(_is_number(i) for i in obj)
     except TypeError:
@@ -138,19 +138,19 @@ class AxesWrapper:
     # we use base 10 because they are equivalent and easier to debug.
     # keys include aliases, and values are the name of staticmethods.
     _predefined_function_names = {
-        'identity': 'identity',
-        'id': 'identity',
-        'linear': 'identity',
-        'log': 'log10',
-        'log10': 'log10',
-        'exp': 'exp10',
-        'exp10': 'exp10',
+        "identity": "identity",
+        "id": "identity",
+        "linear": "identity",
+        "log": "log10",
+        "log10": "log10",
+        "exp": "exp10",
+        "exp10": "exp10",
     }  # type: Mapping[str, str]
 
     _inverse_function_names = {
-        'identity': 'identity',
-        'log10': 'exp10',
-        'exp10': 'log10',
+        "identity": "identity",
+        "log10": "exp10",
+        "exp10": "log10",
     }  # type: Mapping[str, str]
 
     @classmethod
@@ -165,7 +165,7 @@ class AxesWrapper:
         if isinstance(obj, str):
             name = cls._predefined_function_names.get(obj)
             if not name:
-                raise KeyError('Function %s is not predefined in AxesWrapper', obj)
+                raise KeyError("Function %s is not predefined in AxesWrapper", obj)
             return cast(FT, numpy.vectorize(getattr(cls, name)))
         else:
             return cast(FT, numpy.vectorize(obj))
@@ -186,7 +186,7 @@ class AxesWrapper:
         elif isinstance(wy, str):
             self.wy_inv = self._get_inverse_function(wy)  # guess wy_inv
         else:
-            raise TypeError('wy_inv must be specified.')
+            raise TypeError("wy_inv must be specified.")
 
     def wrapped_x(self, xs):
         # type: (XT)->XT
@@ -248,7 +248,7 @@ class AxesWrapper:
         def _f(x, _f_bar=f_bar, _len=x_len):
             # type: (XT, Callable[[XT], YT], Union[int, None])->YT
             if _len is not None and not _is_number_sequence(x, _len):
-                raise TypeError('Invalid arguments for %d-dim fit: %s', _len, x)
+                raise TypeError("Invalid arguments for %d-dim fit: %s", _len, x)
             return self.wy_inv(_f_bar(self.wrapped_x(x)))
 
         return _f

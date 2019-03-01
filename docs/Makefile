@@ -21,5 +21,9 @@ pdf: latex
 	export LATEXOPTS='' && cd $(BUILDDIR)/latex && latexmk -pdf --halt-on-error $(TEXNAME).tex
 	cp -f $(BUILDDIR)/latex/$(TEXNAME).pdf doc.pdf
 
+latexpdf:
+	@$(SPHINXBUILD) -M latexpdf "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
+	cp -f $(BUILDDIR)/latex/$(TEXNAME).pdf doc_before_finalize.pdf
+
 %: Makefile
 	@$(SPHINXBUILD) -M $@ "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)

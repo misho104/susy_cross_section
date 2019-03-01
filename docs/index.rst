@@ -13,7 +13,10 @@ Welcome to SUSY cross section's documentation!
 
     introduction
     quick_start
-    susy_cross_section
+    use_as_script
+    use_as_package
+    api_reference
+
 
 
 .. only:: html
@@ -24,10 +27,3 @@ Welcome to SUSY cross section's documentation!
     * :ref:`genindex`
     * :ref:`modindex`
     * :ref:`search`
-
-
-.. raw:: latex
-
-    \newpage
-    \section*{References}
-    \bibliography{susy_cross_section}
