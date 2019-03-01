@@ -272,4 +272,9 @@ class BaseFile(object):
             results.append(line)
             results.append(self.tables[k].__str__())  # py2
             results.append("")
+
+        results.append(line)
+        for k, v in self.info.document.items():
+            results.append("{}: {}".format(k, v))
+        results.append(line)
         return "\n".join(results)
