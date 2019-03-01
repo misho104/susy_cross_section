@@ -145,10 +145,7 @@ class Table(BaseTable):
         # type: ()->str
         """Dump the data-frame with information."""
         return "\n\n".join(
-            [
-                super(Table, self).__str__(),
-                self.attributes.formatted_str(),
-            ]
+            [super(Table, self).__str__(), self.attributes.formatted_str()]
         )
 
     @property

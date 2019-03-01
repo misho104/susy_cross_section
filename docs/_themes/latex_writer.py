@@ -28,7 +28,7 @@ class MyTranslator(sphinx.writers.latex.LaTeXTranslator):
             key = self.bibcache_dict.get(label)
             if key:
                 # special treatment for cite
-                self.body.append(r'\cite{' + key + "}")
+                self.body.append(r"\cite{" + key + "}")
                 raise docutils.nodes.SkipNode
         # otherwise usual treatment
         super().visit_reference(node)

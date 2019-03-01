@@ -38,18 +38,27 @@ def finalize_section_tt(text):
 
 def finalize_index_tt(text):
     regexps = [
-        [r"\A([^{]+)\(\) \(([^{]+) (class|static) method\)\Z",
-         r"\\texttt{\1()} {\\color{darkgray}(\\texttt{\2} \3 method)}"],
-        [r"\A([^{]+)\(\) \(([^{]+) method\)\Z",
-         r"\\texttt{\1()} {\\color{darkgray}(\\texttt{\2} method)}"],
-        [r"\A([^{]+) \(in module ([^{]+)\)\Z",
-         r"\\texttt{\1} {\\color{darkgray}(in module \\texttt{\2})}"],
-        [r"\A([^{]+) \(class in ([^{]+)\)\Z",
-         r"\\texttt{\1} {\\color{darkgray}(class in \\texttt{\2})}"],
-        [r"\A([^{]+) \(([^{]+) attribute\)\Z",
-         r"\\texttt{\1} {\\color{darkgray}(\\texttt{\2} attribute)}"],
-        [r"\A([^{]+) \(module\)\Z",
-         r"\\texttt{\1} {\\color{darkgray}(module)}"],
+        [
+            r"\A([^{]+)\(\) \(([^{]+) (class|static) method\)\Z",
+            r"\\texttt{\1()} {\\color{darkgray}(\\texttt{\2} \3 method)}",
+        ],
+        [
+            r"\A([^{]+)\(\) \(([^{]+) method\)\Z",
+            r"\\texttt{\1()} {\\color{darkgray}(\\texttt{\2} method)}",
+        ],
+        [
+            r"\A([^{]+) \(in module ([^{]+)\)\Z",
+            r"\\texttt{\1} {\\color{darkgray}(in module \\texttt{\2})}",
+        ],
+        [
+            r"\A([^{]+) \(class in ([^{]+)\)\Z",
+            r"\\texttt{\1} {\\color{darkgray}(class in \\texttt{\2})}",
+        ],
+        [
+            r"\A([^{]+) \(([^{]+) attribute\)\Z",
+            r"\\texttt{\1} {\\color{darkgray}(\\texttt{\2} attribute)}",
+        ],
+        [r"\A([^{]+) \(module\)\Z", r"\\texttt{\1} {\\color{darkgray}(module)}"],
     ]
 
     def sub(match):
