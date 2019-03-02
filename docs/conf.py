@@ -64,6 +64,7 @@ extensions = [
     "sphinx.ext.ifconfig",
     "sphinx.ext.viewcode",
     "sphinx.ext.githubpages",
+    "sphinx.ext.graphviz",
     "docs._themes.conf_bibtex",
     "sphinxcontrib.bibtex",
     "docs._themes.latex_writer",

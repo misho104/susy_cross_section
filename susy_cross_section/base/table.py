@@ -143,7 +143,7 @@ class BaseFile(object):
         # type: (pathlib.Path)->pandas.DataFrame
         """Read a csv file and return the content.
 
-        Internally, call :meth:`pandas.read_csv()` with `!reader_options`.
+        Internally, call `pandas.read_csv` with `!reader_options`.
         """
         reader_options = {
             "skiprows": [0],
