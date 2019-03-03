@@ -167,7 +167,9 @@ latex_additional_files = [
 ]
 
 latex_abstract = r"""
-TBW
+\texttt{susy\_cross\_section} is a Python package to handle cross-section grid tables regardless of their format.
+This package may parse any table-like grid files as a \texttt{pandas.DataFrame} object, and with built-in interpolators users can get interpolated values of cross sections together with uncertainties.
+Several table data is also pre-installed in this package.
 """
 
 latex_preamble = r"""
