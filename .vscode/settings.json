@@ -22,6 +22,7 @@
     "nlo",
     "noqa",
     "numpy",
+    "pyplot",
     "rect",
     "resummino",
     "scipy",
@@ -29,7 +30,11 @@
     "slinear",
     "susy",
     "vectorize",
-    "xsec"
+    "xlabel",
+    "xscale",
+    "xsec",
+    "ylabel",
+    "yscale"
   ],
   "python.unitTest.nosetestsEnabled": false,
   "files.associations": {
