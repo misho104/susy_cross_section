@@ -28,7 +28,6 @@ from typing import (  # noqa: F401
 
 import pandas  # noqa: F401
 
-from susy_cross_section.base.info import FileInfo
 from susy_cross_section.base.table import BaseFile, BaseTable
 
 if sys.version_info[0] < 3:  # py2
@@ -126,19 +125,19 @@ class CrossSectionAttributes(object):
 class Table(BaseTable):
     """Table object with annotations."""
 
-    def __init__(self, obj=None, file_info=None, name=None):
-        # type: (Any, Optional[FileInfo], Optional[str])->None
+    def __init__(self, obj=None, file=None, name=None):
+        # type: (Any, Optional[File], Optional[str])->None
         if isinstance(obj, BaseTable):
             self._df = obj._df  # type: pandas.DataFrame
-            self.file_info = file_info or obj.file_info  # type: Optional[FileInfo]
+            self.file = file or obj.file  # type: Optional[File]
             self.name = name or obj.name
         elif isinstance(obj, pandas.DataFrame):
             self._df = obj
-            self.file_info = file_info
+            self.file = file
             self.name = name
         else:
             self._df = pandas.DataFrame()
-            self.file_info = file_info
+            self.file = file
             self.name = name
 
     def __str__(self):
@@ -152,8 +151,8 @@ class Table(BaseTable):
     def unit(self):
         # type: ()->str
         """Return the unit of table values."""
-        if self.file_info and self.name:
-            return self.file_info.get_column(self.name).unit
+        if self.file and self.name:
+            return self.file.info.get_column(self.name).unit
         else:
             raise RuntimeError("No information is given for this table.")
 
@@ -161,8 +160,8 @@ class Table(BaseTable):
     def attributes(self):
         # type: ()->CrossSectionAttributes
         """Return the information associated to this table."""
-        if self.file_info and self.name:
-            value_info = [v for v in self.file_info.values if v.column == self.name]
+        if self.file and self.name:
+            value_info = [v for v in self.file.info.values if v.column == self.name]
             if not value_info:
                 raise RuntimeError("Value-info lookup failed.")
             return CrossSectionAttributes(**value_info[0].attributes)

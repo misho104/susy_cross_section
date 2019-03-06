@@ -44,25 +44,25 @@ class BaseTable(object):
     """Table object with annotations.
 
     This is a wrapper class of :class:`pandas.DataFrame`. Any methods except
-    for read/write of `!file_info` are delegated to the DataFrame object.
+    for read/write of `!file` are delegated to the DataFrame object.
 
     Attributes
     ----------
-    file_info: FileInfo, optional
-        Info-data used to parse this table.
+    file: BaseFile, optional
+        File object containing this table.
     name: str, optional
         Name of this table.
 
-        This is provided so that `ValueInfo` can be obtained from `!file_info`.
+        This is provided so that `ValueInfo` can be obtained from `!file`.
     """
 
-    def __init__(self, obj=None, file_info=None, name=None):
-        # type:(pandas.DataFrame, Optional[FileInfo], Optional[str])->None
+    def __init__(self, obj=None, file=None, name=None):
+        # type:(pandas.DataFrame, Optional[BaseFile], Optional[str])->None
         if isinstance(obj, pandas.DataFrame):
             self._df = obj  # type: pandas.DataFrame
         else:
             self._df = pandas.DataFrame()
-        self.file_info = file_info  # type: Optional[FileInfo]
+        self.file = file  # type: Optional[BaseFile]
         self.name = name  # type: Optional[str]
 
     def __getattr__(self, name):
@@ -185,7 +185,7 @@ class BaseFile(object):
                 # type: (Any, str, Mapping[str, str], Mapping[str, float])->float
                 return self._combine_uncertainties(row, name, unc_sources, factors)
 
-            tables[name] = BaseTable(file_info=self.info, name=name)
+            tables[name] = BaseTable(file=self, name=name)
             tables[name]["value"] = data[name]
             tables[name]["unc+"] = data.apply(unc_p, axis=1)
             tables[name]["unc-"] = data.apply(unc_m, axis=1)
