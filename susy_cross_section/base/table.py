@@ -15,11 +15,13 @@ import pathlib  # noqa: F401
 import sys
 from typing import (  # noqa: F401
     Any,
+    Generic,
     List,
     Mapping,
     MutableMapping,
     Optional,
     Sequence,
+    TypeVar,
     Union,
     cast,
 )
@@ -39,6 +41,9 @@ else:
 logging.basicConfig(level=logging.WARNING)
 logger = logging.getLogger(__name__)
 
+PathLike = Union[pathlib.Path, str]
+TableT = TypeVar("TableT", bound="BaseTable", covariant=True)
+
 
 class BaseTable(object):
     """Table object with annotations.
@@ -57,12 +62,12 @@ class BaseTable(object):
     """
 
     def __init__(self, obj=None, file=None, name=None):
-        # type:(pandas.DataFrame, Optional[BaseFile], Optional[str])->None
+        # type:(pandas.DataFrame, Optional[BaseFile[BaseTable]], Optional[str])->None
         if isinstance(obj, pandas.DataFrame):
             self._df = obj  # type: pandas.DataFrame
         else:
             self._df = pandas.DataFrame()
-        self.file = file  # type: Optional[BaseFile]
+        self.file = file  # type: Optional[BaseFile[BaseTable]]
         self.name = name  # type: Optional[str]
 
     def __getattr__(self, name):
@@ -86,7 +91,7 @@ class BaseTable(object):
         return cast(str, self._df.__str__())
 
 
-class BaseFile(object):
+class BaseFile(Generic[TableT]):
     """File with table data-sets and annotations.
 
     An instance has two main attributes: `!info` (:typ:`FileInfo`) as the
@@ -124,19 +129,29 @@ class BaseFile(object):
     """
 
     def __init__(self, table_path, info_path=None):
-        # type: (Union[pathlib.Path, str], Union[pathlib.Path, str])->None
-        self.table_path = pathlib.Path(table_path)  # type: pathlib.Path
+        # type: (Union[PathLike, BaseFile[TableT]], Optional[PathLike])->None
+        if isinstance(table_path, BaseFile):
+            # copy constructor
+            assert info_path is None  # or invalid use of copy constructor
+            self.table_path = table_path.table_path  # type: pathlib.Path
+            self.info_path = table_path.info_path  # type: pathlib.Path
+            self.info = table_path.info  # type: FileInfo
+            self.raw_data = table_path.raw_data  # type: pandas.DataFrame
+            self.tables = table_path.tables  # type: MutableMapping[str, TableT]
+            return
+
+        self.table_path = pathlib.Path(table_path)
         self.info_path = pathlib.Path(
             info_path if info_path else self.table_path.with_suffix(".info")
-        )  # type: pathlib.Path
+        )
 
-        self.info = FileInfo.load(self.info_path)  # type: FileInfo
-        self.raw_data = self._read_csv(self.table_path)  # type: pandas.DataFrame
+        self.info = FileInfo.load(self.info_path)
+        self.raw_data = self._read_csv(self.table_path)
 
         # validate annotation before actual load
         self.info.validate()
         # and do actual loading
-        self.tables = self._parse_data()  # type: MutableMapping[str, BaseTable]
+        self.tables = self._parse_data()
         self.validate()
 
     def _read_csv(self, path):
@@ -153,9 +168,9 @@ class BaseFile(object):
         return pandas.read_csv(path, **reader_options)
 
     def _parse_data(self):
-        # type: ()->MutableMapping[str, BaseTable]
+        # type: ()->MutableMapping[str, TableT]
         """Load and prepare data from the specified paths."""
-        tables = {}  # type: MutableMapping[str, BaseTable]
+        tables = {}  # type: MutableMapping[str, TableT]
         for value_info in self.info.values:
             name = value_info.column
             value_unit = self.info.get_column(name).unit
@@ -185,7 +200,7 @@ class BaseFile(object):
                 # type: (Any, str, Mapping[str, str], Mapping[str, float])->float
                 return self._combine_uncertainties(row, name, unc_sources, factors)
 
-            tables[name] = BaseTable(file=self, name=name)
+            tables[name] = cast(TableT, BaseTable(file=self, name=name))
             tables[name]["value"] = data[name]
             tables[name]["unc+"] = data.apply(unc_p, axis=1)
             tables[name]["unc-"] = data.apply(unc_m, axis=1)
