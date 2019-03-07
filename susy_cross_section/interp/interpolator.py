@@ -437,7 +437,7 @@ class ScipyGridInterpolator(AbstractInterpolator):
         if len(xs) != 2:
             raise ValueError("ScipyGridInterpolator with spline is only for 2d data.")
 
-        if numpy.isnan(xs).any() or numpy.isnan(ys).any():
+        if numpy.isnan(ys).any():
             raise ValueError("Spline interpolation does not allow missing grid points.")
         interp = sci_interp.RectBivariateSpline(xs[0], xs[1], ys, s=0, kx=kx, ky=ky)
 
