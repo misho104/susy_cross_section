@@ -1,20 +1,24 @@
 """Validation of interpolators for 1d grid."""
 
 import logging
-from typing import List, Optional, Tuple, Union
+from typing import Any, List, Optional, Sequence, Tuple, Union
 
-import matplotlib.pyplot
+import matplotlib
 import matplotlib.style
 import numpy
+from matplotlib.axes import Axes
 from matplotlib.backends.backend_pdf import PdfPages
+from mpl_toolkits.mplot3d import Axes3D  # noqa: F401
+from pandas import DataFrame
 
-from susy_cross_section.interp.interpolator import Interpolation, Scipy1dInterpolator
+from susy_cross_section.interp.interpolator import (
+    AbstractInterpolator,
+    Interpolation,
+    Scipy1dInterpolator,
+)
 from susy_cross_section.table import Table
 from validation.base import BaseValidator, PathLike
-
-SubplotType = Tuple[matplotlib.figure.Figure, matplotlib.axes.Axes]
-matplotlib.style.use("seaborn-whitegrid")
-
+from validation.sieve import SievedInterpolations
 
 logging.basicConfig(level=logging.WARNING)
 logger = logging.getLogger(__name__)
@@ -98,9 +102,22 @@ class OneDimComparator(BaseValidator):
             badnesses.append(var / rep_unc)
         return float(max(variations)), float(max(badnesses))
 
-    def generate_interpolation_plot(self, table, ax):
-        # type: (Table, matplotlib.axes.Axes)->None
-        """Return a plot with the data points and interpolating functions."""
+    def draw_interpolations(self, ax, table, interpolations):
+        # type: (Table, Axes, List[Tuple[str, Any]])->None
+        """Draw a plot of data points interpolations.
+
+        Parameters
+        ----------
+        ax: Axes
+            The axes to be drawn.
+        table: Table
+            The data table to be interpolated and drawn.
+        interpolations: List[Tuple[str, interpolation object]]
+            The interpolation data to be drawn.
+
+            The object can be an interpolator (`AbstractInterpolator`), its output
+            (`Interpolation`), or a list of (x, y)-tuples.
+        """
         ax.set_xscale("linear")
         ax.set_yscale("log")
 
@@ -111,14 +128,21 @@ class OneDimComparator(BaseValidator):
         ax.errorbar(x, y, ey, fmt="none", elinewidth=1, ecolor="black", label="data")
 
         ux = self.split_interval(x, n=self.grid_division, log=False)
-        for interp in self.interpolators:
-            i = interp.interpolate(table)
-            label = "{}/{}".format(interp.kind, interp.axes)
-            ax.plot(ux, [i(x) for x in ux], linewidth=0.5, label=label)
+        for label, ip in interpolations:
+            if isinstance(ip, AbstractInterpolator):
+                i = ip.interpolate(table)
+                x_list = ux
+                y_list = [i(x) for x in ux]
+            elif isinstance(ip, Interpolation):
+                x_list = ux
+                y_list = [ip(x) for x in ux]
+            else:
+                x_list, y_list = zip(*ip)
+            ax.plot(x_list, y_list, linewidth=0.5, label=label)
         ax.legend()
 
     def generate_variation_plot(self, table, ax, with_legend=False):
-        # type: (Table, matplotlib.axes.Axes, bool)->None
+        # type: (Table, Axes, bool)->None
         """Plot variation among interpolators."""
         ax.set_xscale("linear")
         ax.set_yscale("linear")
@@ -171,10 +195,142 @@ class OneDimComparator(BaseValidator):
         ax2 = fig.add_axes((m[0], m[1], w, h - h1), sharex=ax1)
 
         table = file.tables[file_name]
-        self.generate_interpolation_plot(table, ax1)
+        ips = [("{}/{}".format(i.kind, i.axes), i) for i in self.interpolators]
+
+        self.draw_interpolations(ax1, table, ips)
         self.generate_variation_plot(table, ax2, with_legend=False)
         ax1.tick_params(labelbottom=False)
         ax1.set_title(table.file.table_path.name)
         ax1.set_xlabel(None)
         ax2.set_title(None)
+        self._save(fig)
+
+
+class SievedInterpolationValidator(BaseValidator):
+    """Validation with sieved table interpolations."""
+
+    def __init__(self, output=None):
+        # type: (Optional[Union[PdfPages, PathLike]])->None
+        super().__init__(output=output)
+
+    def __del__(self):
+        """Deconstruct this instance."""
+        super().__del__()
+
+    def draw_interpolation(self, ax, table, data):
+        # type: (Axes, Table, DataFrame)->None
+        if data.index.nlevels == 1:
+            pass
+        elif data.index.nlevels == 2:
+
+            def f(x):
+                # type: (float)->float
+                return numpy.log10(x)
+
+            ax.view_init(30, 40)
+
+            xs, ys = zip(*table.index.values)
+            zs, zps, zms = (table[k].to_numpy() for k in ("value", "unc+", "unc-"))
+            with_label = True
+            for x, y, z, zp, zm in zip(xs, ys, zs, zps, zms):
+                ax.plot(
+                    [x, x],
+                    [y, y],
+                    [f(z + zp), f(z - zm)],
+                    marker="",
+                    c="black",
+                    linewidth=0.3,
+                    label="Data" if with_label else None,
+                )
+                with_label = False
+
+            xs, ys = zip(*data.index.values)
+            ips = [f(z) for z in data["interpolation"].to_numpy()]
+            ax.scatter(
+                xs,
+                ys,
+                ips,
+                c="r",
+                marker="_",
+                s=10,
+                label="interpolation",
+                linewidth=0.5,
+            )
+            self.set_labels_3d(ax, table, title="{file_name}")
+            ax.legend(loc="upper right", bbox_to_anchor=(1, 0.92))
+            ax.set_zlabel(r"$\log_{10}$ " + ax.get_zlabel())
+        else:
+            logger.critical("Plot index dimension too high.")
+            raise ValueError("Too high dimension.")
+
+    def draw_badness(self, ax, table, data):
+        # type: (Axes, Table, DataFrame)->None
+
+        def extend(seq):
+            # type: (Sequence[float])->List[float]
+            r = [(x1 + x2) / 2 for x1, x2 in zip(seq, seq[1:])]
+            r.insert(0, seq[0] - (seq[1] - seq[0]) / 2)
+            r.append(seq[-1] + (seq[-1] - seq[-2]) / 2)
+            return r
+
+        magma = matplotlib.pyplot.get_cmap("magma_r")
+        cmap_array = [magma(i) for i in range(0, 24 * 12, 24)]
+        cmap = matplotlib.colors.ListedColormap(cmap_array[1:-1])
+        cmap.set_under(cmap_array[0])
+        cmap.set_over(cmap_array[-1])
+
+        if data.index.nlevels == 1:
+            pass
+        elif data.index.nlevels == 2:
+            xs, ys = data.index.levels
+            zs = abs(data["badness"].unstack().to_numpy())
+            mesh = ax.pcolormesh(
+                # note the reversed order!
+                extend(ys),
+                extend(xs),
+                zs,
+                cmap=cmap,
+                vmin=0,
+                vmax=1,
+                linewidths=5,
+            )
+            bar = ax.figure.colorbar(mesh)
+            bar.set_label("badness", rotation=270)
+            bar.ax.yaxis.labelpad = 10
+            ax.grid()
+            self.set_labels_3d(ax, table, z=False)
+        else:
+            logger.critical("Plot index dimention too high.")
+            raise ValueError("Too high dimension.")
+
+    def plot(self, table, interpolator):
+        # type: (Table, Union[AbstractInterpolator, DataFrame])->matplotlib.figure.Figure
+        if isinstance(interpolator, AbstractInterpolator):
+            # perform interpolation according to specified interpolator
+            sieved_interpolation = SievedInterpolations(table, interpolator)
+            ip = sieved_interpolation.interpolated_table()
+        else:
+            # or results are already given as `interpolator`
+            ip = interpolator
+
+        m = (0.22, 0.13, 0.1, 0.1)  # left, bottom, right, top
+        w, h = 1 - m[0] - m[2], 1 - m[1] - m[3]
+        h1 = h * 0.65
+
+        fig = matplotlib.pyplot.figure(figsize=(6.4, 9.05))
+        ax1 = fig.add_axes(
+            (m[0] - 0.08, m[1] + (h - h1), w + 0.08, h1), projection="3d"
+        )
+        ax2 = fig.add_axes((m[0], m[1], w - 0.02, h - h1 * 1.07))
+
+        self.draw_interpolation(ax1, table, ip)
+        self.draw_badness(ax2, table, ip)
+        return fig
+
+    def draw_plot(self, table, interpolator):
+        # type: (Table, Union[AbstractInterpolator, DataFrame])->None
+        if not self.pdf:
+            logger.warning("No PDF object to write.")
+            return
+        fig = self.plot(table, interpolator)
         self._save(fig)
