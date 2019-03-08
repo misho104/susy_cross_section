@@ -1,7 +1,7 @@
 """Validation of interpolators for 1d grid."""
 
 import logging
-from typing import Any, List, Optional, Sequence, Tuple, Union
+from typing import Any, List, Optional, Sequence, Tuple, Union, cast
 
 import matplotlib
 import matplotlib.style
@@ -24,21 +24,16 @@ logging.basicConfig(level=logging.WARNING)
 logger = logging.getLogger(__name__)
 
 
-class OneDimComparator(BaseValidator):
+class OneDimValidator(BaseValidator):
     """Generator of validation plots for one-dimensional grid tables."""
 
     interpolators = [
-        Scipy1dInterpolator(kind="pchip", axes="loglog"),
         Scipy1dInterpolator(kind="linear", axes="loglog"),
         Scipy1dInterpolator(kind="spline", axes="loglog"),
         Scipy1dInterpolator(kind="akima", axes="loglog"),
+        Scipy1dInterpolator(kind="pchip", axes="loglog"),
     ]
-    """The interpolators to test.
-
-    The first one is used as the benchmark standard."""
-
-    grid_division = 9
-    """Number of sample points within each interval."""
+    """The interpolators to test, with first being the benchmark standard."""
 
     def __init__(self, output=None):
         # type: (Optional[Union[PdfPages, PathLike]])->None
@@ -49,9 +44,32 @@ class OneDimComparator(BaseValidator):
         """Close the pdf as a destructor."""
         super().__del__()
 
+    def draw_data(self, ax, table, **kwargs):
+        # type: (Axes, Table, Any)->None
+        """Draw the original data with uncertainty."""
+        x = table.index
+        y = table["value"]
+        ey = (table["unc-"], table["unc+"])
+        assert len(x.names) == 1
+        assert len(x) == len(y) == len(ey[0]) == len(ey[1])
+        k = {"fmt": "none", "elinewidth": 1, "ecolor": "black", "label": "data"}
+        k.update(kwargs)
+        ax.errorbar(x, y, ey, **k)
+
+    def _build_x_y(self, table, obj):
+        x_list = self.split_interval(table.index, n=9, log=False)
+        if isinstance(obj, AbstractInterpolator):
+            interp = obj.interpolate(table)
+            y_list = [interp(x) for x in x_list]
+        elif isinstance(obj, Interpolation):
+            y_list = [obj(x) for x in x_list]
+        else:
+            x_list, y_list = zip(*obj)
+        return x_list, y_list
+
     @staticmethod
-    def _calculate_badness(table, ux, ip1, ip2):
-        # type: (Table, numpy.ndarray, Interpolation, Interpolation)->Tuple[float, float]
+    def _calculate_badness(table, ux, uy1, uy2):
+        # type: (Table, numpy.ndarray, numpy.ndarray, numpy.ndarray)->Tuple[List[float], List[float]]
         """Calculate the maximal variation and badness of interpolator.
 
         Variation is defined for each sampling point by the difference between
@@ -71,121 +89,62 @@ class OneDimComparator(BaseValidator):
             The table for evaluation.
         ux: numpy.ndarray
             The sampling points in x-axis.
-        ip1: Interpolation
-            A result of interpolation.
-        ip2: Interpolation
-            Another result of interpolation.
+        uy1: numpy.ndarray
+            Values corresponding to ux from an interpolator.
+        uy2: numpy.ndarray
+            Values corresponding to ux from another interpolator.
 
         Returns
         -------
-        Tuple[float, float]
-            The first element is the max difference between the interpolation
-            results normalized to the central value, or relative uncertainty due to
-            the interpolation, and the second is the ratio of the relative
-            uncertainty to the other uncertainty in the grid data.
+        Tuple[List[float], List[float]]
+            A pair of variation and badness
         """
-        x = table.index
-        y, ym, yp = table["value"], numpy.abs(table["unc-"]), table["unc+"]
+        x_list, em, ep = (
+            table.index.to_numpy(),
+            numpy.abs(table["unc-"]).to_numpy(),
+            table["unc+"].to_numpy(),
+        )
+
+        representative_unc = [
+            min(ep[i], ep[i + 1], em[i], em[i + 1]) for i in range(0, len(x_list) - 1)
+        ]  # type: List[float]
 
         variations = []  # type: List[float]
         badnesses = []  # type: List[float]
 
-        for x1, x2 in zip(x, x[1:]):
-            interval = [xx for xx in ux if x1 < xx < x2]
-            rep_unc = min(
-                ym[x1] / y[x1], ym[x2] / y[x2], yp[x1] / y[x1], yp[x2] / y[x2]
-            )
-            uy1 = numpy.array([ip1(x) for x in interval])
-            uy2 = numpy.array([ip2(x) for x in interval])
-            var = numpy.max(numpy.abs(uy2 / uy1 - 1))
-            variations.append(var)
-            badnesses.append(var / rep_unc)
-        return float(max(variations)), float(max(badnesses))
+        for n, x in enumerate(ux):
+            for x1, x2, r in zip(x_list, x_list[1:], representative_unc):
+                if x1 <= x <= x2:
+                    d = abs(uy2[n] - uy1[n])
+                    variations.append(d / uy1[n])
+                    badnesses.append(d / r)
+                    break
 
-    def draw_interpolations(self, ax, table, interpolations):
-        # type: (Table, Axes, List[Tuple[str, Any]])->None
-        """Draw a plot of data points interpolations.
+        return variations, badnesses
 
-        Parameters
-        ----------
-        ax: Axes
-            The axes to be drawn.
-        table: Table
-            The data table to be interpolated and drawn.
-        interpolations: List[Tuple[str, interpolation object]]
-            The interpolation data to be drawn.
+    def draw_variations(self, ax, table, interp_list, **kwargs):
+        # type: (Axes, Table, List[Tuple[str, AbstractInterpolator]], Any)->Tuple[float, float]
+        """Plot variation among interpolators and returns the worst values."""
+        label0, i0 = interp_list[0]
+        ux0, uy0 = self._build_x_y(table, i0)
 
-            The object can be an interpolator (`AbstractInterpolator`), its output
-            (`Interpolation`), or a list of (x, y)-tuples.
-        """
-        ax.set_xscale("linear")
-        ax.set_yscale("log")
+        variations = []  # type: List[List[float]]
+        badnesses = []  # type: List[List[float]]
+        for label, i in interp_list:
+            f = i.interpolate(table)
+            uy = numpy.array([f(x) for x in ux0])
+            v, b = self._calculate_badness(table, ux0, uy0, uy)
+            variations.append(v)
+            badnesses.append(b)
+            k = {"linewidth": 0.5, "label": label}
+            k.update(kwargs)
+            ax.plot(ux0, uy / uy0 - 1, **k)
 
-        x = table.index
-        y = table["value"]
-        ey = (table["unc-"], table["unc+"])
-        self.set_labels(ax, table, title="Interpolation result of {file_name}")
-        ax.errorbar(x, y, ey, fmt="none", elinewidth=1, ecolor="black", label="data")
+        return max(max(v) for v in variations), max(max(v) for v in badnesses)
 
-        ux = self.split_interval(x, n=self.grid_division, log=False)
-        for label, ip in interpolations:
-            if isinstance(ip, AbstractInterpolator):
-                i = ip.interpolate(table)
-                x_list = ux
-                y_list = [i(x) for x in ux]
-            elif isinstance(ip, Interpolation):
-                x_list = ux
-                y_list = [ip(x) for x in ux]
-            else:
-                x_list, y_list = zip(*ip)
-            ax.plot(x_list, y_list, linewidth=0.5, label=label)
-        ax.legend()
-
-    def generate_variation_plot(self, table, ax, with_legend=False):
-        # type: (Table, Axes, bool)->None
-        """Plot variation among interpolators."""
-        ax.set_xscale("linear")
-        ax.set_yscale("linear")
-
-        if len(self.interpolators) < 2:
-            logger.warning("No interpolators to compare.")
-            return
-
-        x = table.index
-        y = table["value"]
-        ey = (table["unc-"], table["unc+"])
-        ux = self.split_interval(x, n=self.grid_division, log=False)
-
-        variations = []  # type: List[float]
-        badnesses = []  # type: List[float]
-        for k, interp in enumerate(self.interpolators):
-            i = interp.interpolate(table)
-            uy = numpy.array([i(x) for x in ux])
-            label = "{}/{}".format(interp.kind, interp.axes)
-            if k == 0:
-                i0 = i
-                uy0 = uy
-                label0 = label
-                label = ""
-            else:
-                v, b = self._calculate_badness(table, ux, i0, i)
-                variations.append(v)
-                badnesses.append(b)
-            if not with_legend:
-                label = ""
-            ax.plot(ux, uy / uy0 - 1, linewidth=0.5, label=label)
-        max_variation = max(variations)
-        max_badness = max(badnesses)
-
-        ax.plot(x, ey[1] / y, color="black", label="uncertainty of cross-section value")
-        ax.plot(x, -ey[0] / y, color="black")
-        self.set_labels(ax, table, title="Interpolator comparison in {file_name}")
-        ax.set_ylabel("Variation from {}".format(label0))
-        msg = "Variation={:.2%}; Badness={:.3}".format(max_variation, max_badness)
-        ax.plot([], [], " ", label=msg)
-        ax.legend()
-
-    def draw_plots(self, file, file_name):
+    def compare(self, table):
+        # type: (Table)->None
+        """Compare multiple interpolators."""
         m = (0.22, 0.13, 0.1, 0.1)  # left, bottom, right, top
         w, h = 1 - m[0] - m[2], 1 - m[1] - m[3]
         h1 = h * 0.6
@@ -194,15 +153,31 @@ class OneDimComparator(BaseValidator):
         ax1 = fig.add_axes((m[0], m[1] + (h - h1), w, h1))
         ax2 = fig.add_axes((m[0], m[1], w, h - h1), sharex=ax1)
 
-        table = file.tables[file_name]
-        ips = [("{}/{}".format(i.kind, i.axes), i) for i in self.interpolators]
+        interp_list = [
+            ("{}/{}".format(i.kind, i.axes), cast(AbstractInterpolator, i))
+            for i in self.interpolators
+        ]
 
-        self.draw_interpolations(ax1, table, ips)
-        self.generate_variation_plot(table, ax2, with_legend=False)
+        # first plot
+        self.draw_data(ax1, table)
+        for label, i in interp_list:
+            ax1.plot(*(self._build_x_y(table, i)), linewidth=0.5, label=label)
+
+        # second plot
+        ep, em = table["unc+"] / table["value"], -table["unc-"] / table["value"]
+        v, b = self.draw_variations(ax2, table, interp_list, label="")
+        ax2.plot(table.index, ep, color="black", label="relative uncertainty of data")
+        ax2.plot(table.index, em, color="black")
+        ax2.plot([], [], " ", label=f"Variation={v:.2%}; Badness={b:.3}")
+
+        # decoration
+        self.set_labels(ax1, table, x=False, title="{file_name}")
+        self.set_labels(ax2, table, y=f"Variation from {interp_list[0][0]}")
+        ax1.set_xscale("linear")
+        ax1.set_yscale("log")
         ax1.tick_params(labelbottom=False)
-        ax1.set_title(table.file.table_path.name)
-        ax1.set_xlabel(None)
-        ax2.set_title(None)
+        ax1.legend()
+        ax2.legend()
         self._save(fig)
 
 
@@ -298,7 +273,7 @@ class SievedInterpolationValidator(BaseValidator):
             bar.set_label("badness", rotation=270)
             bar.ax.yaxis.labelpad = 10
             ax.grid()
-            self.set_labels_3d(ax, table, z=False)
+            self.set_labels_3d(ax, table, z="")
         else:
             logger.critical("Plot index dimention too high.")
             raise ValueError("Too high dimension.")

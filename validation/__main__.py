@@ -73,18 +73,18 @@ def onedim_compare(ctx, *args, **kwargs):  # type: ignore
     """Plot multiple interpolation results of 1d grid."""
     pdf = PdfPages(kwargs["output"]) if kwargs["output"] else None
     if kwargs["all"]:
-        v = validation.onedim.OneDimComparator(pdf)
+        v = validation.onedim.OneDimValidator(pdf)
         for key in table_names:
             paths = table_paths(key)
             logger.info("Evaluating: {}".format(paths[0]))
-            file = File(*paths)
-            if len(file.info.parameters) == 1:
-                v.draw_plots(file, "xsec")
+            table = File(*paths).tables["xsec"]
+            if len(table.index.names) == 1:
+                v.compare(table)
     elif kwargs["table"]:
         table = pathlib.Path(kwargs["table"])
         assert table.is_file()
-        v = validation.onedim.OneDimComparator(pdf)
-        v.draw_plots(File(table), "xsec")
+        v = validation.onedim.OneDimValidator(pdf)
+        v.compare(File(table).tables["xsec"])
     else:
         click.echo("table path or --all option must be required.")
     if pdf:

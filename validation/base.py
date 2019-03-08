@@ -101,17 +101,17 @@ class BaseValidator:
         if x_name:
             try:
                 x_unit = table.file.info.get_column(x_name).unit
-                ax.set_xlabel(BaseValidator.label_with_unit(x_name, x_unit))
             except KeyError:
-                pass
+                x_unit = ""
+            ax.set_xlabel(BaseValidator.label_with_unit(x_name, x_unit))
 
         y_name = y if isinstance(y, str) else table.name if y else ""
         if y_name:
             try:
                 y_unit = table.file.info.get_column(y_name).unit
-                ax.set_ylabel(BaseValidator.label_with_unit(y_name, y_unit))
             except KeyError:
-                pass
+                y_unit = ""
+            ax.set_ylabel(BaseValidator.label_with_unit(y_name, y_unit))
 
     @staticmethod
     def set_labels_3d(ax, table, x=True, y=True, z="xsec", title=""):

@@ -1,12 +1,15 @@
 {
   "editor.rulers": [79, 88] /* 79 for docstring, 88 for code */,
   "cSpell.words": [
+    "akima",
     "bivariate",
     "bs",
     "chargino",
     "colorama",
     "coloredlogs",
     "cteq",
+    "ecolor",
+    "elinewidth",
     "imul",
     "inplace",
     "interp",
@@ -22,6 +25,7 @@
     "nlo",
     "noqa",
     "numpy",
+    "pchip",
     "pyplot",
     "rect",
     "resummino",
