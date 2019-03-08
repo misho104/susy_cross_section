@@ -37,8 +37,10 @@
     "xlabel",
     "xscale",
     "xsec",
+    "yaxis",
     "ylabel",
-    "yscale"
+    "yscale",
+    "zlabel"
   ],
   "python.unitTest.nosetestsEnabled": false,
   "files.associations": {

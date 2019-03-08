@@ -96,6 +96,11 @@ class SievedInterpolations:
             for signature, sieved_table in SievedTable(table, base=base).tables.items()
         }
 
+    @property
+    def interpolations(self):
+        """Return sieved interpolations."""
+        return self._interpolations
+
     def _negate(self, grid_point):
         # type: (int)->int
         return int(grid_point + self._base / 2) % self._base
@@ -109,14 +114,16 @@ class SievedInterpolations:
 
     def interpolated_table(self):
         result = self._table.copy()
-        for level, points in enumerate(result.index.levels):
-            result.drop([points[0], points[-1]], level=level, inplace=True)
-        try:
-            result.index = result.index.remove_unused_levels()  # for multiindex
-        except AttributeError:
-            pass
+        is_multi = len(result.index.names) > 1
+        # for multiindex
+        if is_multi:
+            for level, points in enumerate(result.index.levels):
+                result.drop([points[0], points[-1]], level=level, inplace=True)
+                result.index = result.index.remove_unused_levels()
+        else:
+            result.drop([result.index[0], result.index[-1]], inplace=True)
         for key, row in result.iterrows():
-            interp = self(key)
+            interp = self(key if is_multi else (key,))
             badness = (interp - row["value"]) / min(row["unc+"], row["unc-"])
             result.loc[key, "interpolation"] = interp
             result.loc[key, "badness"] = badness

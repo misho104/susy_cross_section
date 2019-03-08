@@ -8,12 +8,14 @@ import matplotlib.style
 import numpy
 from matplotlib.axes import Axes
 from matplotlib.backends.backend_pdf import PdfPages
+from matplotlib.pyplot import cm
 from mpl_toolkits.mplot3d import Axes3D  # noqa: F401
 from pandas import DataFrame
 
 from susy_cross_section.interp.interpolator import (
     AbstractInterpolator,
     Interpolation,
+    ScipyGridInterpolator,
     Scipy1dInterpolator,
 )
 from susy_cross_section.table import Table
@@ -56,16 +58,22 @@ class OneDimValidator(BaseValidator):
         k.update(kwargs)
         ax.errorbar(x, y, ey, **k)
 
-    def _build_x_y(self, table, obj):
-        x_list = self.split_interval(table.index, n=9, log=False)
+    def _build_x_y(self, table, obj, x_list=None):
+        if x_list is None:
+            x_list = self.split_interval(table.index, n=9, log=False)
         if isinstance(obj, AbstractInterpolator):
             interp = obj.interpolate(table)
             y_list = [interp(x) for x in x_list]
         elif isinstance(obj, Interpolation):
-            y_list = [obj(x) for x in x_list]
+            y_list = []  # type: List[float]
+            for x in x_list:
+                try:
+                    y_list.append(obj(x))
+                except ValueError:
+                    y_list.append(None)
         else:
             x_list, y_list = zip(*obj)
-        return x_list, y_list
+        return numpy.array(x_list), numpy.array(y_list)
 
     @staticmethod
     def _calculate_badness(table, ux, uy1, uy2):
@@ -113,6 +121,8 @@ class OneDimValidator(BaseValidator):
         badnesses = []  # type: List[float]
 
         for n, x in enumerate(ux):
+            if uy1[n] is None or uy2[n] is None:
+                continue
             for x1, x2, r in zip(x_list, x_list[1:], representative_unc):
                 if x1 <= x <= x2:
                     d = abs(uy2[n] - uy1[n])
@@ -128,17 +138,24 @@ class OneDimValidator(BaseValidator):
         label0, i0 = interp_list[0]
         ux0, uy0 = self._build_x_y(table, i0)
 
+        n_interp = len(interp_list)
+
         variations = []  # type: List[List[float]]
         badnesses = []  # type: List[List[float]]
-        for label, i in interp_list:
-            f = i.interpolate(table)
-            uy = numpy.array([f(x) for x in ux0])
+        for n, (label, i) in enumerate(interp_list[1:]):
+            _, uy = self._build_x_y(table, i, x_list=ux0)
             v, b = self._calculate_badness(table, ux0, uy0, uy)
             variations.append(v)
             badnesses.append(b)
-            k = {"linewidth": 0.5, "label": label}
+            color = int(n / 2) if n_interp == len(self.interpolators) * 2 + 1 else n + 1
+            k = {"linewidth": 0.5, "label": label, "c": cm.tab10(color)}
             k.update(kwargs)
-            ax.plot(ux0, uy / uy0 - 1, **k)
+            new_x, new_y = [], []  # type: List[float], List[float]
+            for x, y, y0 in zip(ux0, uy, uy0):
+                if all(i is not None for i in [x, y, y0]):
+                    new_x.append(x)
+                    new_y.append(y / y0 - 1)
+            ax.plot(new_x, new_y, **k)
 
         return max(max(v) for v in variations), max(max(v) for v in badnesses)
 
@@ -165,14 +182,58 @@ class OneDimValidator(BaseValidator):
 
         # second plot
         ep, em = table["unc+"] / table["value"], -table["unc-"] / table["value"]
-        v, b = self.draw_variations(ax2, table, interp_list, label="")
         ax2.plot(table.index, ep, color="black", label="relative uncertainty of data")
         ax2.plot(table.index, em, color="black")
+        v, b = self.draw_variations(ax2, table, interp_list, label="")
         ax2.plot([], [], " ", label=f"Variation={v:.2%}; Badness={b:.3}")
 
         # decoration
         self.set_labels(ax1, table, x=False, title="{file_name}")
         self.set_labels(ax2, table, y=f"Variation from {interp_list[0][0]}")
+        ax1.set_xscale("linear")
+        ax1.set_yscale("log")
+        ax1.tick_params(labelbottom=False)
+        ax1.legend()
+        ax2.legend()
+        self._save(fig)
+
+    def sieve(self, table):
+        # type: (Table)->None
+        m = (0.22, 0.13, 0.1, 0.1)  # left, bottom, right, top
+        w, h = 1 - m[0] - m[2], 1 - m[1] - m[3]
+        h1 = h * 0.6
+
+        fig = matplotlib.pyplot.figure(figsize=(6.4, 9.05))
+        ax1 = fig.add_axes((m[0], m[1] + (h - h1), w, h1))
+        ax2 = fig.add_axes((m[0], m[1], w, h - h1), sharex=ax1)
+
+        interp_list = [
+            ("{}/{}".format(i.kind, i.axes), cast(AbstractInterpolator, i))
+            for i in self.interpolators
+        ]
+
+        interp_for_variation = []
+        interp_for_variation.append(interp_list[0])
+
+        # first plot
+        self.draw_data(ax1, table)
+        for index, (label, interp) in enumerate(interp_list):
+            ips = SievedInterpolations(table, interp).interpolations
+            c = cm.tab10(index)
+            for ip in ips.values():
+                interp_for_variation.append(("x", ip))
+                ax1.plot(*(self._build_x_y(table, ip)), label=label, linewidth=0.5, c=c)
+                label = ""  # to remove label for the second and later lines
+
+        # second plot
+        ep, em = table["unc+"] / table["value"], -table["unc-"] / table["value"]
+        ax2.plot(table.index, ep, color="black", label="relative uncertainty of data")
+        ax2.plot(table.index, em, color="black")
+        v, b = self.draw_variations(ax2, table, interp_for_variation, label="")
+        ax2.plot([], [], " ", label=f"Variation={v:.2%}; Badness={b:.3}")
+
+        self.set_labels(ax1, table, x=False, title="{file_name}")
+        self.set_labels(ax2, table, y=f"Variation")
         ax1.set_xscale("linear")
         ax1.set_yscale("log")
         ax1.tick_params(labelbottom=False)
@@ -275,7 +336,7 @@ class SievedInterpolationValidator(BaseValidator):
             ax.grid()
             self.set_labels_3d(ax, table, z="")
         else:
-            logger.critical("Plot index dimention too high.")
+            logger.critical("Plot index dimension too high.")
             raise ValueError("Too high dimension.")
 
     def plot(self, table, interpolator):
@@ -297,9 +358,10 @@ class SievedInterpolationValidator(BaseValidator):
             (m[0] - 0.08, m[1] + (h - h1), w + 0.08, h1), projection="3d"
         )
         ax2 = fig.add_axes((m[0], m[1], w - 0.02, h - h1 * 1.07))
-
         self.draw_interpolation(ax1, table, ip)
         self.draw_badness(ax2, table, ip)
+        if isinstance(interpolator, ScipyGridInterpolator):
+            ax1.title.set_text(f"{ax1.title.get_text()}/{interpolator.kind}")
         return fig
 
     def draw_plot(self, table, interpolator):
