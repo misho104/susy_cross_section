@@ -389,8 +389,12 @@ class ScipyGridInterpolator(AbstractInterpolator):
 
     def _interpolate(self, df):
         # type: (pandas.DataFrame)->InterpType
-        xs = df.index.levels
-        ys = df.unstack().to_numpy()
+        try:
+            xs = df.index.levels   # multiindex case
+            ys = df.unstack().to_numpy()
+        except AttributeError:
+            xs = [df.index.values]
+            ys = df.to_numpy()
         # xs: list with n_dim elements; each is a list of grid points along an axis.
         # ys: a numpy matrix with ndim = n_dim, i.e., "unstacked" tensor.
 
