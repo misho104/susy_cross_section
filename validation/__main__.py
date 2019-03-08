@@ -138,4 +138,7 @@ def sieve(ctx, *args, **kwargs):  # type: ignore
 
 
 if __name__ == "__main__":
+    coloredlogs.install(
+        level=logging.INFO, logger=logging.getLogger(), fmt="%(levelname)8s %(message)s"
+    )
     main()
