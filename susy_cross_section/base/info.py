@@ -20,7 +20,7 @@ import json
 import logging
 import pathlib  # noqa: F401
 import sys
-from typing import Any, Dict, List, Mapping, MutableMapping, Optional, Sequence, Union
+from typing import Any, Dict, List, Mapping, MutableMapping, Optional, Union
 
 from susy_cross_section.utility import TypeCheck as TC
 

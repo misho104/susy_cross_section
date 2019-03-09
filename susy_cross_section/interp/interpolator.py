@@ -390,7 +390,7 @@ class ScipyGridInterpolator(AbstractInterpolator):
     def _interpolate(self, df):
         # type: (pandas.DataFrame)->InterpType
         try:
-            xs = df.index.levels   # multiindex case
+            xs = df.index.levels  # multiindex case
             ys = df.unstack().to_numpy()
         except AttributeError:
             xs = [df.index.values]

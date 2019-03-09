@@ -17,7 +17,7 @@ import susy_cross_section.scripts
 import validation.onedim
 from susy_cross_section.interp.axes_wrapper import AxesWrapper
 from susy_cross_section.interp.interpolator import ScipyGridInterpolator
-from susy_cross_section.table import File, Table
+from susy_cross_section.table import File
 
 __author__ = susy_cross_section.scripts.__author__
 __copyright__ = susy_cross_section.scripts.__copyright__

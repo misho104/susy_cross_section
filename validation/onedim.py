@@ -17,8 +17,8 @@ from pandas import DataFrame
 from susy_cross_section.interp.interpolator import (
     AbstractInterpolator,
     Interpolation,
-    ScipyGridInterpolator,
     Scipy1dInterpolator,
+    ScipyGridInterpolator,
 )
 from susy_cross_section.table import Table
 from validation.base import BaseValidator, PathLike
@@ -164,7 +164,7 @@ class OneDimValidator(BaseValidator):
         return max(max(v) for v in variations), max(max(v) for v in badnesses)
 
     def compare(self, table, nllfast_cache_key=None):
-        # type: (Table)->None
+        # type: (Table, Optional[str])->None
         """Compare multiple interpolators."""
         m = (0.22, 0.13, 0.1, 0.1)  # left, bottom, right, top
         w, h = 1 - m[0] - m[2], 1 - m[1] - m[3]
