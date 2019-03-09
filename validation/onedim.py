@@ -1,11 +1,13 @@
 """Validation of interpolators for 1d grid."""
 
 import logging
+import pathlib
 from typing import Any, List, Optional, Sequence, Tuple, Union, cast
 
 import matplotlib
 import matplotlib.style
 import numpy
+import pandas
 from matplotlib.axes import Axes
 from matplotlib.backends.backend_pdf import PdfPages
 from matplotlib.pyplot import cm
@@ -24,6 +26,8 @@ from validation.sieve import SievedInterpolations
 
 logging.basicConfig(level=logging.WARNING)
 logger = logging.getLogger(__name__)
+
+nllfast_cache_dir = pathlib.Path(__file__).parent / "contrib" / "nllfast-cache"
 
 
 class OneDimValidator(BaseValidator):
@@ -159,7 +163,7 @@ class OneDimValidator(BaseValidator):
 
         return max(max(v) for v in variations), max(max(v) for v in badnesses)
 
-    def compare(self, table):
+    def compare(self, table, nllfast_cache_key=None):
         # type: (Table)->None
         """Compare multiple interpolators."""
         m = (0.22, 0.13, 0.1, 0.1)  # left, bottom, right, top
@@ -185,7 +189,21 @@ class OneDimValidator(BaseValidator):
         ax2.plot(table.index, ep, color="black", label="relative uncertainty of data")
         ax2.plot(table.index, em, color="black")
         v, b = self.draw_variations(ax2, table, interp_list, label="")
-        ax2.plot([], [], " ", label=f"Variation={v:.2%}; Badness={b:.3}")
+
+        # NLL-fast cache
+        if nllfast_cache_key:
+            cache = nllfast_cache_dir / (nllfast_cache_key + ".cache")
+            if not cache.is_file():
+                logger.warning("NLL-fast cache not found; skipped.")
+            else:
+                df = pandas.read_csv(cache, sep="\t", header=None, names=["m", "orig"])
+                assert len(df.columns) == 2
+                ip_base = interp_list[0][1].interpolate(table)
+                for k, row in df.iterrows():
+                    df.loc[k, "variation"] = row["orig"] / ip_base(row["m"]) - 1
+                style = {"linestyle": " ", "markeredgewidth": 0, "marker": "o"}
+                df.plot("m", "orig", ax=ax1, markersize=0.5, label="", **style)
+                df.plot("m", "variation", ax=ax2, markersize=0.8, label="", **style)
 
         # decoration
         self.set_labels(ax1, table, x=False, title="{file_name}")
@@ -194,6 +212,7 @@ class OneDimValidator(BaseValidator):
         ax1.set_yscale("log")
         ax1.tick_params(labelbottom=False)
         ax1.legend()
+        ax2.plot([], [], " ", label=f"Variation={v:.2%}; Badness={b:.3}")
         ax2.legend()
         self._save(fig)
 

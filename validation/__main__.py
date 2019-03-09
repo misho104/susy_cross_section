@@ -52,7 +52,7 @@ def _all_tables_iter(table_name="xsec"):
     for key in susy_cross_section.config.table_names:
         paths = susy_cross_section.config.table_paths(key)
         logger.info("Evaluating: {}".format(paths[0]))
-        yield File(*paths).tables[table_name]
+        yield key, File(*paths).tables[table_name]
 
 
 @click.group(
@@ -81,9 +81,9 @@ def onedim_compare(ctx, *args, **kwargs):  # type: ignore
     pdf = PdfPages(kwargs["output"]) if kwargs["output"] else None
     v = validation.onedim.OneDimValidator(pdf)
     if kwargs["all"]:
-        for table in _all_tables_iter():
+        for key, table in _all_tables_iter():
             if len(table.index.names) == 1:
-                v.compare(table)
+                v.compare(table, nllfast_cache_key=key)
     elif kwargs["table"]:
         f = pathlib.Path(kwargs["table"])
         assert f.is_file()
@@ -111,7 +111,7 @@ def sieve(ctx, *args, **kwargs):  # type: ignore
         for k in ["linear", "spline33"]
     ]
     if kwargs["all"]:
-        for table in _all_tables_iter():
+        for _key, table in _all_tables_iter():
             try:
                 n_keys = len(table.index.names)
                 if n_keys == 1:

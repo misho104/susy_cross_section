@@ -22,6 +22,7 @@
     "ndim",
     "neutralino",
     "nlevels",
+    "nllfast",
     "nlo",
     "noqa",
     "numpy",
