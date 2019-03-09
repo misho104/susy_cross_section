@@ -22,6 +22,8 @@ import pathlib  # noqa: F401
 import sys
 from typing import Any, Dict, List, Mapping, MutableMapping, Optional, Sequence, Union
 
+from susy_cross_section.utility import TypeCheck as TC
+
 if sys.version_info[0] < 3:  # py2
     str = basestring  # noqa: A001, F821
     JSONDecodeError = Exception
@@ -247,21 +249,11 @@ class ParameterInfo(object):
         ValueError
             If any attributes have invalid content.
         """
-        if not isinstance(self.column, str):
-            raise TypeError("ParameterInfo.column must be string: %s", self.column)
-        if not self.column:
-            raise ValueError("ParameterInfo.column is missing")
+        assert isinstance(self.column, str), "ParameterInfo.column must be string."
+        assert self.column, "ParameterInfo.column is missing"
         if self.granularity is not None:
-            try:
-                if not float(self.granularity) > 0:
-                    raise ValueError(
-                        "ParameterInfo.granularity is not positive: %s",
-                        self.granularity,
-                    )
-            except TypeError:
-                raise TypeError(
-                    "ParameterInfo.granularity is not a number: %s", self.granularity
-                )
+            assert hasattr(self.granularity, "__float__"), "Granularity not a number."
+            assert float(self.granularity) > 0, "Negative granularity."
 
 
 class ValueInfo(object):
@@ -317,30 +309,16 @@ class ValueInfo(object):
         self.unc_p = unc_p or {}
         self.unc_m = unc_m or {}
 
-    @staticmethod
-    def _is_dict_with_str_keys(obj):
-        # type: (Any)->bool
-        if not isinstance(obj, MutableMapping):
-            return False
-        if all(isinstance(k, str) for k in obj.keys()):
-            return True
-        return False
-
     def validate(self):
         # type: ()->None
         """Validate the content."""
-        if not isinstance(self.column, str):
-            raise TypeError("ValueInfo.column must be string: %s", self.column)
-        if not self.column:
-            raise ValueError("ValueInfo.column is missing")
-        if not self._is_dict_with_str_keys(self.attributes):
-            raise TypeError("%s.attributes must be dict with str keys.", self.column)
+        assert isinstance(self.column, str), "ValueInfo.column must be string."
+        assert self.column, "ValueInfo.column is missing."
+        assert TC.is_dict(self.attributes, key_type=str), "attributes not dict[str]."
         for title, unc in [("unc+", self.unc_p), ("unc-", self.unc_m)]:
-            if not self._is_dict_with_str_keys(unc):
-                raise TypeError("%s.%s must be dict with str keys", self.column, title)
+            assert TC.is_dict(unc, key_type=str), title + " not dict[str]."
             for v in unc.values():
-                if v not in self._valid_uncertainty_types:
-                    raise ValueError("%s.%s has wrong value: %s", self.column, title, v)
+                assert v in self._valid_uncertainty_types, "invalid unc type: %s" % v
 
     @classmethod
     def from_json(cls, json_obj):
@@ -362,7 +340,7 @@ class ValueInfo(object):
         ValueError
             If :ar:`json_obj` has invalid data.
         """
-        if not isinstance(json_obj, Mapping):
+        if not TC.is_dict(json_obj):
             raise TypeError('Entry of "values" must be a dict: %s', json_obj)
         if "column" not in json_obj:
             raise KeyError('Entry of "values" must have a key "column": %s', json_obj)
@@ -377,10 +355,7 @@ class ValueInfo(object):
             if unc_def is None:
                 logger.warning("Uncertainty (%s) missing for %s.", key_name, obj.column)
                 continue
-            if not (
-                isinstance(unc_def, Sequence)
-                and all(isinstance(source, Mapping) for source in unc_def)
-            ):
+            if not TC.is_list(unc_def, element_type=Mapping):
                 raise TypeError("%s (%s) is not a list of dicts.", key_name, obj.column)
             try:
                 unc_dict = {source["column"]: source["type"] for source in unc_def}
@@ -459,38 +434,32 @@ class FileInfo(object):
         self.values = values or []
         self.reader_options = reader_options or {}
 
-    def validate(self):  # noqa: C901
+    def validate(self):
         # type: ()->None
         """Validate the content."""
-        if not isinstance(self.document, MutableMapping):
-            raise TypeError("document must be a dict.")
+        assert TC.is_dict(self.document), "document must be a dict."
         for name in ["columns", "parameters", "values"]:
-            if not isinstance(getattr(self, name), List):
-                raise TypeError("FileInfo.%s must be a list", name)
+            assert TC.is_list(getattr(self, name)), "FileInfo.%s must be a list" % name
             for obj in getattr(self, name):
                 obj.validate()
-        if not isinstance(self.reader_options, MutableMapping):
-            raise TypeError("reader_options must be a dict(str, Any).")
-        if not all(isinstance(k, str) for k in self.reader_options.keys()):
-            raise TypeError("reader_options must be a dict(str, Any).")
+        assert TC.is_dict(
+            self.reader_options, key_type=str
+        ), "reader_options must be a dict(str, Any)."
 
         # validate columns (`index` matches actual index, names are unique)
         names_dict = {}  # type: MutableMapping[str, bool]
-        for i, column in enumerate(self.columns):
-            if column.index != i:
-                raise ValueError("Mismatched column index: %d has %d", i, column.index)
-            if names_dict.get(column.name):
-                raise ValueError("Duplicated column name: %s", column.name)
-            names_dict[column.name] = True
+        for i, col in enumerate(self.columns):
+            assert col.index == i, "Mismatched column index: %d/%d" % (i, col.index)
+            assert col.name not in names_dict, "Duplicated column name: " + col.name
+            names_dict[col.name] = True
 
         # validate params and values
         for p in self.parameters:
-            if p.column not in names_dict:
-                raise ValueError("Unknown column name: %s", p.column)
+            assert p.column in names_dict, "Unknown column name: %s" % p.column
         for v in self.values:
-            for col in itertools.chain([v.column], v.unc_p.keys(), v.unc_m.keys()):
-                if col not in names_dict:
-                    raise ValueError("Unknown column name: %s", v.column)
+            assert v.column in names_dict, "Unknown column name: %s" % v.column
+            for u_col in itertools.chain(v.unc_p.keys(), v.unc_m.keys()):
+                assert u_col in names_dict, "Unknown column name: %s" % u_col
 
     @classmethod
     def load(cls, source):
