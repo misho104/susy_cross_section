@@ -1,5 +1,3 @@
-# Not yet provided because the uncertainty format is not supported.
-
 {
   "document": {
     "title": "Squark-pair production cross-section at 13TeV LHC",
@@ -18,15 +16,15 @@
     { "name": "ms", "unit": "GeV" },
     { "name": "mgl", "unit": "GeV" },
     { "name": "xsec_lo", "unit": "pb" },
-    { "name": "unc+_scale_lo", "unit": "pb" },
-    { "name": "unc-_scale_lo", "unit": "pb" },
+    { "name": "unc_mu1_lo", "unit": "pb" },
+    { "name": "unc_mu2_lo", "unit": "pb" },
     { "name": "xsec_nlo", "unit": "pb" },
-    { "name": "unc+_scale_nlo", "unit": "pb" },
-    { "name": "unc-_scale_nlo", "unit": "pb" },
+    { "name": "unc_mu1_nlo", "unit": "pb" },
+    { "name": "unc_mu2_nlo", "unit": "pb" },
     { "name": "unc_pdf_alphas_nlo", "unit": "%" },
     { "name": "xsec", "unit": "pb" },
-    { "name": "unc-_scale_nnll", "unit": "pb" },
-    { "name": "unc+_scale_nnll", "unit": "pb" },
+    { "name": "unc_mu1_nnll", "unit": "pb" },
+    { "name": "unc_mu2_nnll", "unit": "pb" },
     { "name": "unc_pdf_alphas_nnll", "unit": "%" }
   ],
   "reader_options": {
@@ -40,36 +38,27 @@
   "values": [
     {
       "column": "xsec_lo",
-      "unc+": [
-        { "column": "unc+_scale_lo", "type": "absolute" },
-        { "column": "unc_pdf_alphas_nlo", "type": "relative" }
-      ],
-      "unc-": [
-        { "column": "unc-_scale_lo", "type": "absolute" },
+      "unc": [
+        { "column": ["unc_mu1_lo", "unc_mu2_lo"], "type": "absolute,signed" },
         { "column": "unc_pdf_alphas_nlo", "type": "relative" }
       ],
       "attributes": { "order": "LO", "pdf_name": "(unknown)" }
     },
     {
       "column": "xsec_nlo",
-      "unc+": [
-        { "column": "unc+_scale_nlo", "type": "absolute" },
-        { "column": "unc_pdf_alphas_nlo", "type": "relative" }
-      ],
-      "unc-": [
-        { "column": "unc-_scale_nlo", "type": "absolute" },
+      "unc": [
+        { "column": ["unc_mu1_nlo", "unc_mu2_nlo"], "type": "absolute,signed" },
         { "column": "unc_pdf_alphas_nlo", "type": "relative" }
       ],
       "attributes": { "order": "NLO", "pdf_name": "PDF4LHC15_nlo_mc" }
     },
     {
       "column": "xsec",
-      "unc+": [
-        { "column": "unc+_scale_nnll", "type": "absolute" },
-        { "column": "unc_pdf_alphas_nnll", "type": "relative" }
-      ],
-      "unc-": [
-        { "column": "unc-_scale_nnll", "type": "absolute" },
+      "unc": [
+        {
+          "column": ["unc_mu1_nnll", "unc_mu2_nnll"],
+          "type": "absolute,signed"
+        },
         { "column": "unc_pdf_alphas_nnll", "type": "relative" }
       ],
       "attributes": {
