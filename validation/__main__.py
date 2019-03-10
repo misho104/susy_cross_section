@@ -14,8 +14,8 @@ from matplotlib.backends.backend_pdf import PdfPages
 import susy_cross_section
 import susy_cross_section.config
 import susy_cross_section.scripts
-import validation.onedim
 from susy_cross_section.table import File
+from validation.validators import choose_validator
 
 __author__ = susy_cross_section.scripts.__author__
 __copyright__ = susy_cross_section.scripts.__copyright__
@@ -80,7 +80,7 @@ def compare(ctx, *args, **kwargs):  # type: ignore
     if kwargs["all"]:
         for key, table in _all_tables_iter():
             try:
-                validation.onedim.choose_validator(table)(pdf).compare(table, key)
+                choose_validator(table)(pdf).compare(table, key)
             except ValueError as e:
                 print(e)
     elif kwargs["table"]:
@@ -88,7 +88,7 @@ def compare(ctx, *args, **kwargs):  # type: ignore
         assert f.is_file()
         table = File(f).tables["xsec"]
         try:
-            validation.onedim.choose_validator(table)(pdf).compare(table)
+            choose_validator(table)(pdf).compare(table)
         except ValueError as e:
             print(e)
     else:
@@ -108,7 +108,7 @@ def sieve(ctx, *args, **kwargs):  # type: ignore
     if kwargs["all"]:
         for _key, table in _all_tables_iter():
             try:
-                validation.onedim.choose_validator(table)(pdf).sieve(table)
+                choose_validator(table)(pdf).sieve(table)
             except ValueError as e:
                 print(e)
     elif kwargs["table"]:
@@ -116,7 +116,7 @@ def sieve(ctx, *args, **kwargs):  # type: ignore
         assert f.is_file()
         table = File(f).tables["xsec"]
         try:
-            validation.onedim.choose_validator(table)(pdf).sieve(table)
+            choose_validator(table)(pdf).sieve(table)
         except ValueError as e:
             print(e)
     else:
