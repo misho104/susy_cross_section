@@ -50,5 +50,6 @@
     "*.info": "json"
   },
   "restructuredtext.builtDocumentationPath": "${workspaceRoot}/docs/_build/html",
-  "restructuredtext.confPath": "${workspaceFolder}/docs"
+  "restructuredtext.confPath": "${workspaceFolder}/docs",
+  "editor.wordWrapColumn": 88
 }
