@@ -141,15 +141,17 @@ The dict has six keys: ``document``, ``attributes`` (optional), ``columns``, ``r
   This list defines the cross-section values.
   Each element is a dictionary and constructs a `ValueInfo` object.
   The dictionary has possibly the keys ``column``, ``unc``, ``unc+``, ``unc-``, and ``attributes``.
-  ``column`` is mandatory and its value is one of the ``name`` of ``columns``, where the column is used as the central value of cross-section.
-  ``attributes`` is optional and its value is a :typ:`dict(str, Any)`; it is used to construct a `CrossSectionAttributes` object, overriding the file-wide default values.
+  Among these keys, ``column`` is mandatory and corresponding value must be one of the ``name`` of ``columns``, where the column is used as the central value of cross-section.
+  The value for ``attributes`` is a dictionary :typ:`dict(str, Any)`. It overrides the file-wide default values (explained above) to construct a `CrossSectionAttributes`.
 
   The other three keys are used to specify uncertainties.
   ``unc`` specifies symmetric uncertainty, while a pair of ``unc+`` and ``unc-`` specifies asymmetric uncertainty; ``unc`` will not be present together with ``unc+`` or ``unc-``.
   Each value of ``unc``, ``unc+``, and ``unc-`` is *a list of dictionaries*, :typ:`list(dict(str, str))`.
   Each element of the list, being a dictionary with two keys ``column`` and ``type``, describes one source of uncertainties.
-  The value for ``column`` is one of the ``name`` of ``columns``, where the column is used as the source.
-  The value for ``type`` specifies the type of uncertainty; for details see the API document of `ValueInfo`.
+  The value for ``column`` is one of the ``name`` of ``columns``, or a list of the names.
+  If one name is specified, the column is used as the source.
+  If a list is specified, the column with the largest value among them is used as the source.
+  The value for ``type`` specifies the type of uncertainty; possible options and further details are found in the API document of `ValueInfo`.
 
 
 How to use own tables

@@ -20,7 +20,7 @@ import json
 import logging
 import pathlib  # noqa: F401
 import sys
-from typing import Any, Dict, List, Mapping, MutableMapping, Optional, Union
+from typing import Any, Dict, List, Mapping, MutableMapping, Optional, Tuple, Union
 
 from susy_cross_section.utility import TypeCheck as TC
 
@@ -33,6 +33,8 @@ else:
 
 logging.basicConfig(level=logging.WARNING)
 logger = logging.getLogger(__name__)
+
+UncSpecType = Tuple[List[str], str]
 
 
 class ColumnInfo(object):
@@ -267,10 +269,12 @@ class ValueInfo(object):
 
     Attributes
     ----------
-    column: str
-        Name of the column that stores this value.
+    column: str or List[str]
+        Names of the column that stores this value.
 
-        This must be match one of the :attr:`ColumnInfo.name` in the file.
+        The string, or each element of the list, must match one of the
+        :attr:`ColumnInfo.name` in the file. If multiple columns are specified,
+        the largest value among the columns (compared in each row) is used.
     attributes: dict (str, Any)
         Physical information annotated to this value.
     unc_p : dict (str, str)
@@ -286,28 +290,35 @@ class ValueInfo(object):
         - ``"absolute"`` for absolute uncertainty, where the unit of the column
           must be the same as that of the value column up to a factor.
 
-        The unit of the uncertainty column should be consistent with the unit
-        of the value column.
+        - ``"absolute,signed"`` or ``"relative,signed"`` for absolute/relative
+          uncertainty but using the columns with correct sign.
     unc_m : dict(str, str)
         The sources of "minus" uncertainties.
 
         Details are the same as `!unc_p`.
     """
 
-    _valid_uncertainty_types = ["relative", "absolute"]  # type: List[str]
+    _valid_uncertainty_types = [
+        "relative",
+        "absolute",
+        "signed,relative",
+        "signed,absolute",
+        "relative,signed",
+        "absolute,signed",
+    ]  # type: List[str]
 
     def __init__(
         self,
         column="",  # type: str
         attributes=None,  # type:MutableMapping[str, Any]
-        unc_p=None,  # type: MutableMapping[str, str]
-        unc_m=None,  # type: MutableMapping[str, str]
+        unc_p=None,  # type: List[UncSpecType]
+        unc_m=None,  # type: List[UncSpecType]
     ):
         # type: (...)->None
         self.column = column
         self.attributes = attributes or {}
-        self.unc_p = unc_p or {}
-        self.unc_m = unc_m or {}
+        self.unc_p = unc_p or []
+        self.unc_m = unc_m or []
 
     def validate(self):
         # type: ()->None
@@ -315,10 +326,9 @@ class ValueInfo(object):
         assert isinstance(self.column, str), "ValueInfo.column must be string."
         assert self.column, "ValueInfo.column is missing."
         assert TC.is_dict(self.attributes, key_type=str), "attributes not dict[str]."
-        for title, unc in [("unc+", self.unc_p), ("unc-", self.unc_m)]:
-            assert TC.is_dict(unc, key_type=str), title + " not dict[str]."
-            for v in unc.values():
-                assert v in self._valid_uncertainty_types, "invalid unc type: %s" % v
+        for col, t in itertools.chain(self.unc_p, self.unc_m):
+            assert TC.is_list(col, element_type=str)
+            assert t in self._valid_uncertainty_types, "invalid unc type: %s" % t
 
     @classmethod
     def from_json(cls, json_obj):
@@ -355,13 +365,18 @@ class ValueInfo(object):
             if unc_def is None:
                 logger.warning("Uncertainty (%s) missing for %s.", key_name, obj.column)
                 continue
-            if not TC.is_list(unc_def, element_type=Mapping):
-                raise TypeError("%s (%s) is not a list of dicts.", key_name, obj.column)
+            assert TC.is_list(unc_def, Mapping), "bad %s/%s" % (key_name, obj.column)
             try:
-                unc_dict = {source["column"]: source["type"] for source in unc_def}
-                setattr(obj, attr_name, unc_dict)
+                unc_list = [
+                    (
+                        src["column"] if TC.is_list(src["column"]) else [src["column"]],
+                        src["type"],
+                    )
+                    for src in unc_def
+                ]
             except KeyError as e:
                 raise ValueError("%s missing in %s (%s)", key_name, obj.column, *e.args)
+            setattr(obj, attr_name, unc_list)
 
         if not (obj.unc_p and obj.unc_m):
             logger.warning("Value %s lacks uncertainties.", obj.column)
@@ -380,8 +395,8 @@ class ValueInfo(object):
         return {
             "column": self.column,
             "attributes": self.attributes,
-            "unc+": [{"column": k, "type": v} for k, v in self.unc_p.items()],
-            "unc-": [{"column": k, "type": v} for k, v in self.unc_m.items()],
+            "unc+": [{"column": c, "type": t} for c, t in self.unc_p],
+            "unc-": [{"column": c, "type": t} for c, t in self.unc_m],
         }
 
 
@@ -458,8 +473,9 @@ class FileInfo(object):
             assert p.column in names_dict, "Unknown column name: %s" % p.column
         for v in self.values:
             assert v.column in names_dict, "Unknown column name: %s" % v.column
-            for u_col in itertools.chain(v.unc_p.keys(), v.unc_m.keys()):
-                assert u_col in names_dict, "Unknown column name: %s" % u_col
+            for col_list, _ in itertools.chain(v.unc_p, v.unc_m):
+                for c in col_list:
+                    assert c in names_dict, "Unknown column name: %s" % c
 
     @classmethod
     def load(cls, source):
