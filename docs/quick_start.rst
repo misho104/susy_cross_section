@@ -174,7 +174,7 @@ will show the documents and attributes, and you may interpolate the table by
 
 .. code-block:: python
 
-   interpolator = Scipy1dInterpolator(axes="loglog", kind="linear")
+   interpolator = Scipy1dInterpolator(axes="loglog", kind="spline")
    xs = interpolator.interpolate(xsec_table)
    print(xs(500), xs.fp(500), xs.fm(500), xs.unc_p_at(500), xs.unc_m_at(500))
    print(xs.tuple_at(513.3))
@@ -186,12 +186,12 @@ The output will be something like this, which reproduces the above-obtained resu
    32.9135    35.6479    30.1791    2.7344     -2.7344
    (array(29.3516), 2.4916, -2.4916)
 
-Note that the interpolator is `Scipy1dInterpolator` with ``linear`` option in log-log axes.
-You may use another interpolator, such as PCHIP interpolator in log-log axes, by
+Note that the interpolator is `Scipy1dInterpolator` with ``spline`` option in log-log axes.
+You may use another interpolator, such as linear interpolator in log-log axes, by
 
 .. code-block:: python
 
-   pchip = Scipy1dInterpolator(axes="loglog", kind="pchip").interpolate(xsec_table)
+   pchip = Scipy1dInterpolator(axes="loglog", kind="linear").interpolate(xsec_table)
    print(pchip.tuple_at(500))
    print(pchip.tuple_at(513.3))
 

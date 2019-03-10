@@ -99,8 +99,7 @@ Here, the default ``xsec`` grid in the table file ``8TeV.gg`` is used.
 One can check with :ref:`show sub-command <cmd_show>` that this grid is calculated by NLL-fast collaboration at the NLO+NLL order with using MSTW2008nlo68cl as the parton distribution functions (PDFs), and thus this 12.6 fb is the NLO+NLL cross section.
 
 The value is calculated by an interpolation if necessary.
-This sub-command uses linear interpolation with all the parameters and values in logarithmic scale.
-For example, an interpolating function for one-parameter grid table is obtained as piece-wise lines in a log-log plot.
+This sub-command uses (possibly multi-dimensional) cubic spline interpolation in logarithmic scale of all the parameters and value because the interpolator tends to give the best results in validations.
 To use other interpolating methods, users have to use this package by importing it to their Python codes as explained in `Section 4`_.
 For details, confer the API document of `susy_cross_section.interp`.
 

@@ -139,11 +139,11 @@ def get(context, **kw):
     # data evaluation
     if len(args) == 1:
         interp = Scipy1dInterpolator(
-            axes="loglog", kind="linear"
+            axes="loglog", kind="spline"
         )  # type: AbstractInterpolator
     else:
         wrapper = AxesWrapper(["log" for _ in args], "log")
-        interp = ScipyGridInterpolator(axes_wrapper=wrapper, kind="linear")
+        interp = ScipyGridInterpolator(axes_wrapper=wrapper, kind="spline33")
     cent, u_p, u_m = interp.interpolate(table).tuple_at(*kw["args"])
 
     # display
