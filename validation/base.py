@@ -133,3 +133,13 @@ class BaseValidator:
                 ax.set_zlabel(BaseValidator.label_with_unit(z_name, z_unit))
             except KeyError:
                 pass
+
+    def compare(self, table, nllfast_cache_key=None):
+        # type: (Table, Optional[str])->None
+        """Validate by comparing several interpolators."""
+        raise NotImplementedError
+
+    def sieve(self, table):
+        # type: (Table)->None
+        """Validate by sieved-interpolation method."""
+        raise NotImplementedError

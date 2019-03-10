@@ -2,7 +2,7 @@
 
 import logging
 import pathlib
-from typing import Any, List, Optional, Sequence, Tuple, Union, cast
+from typing import Any, List, Mapping, Optional, Sequence, Tuple, Union, cast
 
 import matplotlib
 import matplotlib.style
@@ -14,6 +14,7 @@ from matplotlib.pyplot import cm
 from mpl_toolkits.mplot3d import Axes3D  # noqa: F401
 from pandas import DataFrame
 
+from susy_cross_section.interp.axes_wrapper import AxesWrapper
 from susy_cross_section.interp.interpolator import (
     AbstractInterpolator,
     Interpolation,
@@ -28,6 +29,18 @@ logging.basicConfig(level=logging.WARNING)
 logger = logging.getLogger(__name__)
 
 nllfast_cache_dir = pathlib.Path(__file__).parent / "contrib" / "nllfast-cache"
+
+
+def choose_validator(table):
+    # type: (Table)->type
+    """Choose a validator based on the number of parameters."""
+    n_keys = len(table.index.names)
+    if n_keys == 1:
+        return OneDimValidator
+    elif n_keys == 2:
+        return TwoDimValidator
+    else:
+        raise ValueError("No validation method is prepared for n_param=%d.", n_keys)
 
 
 class OneDimValidator(BaseValidator):
@@ -261,12 +274,22 @@ class OneDimValidator(BaseValidator):
         self._save(fig)
 
 
-class SievedInterpolationValidator(BaseValidator):
+class TwoDimValidator(BaseValidator):
     """Validation with sieved table interpolations."""
 
     def __init__(self, output=None):
         # type: (Optional[Union[PdfPages, PathLike]])->None
         super().__init__(output=output)
+        loglog_wrapper = AxesWrapper(["log", "log"], "log")
+        self.interpolators = {
+            "{}/loglog".format(k): ScipyGridInterpolator(k, axes_wrapper=loglog_wrapper)
+            for k in ["linear", "spline33"]
+        }  # type: Mapping[str, ScipyGridInterpolator]
+        magma = matplotlib.pyplot.get_cmap("magma_r")
+        cmap_array = [magma(i) for i in range(0, 24 * 12, 24)]
+        self.cmap = matplotlib.colors.ListedColormap(cmap_array[1:-1])
+        self.cmap.set_under(cmap_array[0])
+        self.cmap.set_over(cmap_array[-1])
 
     def __del__(self):
         """Deconstruct this instance."""
@@ -274,119 +297,168 @@ class SievedInterpolationValidator(BaseValidator):
 
     def draw_interpolation(self, ax, table, data):
         # type: (Axes, Table, DataFrame)->None
-        if data.index.nlevels == 1:
-            pass
-        elif data.index.nlevels == 2:
+        def f(x):
+            # type: (float)->float
+            return numpy.log10(x)
 
-            def f(x):
-                # type: (float)->float
-                return numpy.log10(x)
+        ax.view_init(30, 40)
 
-            ax.view_init(30, 40)
-
-            xs, ys = zip(*table.index.values)
-            zs, zps, zms = (table[k].to_numpy() for k in ("value", "unc+", "unc-"))
-            with_label = True
-            for x, y, z, zp, zm in zip(xs, ys, zs, zps, zms):
-                ax.plot(
-                    [x, x],
-                    [y, y],
-                    [f(z + zp), f(z - zm)],
-                    marker="",
-                    c="black",
-                    linewidth=0.3,
-                    label="Data" if with_label else None,
-                )
-                with_label = False
-
-            xs, ys = zip(*data.index.values)
-            ips = [f(z) for z in data["interpolation"].to_numpy()]
-            ax.scatter(
-                xs,
-                ys,
-                ips,
-                c="r",
-                marker="_",
-                s=10,
-                label="interpolation",
-                linewidth=0.5,
+        xs, ys = zip(*table.index.values)
+        zs, zps, zms = (table[k].to_numpy() for k in ("value", "unc+", "unc-"))
+        with_label = True
+        for x, y, z, zp, zm in zip(xs, ys, zs, zps, zms):
+            ax.plot(
+                [x, x],
+                [y, y],
+                [f(z + zp), f(z - zm)],
+                marker="",
+                c="black",
+                linewidth=0.3,
+                label="Data" if with_label else None,
             )
-            self.set_labels_3d(ax, table, title="{file_name}")
-            ax.legend(loc="upper right", bbox_to_anchor=(1, 0.92))
-            ax.set_zlabel(r"$\log_{10}$ " + ax.get_zlabel())
-        else:
-            logger.critical("Plot index dimension too high.")
-            raise ValueError("Too high dimension.")
+            with_label = False
+
+        xs, ys = zip(*data.index.values)
+        ips = [f(z) for z in data["interpolation"].to_numpy()]
+        ax.scatter(
+            xs, ys, ips, c="r", marker="_", s=10, label="interpolation", linewidth=0.5
+        )
+        self.set_labels_3d(ax, table, title="{file_name}")
+        ax.legend(loc="upper right", bbox_to_anchor=(1, 0.92))
+        ax.set_zlabel(r"$\log_{10}$ " + ax.get_zlabel())
+
+    @staticmethod
+    def _extend_grid(seq):
+        # type: (Sequence[float])->List[float]
+        r = [(x1 + x2) / 2 for x1, x2 in zip(seq, seq[1:])]
+        r.insert(0, seq[0] - (seq[1] - seq[0]) / 2)
+        r.append(seq[-1] + (seq[-1] - seq[-2]) / 2)
+        return r
 
     def draw_badness(self, ax, table, data):
         # type: (Axes, Table, DataFrame)->None
+        xs, ys = data.index.levels
+        zs = abs(data["badness"].unstack().to_numpy())
+        mesh = ax.pcolormesh(
+            # note the reversed order!
+            self._extend_grid(ys),
+            self._extend_grid(xs),
+            zs,
+            cmap=self.cmap,
+            vmin=0,
+            vmax=1,
+            linewidths=5,
+        )
+        bar = ax.figure.colorbar(mesh)
+        bar.set_label("badness", rotation=270)
+        bar.ax.yaxis.labelpad = 10
+        ax.grid()
+        self.set_labels_3d(ax, table, z="")
 
-        def extend(seq):
-            # type: (Sequence[float])->List[float]
-            r = [(x1 + x2) / 2 for x1, x2 in zip(seq, seq[1:])]
-            r.insert(0, seq[0] - (seq[1] - seq[0]) / 2)
-            r.append(seq[-1] + (seq[-1] - seq[-2]) / 2)
-            return r
+    def compare(self, table, nllfast_cache_key=None):
+        # type: (Table, Optional[str])->None
+        """Compare multiple interpolators."""
+        fig1 = matplotlib.pyplot.figure(figsize=(6.4, 9.05))
+        fig2 = matplotlib.pyplot.figure(figsize=(6.4, 9.05))
+        ax1 = fig1.add_subplot(2, 1, 1, xmargin=0.3, ymargin=0.3)
+        ax2 = fig1.add_subplot(2, 1, 2, xmargin=0.3, ymargin=0.3)
+        ax3 = fig2.add_subplot(2, 1, 1)
+        ax4 = fig2.add_subplot(2, 1, 2)
 
-        magma = matplotlib.pyplot.get_cmap("magma_r")
-        cmap_array = [magma(i) for i in range(0, 24 * 12, 24)]
-        cmap = matplotlib.colors.ListedColormap(cmap_array[1:-1])
-        cmap.set_under(cmap_array[0])
-        cmap.set_over(cmap_array[-1])
+        ip = {k: v.interpolate(table) for k, v in self.interpolators.items()}
 
-        if data.index.nlevels == 1:
-            pass
-        elif data.index.nlevels == 2:
-            xs, ys = data.index.levels
-            zs = abs(data["badness"].unstack().to_numpy())
-            mesh = ax.pcolormesh(
-                # note the reversed order!
-                extend(ys),
-                extend(xs),
-                zs,
-                cmap=cmap,
-                vmin=0,
-                vmax=1,
-                linewidths=5,
+        diff_df = pandas.DataFrame()
+        # nllfast_cache_key = "13TeV.gg"
+        if nllfast_cache_key:
+            # plots are configured for 2 interp + orig
+            assert len(self.interpolators) == 2
+            cache = nllfast_cache_dir / (nllfast_cache_key + ".cache")
+            df = pandas.read_csv(
+                cache, sep="\t", header=None, names=["m1", "m2", "orig"]
             )
-            bar = ax.figure.colorbar(mesh)
+            df.set_index(["m1", "m2"], inplace=True)
+            assert len(df.columns) == 1
+            n1, n2 = ip.keys()
+            ip1, ip2 = ip.values()
+            for key, _ in df.iterrows():
+                ip1_tuple = ip1.tuple_at(key)
+                df.loc[key, n1] = ip1_tuple[0]
+                df.loc[key, "unc"] = min(abs(ip1_tuple[1]), abs(ip1_tuple[2]))
+                df.loc[key, n2] = ip2(key)
+
+            diff_df[f"{n1} vs {n2}"] = abs(df[n1] - df[n2]) / df["unc"]
+            diff_df[f"orig vs {n1}"] = abs(df["orig"] - df[n1]) / df["unc"]
+            diff_df[f"orig vs {n2}"] = abs(df["orig"] - df[n2]) / df["unc"]
+            diff_df[f"max_diff"] = diff_df.max(axis=1)
+            plots_and_columns = [
+                (ax1, "max_diff"),
+                (ax2, f"orig vs {n1}"),
+                (ax3, f"orig vs {n2}"),
+                (ax4, f"{n1} vs {n2}"),
+            ]
+        else:
+            x_list = self.split_interval(table.index.levels[0], n=5, log=False)
+            y_list = self.split_interval(table.index.levels[1], n=5, log=False)
+            n1, n2 = ip.keys()
+            ip1, ip2 = ip.values()
+            xs, ys, zs = [], [], []  # type: List[float], List[float], List[float]
+            for x in x_list:
+                for y in y_list:
+                    v1, ep, em = ip1.tuple_at(x, y)
+                    v2 = ip2(x, y)
+                    xs.append(x)
+                    ys.append(y)
+                    zs.append(abs(v1 - v2) / min(abs(ep), abs(em)))
+            diff_df = pandas.DataFrame(
+                zs, pandas.MultiIndex.from_arrays([xs, ys]), columns=[f"{n1} vs {n2}"]
+            )
+            plots_and_columns = [(ax1, f"{n1} vs {n2}")]
+
+        xs, ys = [self._extend_grid(seq) for seq in diff_df.index.levels]
+        for ax, k in plots_and_columns:
+            zs = abs(diff_df[k].unstack().to_numpy())
+            mesh = ax.pcolormesh(ys, xs, zs, cmap=self.cmap, vmin=0, vmax=1)
+            # note the x/y reversed order!
+            bar = ax.figure.colorbar(mesh, ax=ax)
             bar.set_label("badness", rotation=270)
             bar.ax.yaxis.labelpad = 10
             ax.grid()
-            self.set_labels_3d(ax, table, z="")
-        else:
-            logger.critical("Plot index dimension too high.")
-            raise ValueError("Too high dimension.")
+            self.set_labels_3d(ax, table, z="", title=k)
 
-    def plot(self, table, interpolator):
-        # type: (Table, Union[AbstractInterpolator, DataFrame])->matplotlib.figure.Figure
-        if isinstance(interpolator, AbstractInterpolator):
-            # perform interpolation according to specified interpolator
-            sieved_interpolation = SievedInterpolations(table, interpolator)
+        # decoration
+        adj = {"left": 0.22, "bottom": 0.12, "right": 0.9, "top": 0.83, "hspace": 0.24}
+
+        if len(plots_and_columns) == 1:
+            ax2.remove()
+            fig1.suptitle(f"{table.file.table_path.name}", y=0.9)
+            fig1.subplots_adjust(**adj)
+            self._save(fig1)
+        elif len(plots_and_columns) == 4:
+            fig1.suptitle(f"{table.file.table_path.name} (1/2)", y=0.9)
+            fig1.subplots_adjust(**adj)
+            self._save(fig1)
+            fig2.suptitle(f"{table.file.table_path.name} (2/2)", y=0.9)
+            fig2.subplots_adjust(**adj)
+            self._save(fig2)
+        else:
+            raise RuntimeError
+
+    def sieve(self, table):
+        # type: (Table)->None
+        for interp_name, interp in self.interpolators.items():
+            sieved_interpolation = SievedInterpolations(table, interp)
             ip = sieved_interpolation.interpolated_table()
-        else:
-            # or results are already given as `interpolator`
-            ip = interpolator
 
-        m = (0.22, 0.13, 0.1, 0.1)  # left, bottom, right, top
-        w, h = 1 - m[0] - m[2], 1 - m[1] - m[3]
-        h1 = h * 0.65
+            m = (0.22, 0.13, 0.1, 0.1)  # left, bottom, right, top
+            w, h = 1 - m[0] - m[2], 1 - m[1] - m[3]
+            h1 = h * 0.65
 
-        fig = matplotlib.pyplot.figure(figsize=(6.4, 9.05))
-        ax1 = fig.add_axes(
-            (m[0] - 0.08, m[1] + (h - h1), w + 0.08, h1), projection="3d"
-        )
-        ax2 = fig.add_axes((m[0], m[1], w - 0.02, h - h1 * 1.07))
-        self.draw_interpolation(ax1, table, ip)
-        self.draw_badness(ax2, table, ip)
-        if isinstance(interpolator, ScipyGridInterpolator):
-            ax1.title.set_text(f"{ax1.title.get_text()}/{interpolator.kind}")
-        return fig
-
-    def draw_plot(self, table, interpolator):
-        # type: (Table, Union[AbstractInterpolator, DataFrame])->None
-        if not self.pdf:
-            logger.warning("No PDF object to write.")
-            return
-        fig = self.plot(table, interpolator)
-        self._save(fig)
+            fig = matplotlib.pyplot.figure(figsize=(6.4, 9.05))
+            ax1 = fig.add_axes(
+                (m[0] - 0.08, m[1] + (h - h1), w + 0.08, h1), projection="3d"
+            )
+            ax2 = fig.add_axes((m[0], m[1], w - 0.02, h - h1 * 1.07))
+            self.draw_interpolation(ax1, table, ip)
+            self.draw_badness(ax2, table, ip)
+            ax1.title.set_text(f"{ax1.title.get_text()}/{interp_name}")
+            self._save(fig)

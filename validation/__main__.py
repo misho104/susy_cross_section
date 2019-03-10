@@ -15,8 +15,6 @@ import susy_cross_section
 import susy_cross_section.config
 import susy_cross_section.scripts
 import validation.onedim
-from susy_cross_section.interp.axes_wrapper import AxesWrapper
-from susy_cross_section.interp.interpolator import ScipyGridInterpolator
 from susy_cross_section.table import File
 
 __author__ = susy_cross_section.scripts.__author__
@@ -76,20 +74,23 @@ def main(ctx):  # type: ignore
 @click.option("--output", "-o", type=click.Path(exists=False, writable=True))
 @click.argument("table", required=False, type=click.Path(exists=True, readable=True))
 @click.pass_context
-def onedim_compare(ctx, *args, **kwargs):  # type: ignore
-    """Plot multiple interpolation results of 1d grid."""
+def compare(ctx, *args, **kwargs):  # type: ignore
+    """Plot multiple interpolation results."""
     pdf = PdfPages(kwargs["output"]) if kwargs["output"] else None
-    v = validation.onedim.OneDimValidator(pdf)
     if kwargs["all"]:
         for key, table in _all_tables_iter():
-            if len(table.index.names) == 1:
-                v.compare(table, nllfast_cache_key=key)
+            try:
+                validation.onedim.choose_validator(table)(pdf).compare(table, key)
+            except ValueError as e:
+                print(e)
     elif kwargs["table"]:
         f = pathlib.Path(kwargs["table"])
         assert f.is_file()
         table = File(f).tables["xsec"]
-        assert len(table.index.names) == 1
-        v.compare(table)
+        try:
+            validation.onedim.choose_validator(table)(pdf).compare(table)
+        except ValueError as e:
+            print(e)
     else:
         click.echo("table path or --all option must be required.")
     if pdf:
@@ -104,33 +105,20 @@ def onedim_compare(ctx, *args, **kwargs):  # type: ignore
 def sieve(ctx, *args, **kwargs):  # type: ignore
     """Plot multiple interpolation results of 1d grid."""
     pdf = PdfPages(kwargs["output"]) if kwargs["output"] else None
-    v1 = validation.onedim.OneDimValidator(output=pdf)
-    v2 = validation.onedim.SievedInterpolationValidator(output=pdf)
-    v2_interpolators = [
-        ScipyGridInterpolator(k, axes_wrapper=AxesWrapper(["log", "log"], "log"))
-        for k in ["linear", "spline33"]
-    ]
     if kwargs["all"]:
         for _key, table in _all_tables_iter():
             try:
-                n_keys = len(table.index.names)
-                if n_keys == 1:
-                    v1.sieve(table)
-                elif n_keys == 2:
-                    for i in v2_interpolators:
-                        v2.draw_plot(table, i)
+                validation.onedim.choose_validator(table)(pdf).sieve(table)
             except ValueError as e:
                 print(e)
     elif kwargs["table"]:
         f = pathlib.Path(kwargs["table"])
         assert f.is_file()
         table = File(f).tables["xsec"]
-        n_keys = len(table.index.names)
-        if n_keys == 1:
-            v1.sieve(table)
-        elif n_keys == 2:
-            for i in v2_interpolators:
-                v2.draw_plot(table, i)
+        try:
+            validation.onedim.choose_validator(table)(pdf).sieve(table)
+        except ValueError as e:
+            print(e)
     else:
         click.echo("table path or --all option must be required.")
     if pdf:
