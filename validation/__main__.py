@@ -14,6 +14,7 @@ from matplotlib.backends.backend_pdf import PdfPages
 import susy_cross_section
 import susy_cross_section.config
 import susy_cross_section.scripts
+import susy_cross_section.utility as Util
 from susy_cross_section.table import File
 from validation.validators import choose_validator
 
@@ -72,7 +73,7 @@ def main(ctx):  # type: ignore
 @main.command(context_settings={"help_option_names": ["-h", "--help"]})
 @click.option("--all", is_flag=True, help="Run for all named tables.")
 @click.option("--output", "-o", type=click.Path(exists=False, writable=True))
-@click.argument("table", required=False, type=click.Path(exists=True, readable=True))
+@click.argument("table", required=False)
 @click.pass_context
 def compare(ctx, *args, **kwargs):  # type: ignore
     """Plot multiple interpolation results."""
@@ -84,11 +85,14 @@ def compare(ctx, *args, **kwargs):  # type: ignore
             except ValueError as e:
                 print(e)
     elif kwargs["table"]:
-        f = pathlib.Path(kwargs["table"])
-        assert f.is_file()
-        table = File(f).tables["xsec"]
+        nllfast = (
+            kwargs["table"]
+            if kwargs["table"] in susy_cross_section.config.table_names
+            else None
+        )
+        table = File(*Util.get_paths(kwargs["table"])).tables["xsec"]
         try:
-            choose_validator(table)(pdf).compare(table)
+            choose_validator(table)(pdf).compare(table, nllfast_cache_key=nllfast)
         except ValueError as e:
             print(e)
     else:
@@ -100,7 +104,7 @@ def compare(ctx, *args, **kwargs):  # type: ignore
 @main.command(context_settings={"help_option_names": ["-h", "--help"]})
 @click.option("--all", is_flag=True, help="Run for all named tables.")
 @click.option("--output", "-o", type=click.Path(exists=False, writable=True))
-@click.argument("table", required=False, type=click.Path(exists=True, readable=True))
+@click.argument("table", required=False)
 @click.pass_context
 def sieve(ctx, *args, **kwargs):  # type: ignore
     """Plot multiple interpolation results of 1d grid."""
@@ -112,9 +116,7 @@ def sieve(ctx, *args, **kwargs):  # type: ignore
             except ValueError as e:
                 print(e)
     elif kwargs["table"]:
-        f = pathlib.Path(kwargs["table"])
-        assert f.is_file()
-        table = File(f).tables["xsec"]
+        table = File(*Util.get_paths(kwargs["table"])).tables["xsec"]
         try:
             choose_validator(table)(pdf).sieve(table)
         except ValueError as e:
