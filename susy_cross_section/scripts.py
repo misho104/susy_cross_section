@@ -143,7 +143,8 @@ def get(context, **kw):
         )  # type: AbstractInterpolator
     else:
         wrapper = AxesWrapper(["log" for _ in args], "log")
-        interp = ScipyGridInterpolator(axes_wrapper=wrapper, kind="spline33")
+        kind = "spline33" if len(args) == 2 else "linear"
+        interp = ScipyGridInterpolator(axes_wrapper=wrapper, kind=kind)
     cent, u_p, u_m = interp.interpolate(table).tuple_at(*kw["args"])
 
     # display
