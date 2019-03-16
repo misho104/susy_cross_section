@@ -132,7 +132,8 @@ For more customization, you can use this package from your own code with more de
 Document
 --------
 
-The document is provided on [readthedocs.io](https://susy-cross-section.readthedocs.io), together with [API references](https://susy-cross-section.readthedocs.io/en/latest/susy_cross_section.html).
+The document is provided on [readthedocs.io](https://susy-cross-section.readthedocs.io), together with [API references](https://susy-cross-section.readthedocs.io/en/latest/api_reference.html).
+A [PDF file](https://github.com/misho104/susy_cross_section/blob/master/docs/doc.pdf) is also distributed with this package.
 
 License and Citation Policy
 ---------------------------

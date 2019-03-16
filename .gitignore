@@ -3,7 +3,6 @@
 .mypy_cache
 /poetry.lock
 /pip-wheel-metadata
-/docs/doc.pdf
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

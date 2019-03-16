@@ -1,17 +1,23 @@
 {
   "editor.rulers": [79, 88] /* 79 for docstring, 88 for code */,
   "cSpell.words": [
+    "akima",
     "bivariate",
     "bs",
     "chargino",
     "colorama",
     "coloredlogs",
     "cteq",
+    "ecolor",
+    "elinewidth",
+    "hspace",
     "imul",
     "inplace",
     "interp",
+    "isdisjoint",
     "isnan",
     "issubdtype",
+    "iterrows",
     "lxml",
     "mstw",
     "mypy",
@@ -19,9 +25,13 @@
     "ndim",
     "neutralino",
     "nlevels",
+    "nllfast",
     "nlo",
     "noqa",
     "numpy",
+    "pchip",
+    "pcolormesh",
+    "pyplot",
     "rect",
     "resummino",
     "scipy",
@@ -29,12 +39,23 @@
     "slinear",
     "susy",
     "vectorize",
-    "xsec"
+    "vmax",
+    "vmin",
+    "xlabel",
+    "xmargin",
+    "xscale",
+    "xsec",
+    "yaxis",
+    "ylabel",
+    "ymargin",
+    "yscale",
+    "zlabel"
   ],
   "python.unitTest.nosetestsEnabled": false,
   "files.associations": {
     "*.info": "json"
   },
   "restructuredtext.builtDocumentationPath": "${workspaceRoot}/docs/_build/html",
-  "restructuredtext.confPath": "${workspaceFolder}/docs"
+  "restructuredtext.confPath": "${workspaceFolder}/docs",
+  "editor.wordWrapColumn": 88
 }

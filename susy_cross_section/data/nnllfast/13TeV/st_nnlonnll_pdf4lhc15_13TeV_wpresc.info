@@ -17,17 +17,17 @@
     { "name": "mst", "unit": "GeV" },
     { "name": "mgl", "unit": "GeV" },
     { "name": "xsec_lo", "unit": "pb" },
-    { "name": "unc+_scale_lo", "unit": "pb" },
-    { "name": "unc-_scale_lo", "unit": "pb" },
+    { "name": "unc_mu1_lo", "unit": "pb" },
+    { "name": "unc_mu2_lo", "unit": "pb" },
     { "name": "xsec_nlo", "unit": "pb" },
-    { "name": "unc+_scale_nlo", "unit": "pb" },
-    { "name": "unc-_scale_nlo", "unit": "pb" },
+    { "name": "unc_mu1_nlo", "unit": "pb" },
+    { "name": "unc_mu2_nlo", "unit": "pb" },
     { "name": "unc_pdf_alphas_nlo", "unit": "%" },
     { "name": "unc+_param_nlo", "unit": "%" },
     { "name": "unc-_param_nlo", "unit": "%" },
     { "name": "xsec", "unit": "pb" },
-    { "name": "unc-_scale_nnll", "unit": "pb" },
-    { "name": "unc+_scale_nnll", "unit": "pb" },
+    { "name": "unc_mu1_nnll", "unit": "pb" },
+    { "name": "unc_mu2_nnll", "unit": "pb" },
     { "name": "unc_pdf_alphas_nnll", "unit": "%" },
     { "name": "unc+_param_nnll", "unit": "%" },
     { "name": "unc-_param_nnll", "unit": "%" }
@@ -43,12 +43,8 @@
   "values": [
     {
       "column": "xsec_lo",
-      "unc+": [
-        { "column": "unc+_scale_lo", "type": "absolute" },
-        { "column": "unc_pdf_alphas_nlo", "type": "relative" }
-      ],
-      "unc-": [
-        { "column": "unc-_scale_lo", "type": "absolute" },
+      "unc": [
+        { "column": ["unc_mu1_lo", "unc_mu2_lo"], "type": "absolute,signed" },
         { "column": "unc_pdf_alphas_nlo", "type": "relative" }
       ],
       "attributes": { "order": "LO", "pdf_name": "(unknown)" }
@@ -56,12 +52,12 @@
     {
       "column": "xsec_nlo",
       "unc+": [
-        { "column": "unc+_scale_nlo", "type": "absolute" },
+        { "column": ["unc_mu1_nlo", "unc_mu2_nlo"], "type": "absolute,signed" },
         { "column": "unc_pdf_alphas_nlo", "type": "relative" },
         { "column": "unc+_param_nlo", "type": "relative" }
       ],
       "unc-": [
-        { "column": "unc-_scale_nlo", "type": "absolute" },
+        { "column": ["unc_mu1_nlo", "unc_mu2_nlo"], "type": "absolute,signed" },
         { "column": "unc_pdf_alphas_nlo", "type": "relative" },
         { "column": "unc-_param_nlo", "type": "relative" }
       ],
@@ -70,12 +66,18 @@
     {
       "column": "xsec",
       "unc+": [
-        { "column": "unc+_scale_nnll", "type": "absolute" },
+        {
+          "column": ["unc_mu1_nnll", "unc_mu2_nnll"],
+          "type": "absolute,signed"
+        },
         { "column": "unc_pdf_alphas_nnll", "type": "relative" },
         { "column": "unc-_param_nnll", "type": "relative" }
       ],
       "unc-": [
-        { "column": "unc-_scale_nnll", "type": "absolute" },
+        {
+          "column": ["unc_mu1_nnll", "unc_mu2_nnll"],
+          "type": "absolute,signed"
+        },
         { "column": "unc_pdf_alphas_nnll", "type": "relative" },
         { "column": "unc-_param_nnll", "type": "relative" }
       ],

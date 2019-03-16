@@ -1,8 +1,9 @@
 # cSpell:words docutils
 
+import re
+
 import docutils.nodes
 import sphinx.writers.latex
-import re
 
 
 class MyTranslator(sphinx.writers.latex.LaTeXTranslator):

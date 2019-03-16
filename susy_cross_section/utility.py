@@ -13,7 +13,7 @@ import itertools
 import logging
 import pathlib
 import sys
-from typing import List, Mapping, MutableMapping, Optional, Sequence, Tuple, Union
+from typing import Any, List, Mapping, MutableMapping, Optional, Sequence, Tuple, Union
 
 from numpy import log10
 
@@ -28,6 +28,7 @@ logging.basicConfig(level=logging.WARNING)
 logger = logging.getLogger(__name__)
 
 PathLike = Union[str, pathlib.Path]
+TypeSpecType = Optional[Union[type, Sequence[type]]]
 
 
 class Unit:
@@ -310,3 +311,68 @@ def get_paths(data_name, info_path=None):
         logger.info("For a preconfigured table, double-check the key of the table.")
         logger.info("If you specified a file-path, verify it exists as a file.")
         raise FileNotFoundError(data_name.__str__())
+
+
+class TypeCheck:
+    """Singleton class for methods to type assertion."""
+
+    @staticmethod
+    def is_list(obj, element_type=None):
+        # type: (Any, TypeSpecType)->bool
+        """Return if obj is a list with elements of specified type.
+
+        Arguments
+        ---------
+        obj:
+            object to test.
+        element_type: type or list of type, optional
+            Allowed types for elements.
+
+        Returns
+        -------
+        bool:
+            Validation result.
+        """
+        if isinstance(obj, str) or not isinstance(obj, Sequence):
+            return False
+        if element_type is not None:
+            types = element_type if isinstance(element_type, list) else [element_type]
+            for item in obj:
+                if not any(isinstance(item, t) for t in types):
+                    return False
+        return True
+
+    @staticmethod
+    def is_dict(obj, key_type=None, value_type=None):
+        # type: (Any, TypeSpecType, TypeSpecType)->bool
+        """Return if obj is a dict with keys/values of specified type.
+
+        Arguments
+        ---------
+        obj:
+            object to test.
+        key_type: type or list of type, optional
+            Allowed types for keys.
+        key_type: type or list of type, optional
+            Allowed types for values.
+
+        Returns
+        -------
+        bool:
+            Validation result.
+        """
+        if not isinstance(obj, Mapping):
+            return False
+
+        kt = vt = None
+        if key_type:
+            kt = key_type if isinstance(key_type, list) else [key_type]
+        if value_type:
+            vt = value_type if isinstance(value_type, list) else [value_type]
+
+        for k, v in obj.items():
+            if kt and not any(isinstance(k, t) for t in kt):
+                return False
+            if vt and not any(isinstance(v, t) for t in vt):
+                return False
+        return True

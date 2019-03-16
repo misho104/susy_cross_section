@@ -28,7 +28,6 @@ from typing import (  # noqa: F401
 
 import pandas  # noqa: F401
 
-from susy_cross_section.base.info import FileInfo
 from susy_cross_section.base.table import BaseFile, BaseTable
 
 if sys.version_info[0] < 3:  # py2
@@ -36,6 +35,8 @@ if sys.version_info[0] < 3:  # py2
 
 logging.basicConfig(level=logging.WARNING)
 logger = logging.getLogger(__name__)
+
+PathLike = Union[pathlib.Path, str]
 
 
 class CrossSectionAttributes(object):
@@ -126,19 +127,28 @@ class CrossSectionAttributes(object):
 class Table(BaseTable):
     """Table object with annotations."""
 
-    def __init__(self, obj=None, file_info=None, name=None):
-        # type: (Any, Optional[FileInfo], Optional[str])->None
-        if isinstance(obj, BaseTable):
+    def __init__(self, obj=None, file=None, name=None):
+        # type: (Any, Optional[File], Optional[str])->None
+        if isinstance(obj, Table):
+            assert file is None and name is None
             self._df = obj._df  # type: pandas.DataFrame
-            self.file_info = file_info or obj.file_info  # type: Optional[FileInfo]
-            self.name = name or obj.name
+            self.file = obj.file  # type: Optional[File]
+            self.name = obj.name  # type: Optional[str]
+        elif isinstance(obj, BaseTable):
+            self._df = obj._df  # type: pandas.DataFrame
+            if file and not isinstance(file, File):
+                raise TypeError("Table.file must be File.")
+            self.file = file or None
+            self.name = name or obj.name or None
         elif isinstance(obj, pandas.DataFrame):
             self._df = obj
-            self.file_info = file_info
+            self.file = file
             self.name = name
+        elif obj:
+            raise TypeError("Table.obj must be DataFrame.")
         else:
             self._df = pandas.DataFrame()
-            self.file_info = file_info
+            self.file = file
             self.name = name
 
     def __str__(self):
@@ -152,8 +162,8 @@ class Table(BaseTable):
     def unit(self):
         # type: ()->str
         """Return the unit of table values."""
-        if self.file_info and self.name:
-            return self.file_info.get_column(self.name).unit
+        if self.file and self.name:
+            return self.file.info.get_column(self.name).unit
         else:
             raise RuntimeError("No information is given for this table.")
 
@@ -161,8 +171,8 @@ class Table(BaseTable):
     def attributes(self):
         # type: ()->CrossSectionAttributes
         """Return the information associated to this table."""
-        if self.file_info and self.name:
-            value_info = [v for v in self.file_info.values if v.column == self.name]
+        if self.file and self.name:
+            value_info = [v for v in self.file.info.values if v.column == self.name]
             if not value_info:
                 raise RuntimeError("Value-info lookup failed.")
             return CrossSectionAttributes(**value_info[0].attributes)
@@ -170,7 +180,7 @@ class Table(BaseTable):
             raise RuntimeError("No information is given for this table.")
 
 
-class File(BaseFile):
+class File(BaseFile[Table]):
     """Data of a cross section with parameters, read from a table file.
 
     Contents are the same as superclass but each table is extended from
@@ -191,6 +201,14 @@ class File(BaseFile):
     """
 
     def __init__(self, table_path, info_path=None):
-        # type: (Union[pathlib.Path, str], Union[pathlib.Path, str])->None
-        super(File, self).__init__(table_path, info_path)
-        self.tables = {k: Table(v) for k, v in self.tables.items()}
+        # type: (Union[PathLike, BaseFile[BaseTable], File], Optional[PathLike])->None
+        if isinstance(table_path, File):
+            assert info_path is None
+            super(File, self).__init__(table_path)
+        else:
+            base = BaseFile(table_path, info_path)
+            # note that BaseTable knows BaseFile, not File.
+            # so here we tell them file=self.
+            base.tables = {k: Table(v, file=self) for k, v in base.tables.items()}
+            base = cast(BaseFile[Table], base)
+            super(File, self).__init__(base)

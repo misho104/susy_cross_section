@@ -1,4 +1,4 @@
-\documentclass[a4paper,11pt,parskip=half-]{scrartcl}
+\documentclass[a4paper,11pt,DIV=12,parskip=half-]{scrartcl}
 \pdfoutput=1
 \hyphenpenalty=10000
 

@@ -389,8 +389,12 @@ class ScipyGridInterpolator(AbstractInterpolator):
 
     def _interpolate(self, df):
         # type: (pandas.DataFrame)->InterpType
-        xs = df.index.levels
-        ys = df.unstack().to_numpy()
+        try:
+            xs = df.index.levels  # multiindex case
+            ys = df.unstack().to_numpy()
+        except AttributeError:
+            xs = [df.index.values]
+            ys = df.to_numpy()
         # xs: list with n_dim elements; each is a list of grid points along an axis.
         # ys: a numpy matrix with ndim = n_dim, i.e., "unstacked" tensor.
 
@@ -437,7 +441,7 @@ class ScipyGridInterpolator(AbstractInterpolator):
         if len(xs) != 2:
             raise ValueError("ScipyGridInterpolator with spline is only for 2d data.")
 
-        if numpy.isnan(xs).any() or numpy.isnan(ys).any():
+        if numpy.isnan(ys).any():
             raise ValueError("Spline interpolation does not allow missing grid points.")
         interp = sci_interp.RectBivariateSpline(xs[0], xs[1], ys, s=0, kx=kx, ky=ky)
 

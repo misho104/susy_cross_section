@@ -1,0 +1,72 @@
+{
+  "document": {
+    "title": "Squark-antisquark production cross-section at 13TeV LHC",
+    "authors": "Wim Beenakker, Silja Brensing-Thewes, Christoph Borschensky, Michael Krämer, Anna Kulesza, Leszek Motyka, Eric Laenen, and Irene Niessen",
+    "calculator": "NNLL-fast",
+    "source": "https://www.uni-muenster.de/Physik.TP/~akule_01/nnllfast/doku.php?id=start",
+    "version": "1.1"
+  },
+  "attributes": {
+    "processes": [
+      "p p > total(sq sq~); sq = dl dr ul ur sl sr cl cr bl br; sq~ = dl~ dr~ ul~ ur~ sl~ sr~ cl~ cr~ bl~ br~"
+    ],
+    "collider": "pp",
+    "ecm": "13TeV"
+  },
+  "columns": [
+    { "name": "process", "unit": "" },
+    { "name": "ms", "unit": "GeV" },
+    { "name": "mgl", "unit": "GeV" },
+    { "name": "xsec_lo", "unit": "pb" },
+    { "name": "unc_mu1_lo", "unit": "pb" },
+    { "name": "unc_mu2_lo", "unit": "pb" },
+    { "name": "xsec_nlo", "unit": "pb" },
+    { "name": "unc_mu1_nlo", "unit": "pb" },
+    { "name": "unc_mu2_nlo", "unit": "pb" },
+    { "name": "unc_pdf_alphas_nlo", "unit": "%" },
+    { "name": "xsec", "unit": "pb" },
+    { "name": "unc_mu1_nnll", "unit": "pb" },
+    { "name": "unc_mu2_nnll", "unit": "pb" },
+    { "name": "unc_pdf_alphas_nnll", "unit": "%" }
+  ],
+  "reader_options": {
+    "skiprows": 1,
+    "delim_whitespace": 1
+  },
+  "parameters": [
+    { "column": "ms", "granularity": 1 },
+    { "column": "mgl", "granularity": 1 }
+  ],
+  "values": [
+    {
+      "column": "xsec_lo",
+      "unc": [
+        { "column": ["unc_mu1_lo", "unc_mu2_lo"], "type": "absolute,signed" },
+        { "column": "unc_pdf_alphas_nlo", "type": "relative" }
+      ],
+      "attributes": { "order": "LO", "pdf_name": "(unknown)" }
+    },
+    {
+      "column": "xsec_nlo",
+      "unc": [
+        { "column": ["unc_mu1_nlo", "unc_mu2_nlo"], "type": "absolute,signed" },
+        { "column": "unc_pdf_alphas_nlo", "type": "relative" }
+      ],
+      "attributes": { "order": "NLO", "pdf_name": "PDF4LHC15_nlo_mc" }
+    },
+    {
+      "column": "xsec",
+      "unc": [
+        {
+          "column": ["unc_mu1_nnll", "unc_mu2_nnll"],
+          "type": "absolute,signed"
+        },
+        { "column": "unc_pdf_alphas_nnll", "type": "relative" }
+      ],
+      "attributes": {
+        "order": "NNLOapprox+NNLL+Coul+BS",
+        "pdf_name": "PDF4LHC15_nnlo_mc"
+      }
+    }
+  ]
+}

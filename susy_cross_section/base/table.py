@@ -9,24 +9,28 @@ annotations.
 
 from __future__ import absolute_import, division, print_function  # py2
 
+import itertools
 import json
 import logging
 import pathlib  # noqa: F401
 import sys
 from typing import (  # noqa: F401
     Any,
+    Generic,
     List,
     Mapping,
     MutableMapping,
     Optional,
     Sequence,
+    Set,
+    TypeVar,
     Union,
     cast,
 )
 
 import pandas
 
-from susy_cross_section.base.info import FileInfo
+from susy_cross_section.base.info import FileInfo, UncSpecType, ValueInfo
 from susy_cross_section.utility import Unit
 
 if sys.version_info[0] < 3:  # py2
@@ -39,30 +43,33 @@ else:
 logging.basicConfig(level=logging.WARNING)
 logger = logging.getLogger(__name__)
 
+PathLike = Union[pathlib.Path, str]
+TableT = TypeVar("TableT", bound="BaseTable", covariant=True)
+
 
 class BaseTable(object):
     """Table object with annotations.
 
     This is a wrapper class of :class:`pandas.DataFrame`. Any methods except
-    for read/write of `!file_info` are delegated to the DataFrame object.
+    for read/write of `!file` are delegated to the DataFrame object.
 
     Attributes
     ----------
-    file_info: FileInfo, optional
-        Info-data used to parse this table.
+    file: BaseFile, optional
+        File object containing this table.
     name: str, optional
         Name of this table.
 
-        This is provided so that `ValueInfo` can be obtained from `!file_info`.
+        This is provided so that `ValueInfo` can be obtained from `!file`.
     """
 
-    def __init__(self, obj=None, file_info=None, name=None):
-        # type:(pandas.DataFrame, Optional[FileInfo], Optional[str])->None
+    def __init__(self, obj=None, file=None, name=None):
+        # type:(pandas.DataFrame, Optional[BaseFile[BaseTable]], Optional[str])->None
         if isinstance(obj, pandas.DataFrame):
             self._df = obj  # type: pandas.DataFrame
         else:
             self._df = pandas.DataFrame()
-        self.file_info = file_info  # type: Optional[FileInfo]
+        self.file = file  # type: Optional[BaseFile[BaseTable]]
         self.name = name  # type: Optional[str]
 
     def __getattr__(self, name):
@@ -86,7 +93,7 @@ class BaseTable(object):
         return cast(str, self._df.__str__())
 
 
-class BaseFile(object):
+class BaseFile(Generic[TableT]):
     """File with table data-sets and annotations.
 
     An instance has two main attributes: `!info` (:typ:`FileInfo`) as the
@@ -124,26 +131,36 @@ class BaseFile(object):
     """
 
     def __init__(self, table_path, info_path=None):
-        # type: (Union[pathlib.Path, str], Union[pathlib.Path, str])->None
-        self.table_path = pathlib.Path(table_path)  # type: pathlib.Path
+        # type: (Union[PathLike, BaseFile[TableT]], Optional[PathLike])->None
+        if isinstance(table_path, BaseFile):
+            # copy constructor
+            assert info_path is None  # or invalid use of copy constructor
+            self.table_path = table_path.table_path  # type: pathlib.Path
+            self.info_path = table_path.info_path  # type: pathlib.Path
+            self.info = table_path.info  # type: FileInfo
+            self.raw_data = table_path.raw_data  # type: pandas.DataFrame
+            self.tables = table_path.tables  # type: MutableMapping[str, TableT]
+            return
+
+        self.table_path = pathlib.Path(table_path)
         self.info_path = pathlib.Path(
             info_path if info_path else self.table_path.with_suffix(".info")
-        )  # type: pathlib.Path
+        )
 
-        self.info = FileInfo.load(self.info_path)  # type: FileInfo
-        self.raw_data = self._read_csv(self.table_path)  # type: pandas.DataFrame
+        self.info = FileInfo.load(self.info_path)
+        self.raw_data = self._read_csv(self.table_path)
 
         # validate annotation before actual load
         self.info.validate()
         # and do actual loading
-        self.tables = self._parse_data()  # type: MutableMapping[str, BaseTable]
+        self.tables = self._parse_data()
         self.validate()
 
     def _read_csv(self, path):
         # type: (pathlib.Path)->pandas.DataFrame
         """Read a csv file and return the content.
 
-        Internally, call :meth:`pandas.read_csv()` with `!reader_options`.
+        Internally, call `pandas.read_csv` with `!reader_options`.
         """
         reader_options = {
             "skiprows": [0],
@@ -153,71 +170,74 @@ class BaseFile(object):
         return pandas.read_csv(path, **reader_options)
 
     def _parse_data(self):
-        # type: ()->MutableMapping[str, BaseTable]
+        # type: ()->MutableMapping[str, TableT]
         """Load and prepare data from the specified paths."""
-        tables = {}  # type: MutableMapping[str, BaseTable]
+        tables = {}  # type: MutableMapping[str, TableT]
+
+        def calc(row, unc_sources, sign):
+            # type: (pandas.Series, List[UncSpecType], int)->float
+            """Calculate uncertainty from a row in normalized dataframe."""
+            unc_components = []  # type: List[float]
+            for source, unc_type in unc_sources:  # iterate over sources
+                if "signed" in unc_type.split(","):
+                    # use only the correct-signed uncertainties
+                    unc_candidates = [abs(row[c]) for c in source if row[c] * sign > 0]
+                else:
+                    unc_candidates = [abs(row[c]) for c in source]
+                unc_components.append(max(unc_candidates) if unc_candidates else 0)
+            return sum(i ** 2 for i in unc_components) ** 0.5
+
         for value_info in self.info.values:
             name = value_info.column
-            value_unit = self.info.get_column(name).unit
-            parameters = self.info.parameters
-            data = self.raw_data.copy()
-
-            # set index by the quantized values
-            def quantize(data_frame, granularity):
-                # type: (pandas.DataFrame, float)->pandas.DataFrame
-                return (data_frame / granularity).apply(round) * granularity
-
-            for p in parameters:
-                if p.granularity:
-                    data[p.column] = quantize(data[p.column], p.granularity)
-
-            data.set_index([p.column for p in parameters], inplace=True)
-
-            # define functions to apply to DataFrame to get uncertainty.
-            up_factors = self._uncertainty_factors(Unit(value_unit), value_info.unc_p)
-            um_factors = self._uncertainty_factors(Unit(value_unit), value_info.unc_m)
-
-            def unc_p(row, name=name, unc_sources=value_info.unc_p, factors=up_factors):
-                # type: (Any, str, Mapping[str, str], Mapping[str, float])->float
-                return self._combine_uncertainties(row, name, unc_sources, factors)
-
-            def unc_m(row, name=name, unc_sources=value_info.unc_m, factors=um_factors):
-                # type: (Any, str, Mapping[str, str], Mapping[str, float])->float
-                return self._combine_uncertainties(row, name, unc_sources, factors)
-
-            tables[name] = BaseTable(file_info=self.info, name=name)
+            data = self._prepare_normalized_data(value_info)
+            tables[name] = cast(TableT, BaseTable(file=self, name=name))
             tables[name]["value"] = data[name]
-            tables[name]["unc+"] = data.apply(unc_p, axis=1)
-            tables[name]["unc-"] = data.apply(unc_m, axis=1)
+            for key, row in data.iterrows():
+                tables[name].loc[key, "unc+"] = calc(row, value_info.unc_p, +1)
+                tables[name].loc[key, "unc-"] = calc(row, value_info.unc_m, -1)
+
         return tables
 
-    def _uncertainty_factors(self, value_unit, uncertainty_info):
-        # type: (Unit, Mapping[str, str])->Mapping[str, float]
-        """Return the factor of uncertainty column relative to value column."""
-        factors = {}
-        for source_name, source_type in uncertainty_info.items():
-            unc_unit = Unit(self.info.get_column(source_name).unit)
-            if source_type == "relative":
-                unc_unit *= value_unit
-            # unc / unc_unit == "number in the table"
-            # we want to get "unc / value_unit" = "number in the table"  * unc_unit / value_unit
-            factors[source_name] = float(unc_unit / value_unit)
-        return factors
+    def _prepare_normalized_data(self, value_info):
+        # type: (ValueInfo)->pandas.DataFrame
+        """Quantize parameters and normalize columns to value_info.column."""
+        data = self.raw_data.copy()
 
-    @staticmethod
-    def _combine_uncertainties(row, value_name, unc_sources, factors):
-        # type: (Any, str, Mapping[str, str], Mapping[str, float])->float
-        """Return absolute combined uncertainty."""
-        uncertainties = []
-        for name, typ in unc_sources.items():
-            if typ == "relative":
-                uncertainties.append(row[name] * factors[name] * row[value_name])
-            elif typ == "absolute":
-                uncertainties.append(row[name] * factors[name])
+        def quantize(data_frame, granularity):
+            # type: (pandas.DataFrame, float)->pandas.DataFrame
+            return (data_frame / granularity).apply(round) * granularity
+
+        # set index by the quantized values
+        for p in self.info.parameters:
+            if p.granularity:
+                data[p.column] = quantize(data[p.column], p.granularity)
+        data.set_index([p.column for p in self.info.parameters], inplace=True)
+
+        # collect columns to use
+        abs_columns, rel_columns = set(), set()  # type: Set[str], Set[str]
+        for unc_cols, unc_type in itertools.chain(value_info.unc_p, value_info.unc_m):
+            is_relative = "relative" in unc_type.split(",")
+            for c in unc_cols:
+                (rel_columns if is_relative else abs_columns).add(c)
+        assert abs_columns.isdisjoint(rel_columns)
+
+        name = value_info.column
+        value_unit = Unit(self.info.get_column(name).unit)
+        for col in data.columns:
+            if col == value_info.column:
+                pass
+            elif col in abs_columns:
+                # unc / unc_unit == "number in the table"
+                # we want to get "unc / value_unit"
+                # = "number in the table" * unc_unit / value_unit
+                unc_unit = Unit(self.info.get_column(col).unit)
+                data[col] = data[col] * float(unc_unit / value_unit)
+            elif col in rel_columns:
+                unc_unit = Unit(self.info.get_column(col).unit) * value_unit
+                data[col] = data[name] * data[col] * float(unc_unit / value_unit)
             else:
-                raise ValueError(typ)
-
-        return sum(x ** 2 for x in uncertainties) ** 0.5
+                data.drop(col, axis=1, inplace=True)
+        return data
 
     def validate(self):
         # type: ()->None

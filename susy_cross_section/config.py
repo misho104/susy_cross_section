@@ -40,6 +40,8 @@ table_names = {
     "8TeV.sb10": "nllfast/8TeV/sb_nllnlo_mstw2008.grid",
     "8TeV.ss10": "nllfast/8TeV/ss_nllnlo_mstw2008.grid",
     "13TeV.sb10.decoup": "nnllfast/13TeV/sdcpl_nnlonnll_pdf4lhc15_13TeV_wpresc.grid",
+    "13TeV.sb10": "nnllfast/13TeV/sb_nnlonnll_pdf4lhc15_13TeV_wpresc.grid",
+    "13TeV.ss10": "nnllfast/13TeV/ss_nnlonnll_pdf4lhc15_13TeV_wpresc.grid",
     # stop
     "7TeV.st": "nllfast/7TeV/st_nllnlo_mstw2008.grid",
     "8TeV.st": "nllfast/8TeV/st_nllnlo_mstw2008.grid",

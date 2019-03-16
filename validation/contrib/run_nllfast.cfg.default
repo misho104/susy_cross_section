@@ -1,0 +1,25 @@
+[default]
+# root_dir is overwritten if guess_root_dir is not empty.
+# Possible options for guess_root_dir are:
+#    "git" to use "git rev-parse --show-toplevel".
+root_dir =
+guess_root_dir = git
+
+[7TeV]
+program = nllfast-1.2
+make_cmd = gfortran -o ${program} ${program}.f
+data_dir = ${root_dir}/susy_cross_section/data/nllfast/7TeV
+
+[8TeV]
+program = nllfast-2.1
+make_cmd = gfortran -o ${program} ${program}.f
+data_dir = ${root_dir}/susy_cross_section/data/nllfast/8TeV
+
+[13TeV]
+program = nnllfast-1.1
+make_cmd = gfortran -o ${program} ${program}.f
+data_dir = ${root_dir}/susy_cross_section/data/nnllfast/13TeV
+
+# list of variables:
+#     ${program}
+#     ${data_dir}

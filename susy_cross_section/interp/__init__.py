@@ -32,7 +32,7 @@ i.e., the number of parameters, returns a continuous function :math:`f`
 satisfying :math:`f({\boldsymbol x}_n)=y_n`.
 
 
-Caution
+Warning
 -------
 
 One should distinguish an interpolation :math:`f` from fitting functions. An
