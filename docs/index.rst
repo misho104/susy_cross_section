@@ -16,7 +16,7 @@ Welcome to SUSY cross section's documentation!
     use_as_script
     use_as_package
     api_reference
-
+    validations
 
 
 .. only:: html

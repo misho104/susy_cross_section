@@ -7,6 +7,7 @@ import re
 import sphinx  # sphinx 1.7.9 adapter
 from docutils import nodes, transforms
 from docutils.parsers.rst.roles import set_classes
+from docutils.parsers.rst.directives.images import Figure as FigureDirective
 from sphinx import addnodes
 from sphinx.domains.python import PyXRefRole
 from sphinx.environment.adapters.toctree import TocTree
@@ -30,6 +31,13 @@ def typ_role_options(target, options={}):
             "reftarget": target,
         },
     }
+
+
+class TwoFigureDirective(FigureDirective):
+    def run(self):
+        nodes = super().run()
+        nodes[0].attributes["subfigure"] = 2
+        return nodes
 
 
 class typ_role_class:
@@ -218,7 +226,7 @@ class MyHtmlTranslator(HTMLTranslator):
                 orig_text = n.children[0].astext()
                 try:
                     strip = orig_text.split(" ")[0].rindex(".")
-                    n.children[0] = nodes.Text(orig_text[strip + 1 :], orig_text)
+                    n.children[0] = nodes.Text(orig_text[strip + 1:], orig_text)
                 except ValueError:
                     pass
         return super().visit_bullet_list(node)
@@ -230,6 +238,10 @@ class MyHtmlTranslator(HTMLTranslator):
         return super().visit_math(node)
 
 
+class twofigure(nodes.General, nodes.Element):
+    pass
+
+
 def setup(app):  # noqa: D103
     app.add_role("typ", typ_role)
     app.add_role("ar", ar_role)
@@ -237,6 +249,7 @@ def setup(app):  # noqa: D103
     # MyPyXRefRole is imported in conf.py
     app.add_env_collector(MyTocTreeCollector)
     app.add_transform(ReturnTypeAddRole)
+    app.add_directive("twofigure", TwoFigureDirective)
     app.set_translator("html", MyHtmlTranslator)
     app.set_translator("readthedocs", MyHtmlTranslator)
     app.set_translator("readthedocssinglehtmllocalmedia", MyHtmlTranslator)

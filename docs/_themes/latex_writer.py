@@ -75,6 +75,27 @@ class MyTranslator(sphinx.writers.latex.LaTeXTranslator):
         if not node.hasattr("noemph"):
             self.body.append(r"\paramemph{")
 
+    def visit_figure(self, node):
+        if node.attributes.get("subfigure") != 2:
+            return super().visit_figure(node)
+
+        labels = self.hypertarget_to(node)
+        self.restrict_footnote(node)
+        if self.table:
+            raise NotImplementedError
+        elif node.get("align", "") in ("left", "right"):
+            raise NotImplementedError
+        elif self.in_minipage:
+            raise NotImplementedError
+        else:
+            self.body.append("\n\\begin{subfigure}[t]{0.49\\textwidth}\n\\centering\n")
+            if any(isinstance(child, docutils.nodes.caption) for child in node):
+                self.body.append("\\capstart\n")
+            self.context.append(labels + "\\end{subfigure}")
+        for child in node:
+            if isinstance(child, docutils.nodes.image):
+                child["width"] = "0.9\\textwidth"
+
 
 def setup(app):
     app.set_translator("latex", MyTranslator)

@@ -6,7 +6,7 @@
 
 
 % ----------------------------------------------------------- Packages
-\usepackage{amsmath,amssymb,url,cite,slashed,cancel,booktabs,hyperref,graphicx}
+\usepackage{amsmath,amssymb,url,cite,slashed,cancel,booktabs,hyperref,graphicx,subcaption}
 %%%UNUSED%%% \usepackage{feynmp,enumerate,multirow,wrapfig}
 \renewcommand\citepunct{,\penalty1000\hskip.13emplus.1emminus.1em\relax} % no line-break in \cite
 \renewcommand\thefootnote{*\arabic{footnote}}

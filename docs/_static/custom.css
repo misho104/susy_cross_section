@@ -12,3 +12,7 @@ span.py-ar {
 td.field-body p.first {
   margin-top: 3px;
 }
+
+.icon-home::before {
+  content: "\1f363" !important;
+}
