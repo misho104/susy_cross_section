@@ -214,9 +214,10 @@ class OneDimValidator(BaseValidator):
                 ip_base = interp_list[0][1].interpolate(table)
                 for k, row in df.iterrows():
                     df.loc[k, "variation"] = row["orig"] / ip_base(row["m"]) - 1
-                style = {"linestyle": " ", "markeredgewidth": 0, "marker": "o"}
-                df.plot("m", "orig", ax=ax1, markersize=0.5, label="", **style)
-                df.plot("m", "variation", ax=ax2, markersize=0.8, label="", **style)
+                style = {"linestyle": " ", "markeredgewidth": 0, "style": "ko"}
+                df.plot("m", "orig", ax=ax1, markersize=0.25, label="", **style)
+                df.plot("m", "variation", ax=ax2, markersize=0.25, label="", **style)
+                ax1.plot([], [], "k.", label="original interpolator")
 
         # decoration
         self.set_labels(ax1, table, x=False, title="{file_name}")
