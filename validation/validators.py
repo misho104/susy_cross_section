@@ -92,63 +92,6 @@ class OneDimValidator(BaseValidator):
             x_list, y_list = zip(*obj)
         return numpy.array(x_list), numpy.array(y_list)
 
-    @staticmethod
-    def _calculate_badness(table, ux, uy1, uy2):
-        # type: (Table, numpy.ndarray, numpy.ndarray, numpy.ndarray)->Tuple[List[float], List[float]]
-        """Calculate the maximal variation and badness of interpolator.
-
-        Variation is defined for each sampling point by the difference between
-        two interpolation results, :ar:`ip1` and :ar:`ip2`, where multiple
-        sampling points are picked up in every interval and they are given by
-        :ar:`ux`. This function returns its maximum.
-
-        For each interval, the representative value of uncertainty is defined
-        by the minimum of the uncertainties associated to the grid points
-        surrounding the interval. Badness for each sampling point is defined by
-        the ratio of the variation to the representative value, and this
-        function returns the maximum of the badnesses.
-
-        Parameters
-        ----------
-        table: Table
-            The table for evaluation.
-        ux: numpy.ndarray
-            The sampling points in x-axis.
-        uy1: numpy.ndarray
-            Values corresponding to ux from an interpolator.
-        uy2: numpy.ndarray
-            Values corresponding to ux from another interpolator.
-
-        Returns
-        -------
-        Tuple[List[float], List[float]]
-            A pair of variation and badness
-        """
-        x_list, em, ep = (
-            table.index.to_numpy(),
-            numpy.abs(table["unc-"]).to_numpy(),
-            table["unc+"].to_numpy(),
-        )
-
-        representative_unc = [
-            min(ep[i], ep[i + 1], em[i], em[i + 1]) for i in range(0, len(x_list) - 1)
-        ]  # type: List[float]
-
-        variations = []  # type: List[float]
-        badnesses = []  # type: List[float]
-
-        for n, x in enumerate(ux):
-            if uy1[n] is None or uy2[n] is None:
-                continue
-            for x1, x2, r in zip(x_list, x_list[1:], representative_unc):
-                if x1 <= x <= x2:
-                    d = abs(uy2[n] - uy1[n])
-                    variations.append(d / uy1[n])
-                    badnesses.append(d / r)
-                    break
-
-        return variations, badnesses
-
     def draw_variations(self, ax, table, interp_list, **kwargs):
         # type: (Axes, Table, List[Tuple[str, AbstractInterpolator]], Any)->Tuple[float, float]
         """Plot variation among interpolators and returns the worst values."""
@@ -157,24 +100,21 @@ class OneDimValidator(BaseValidator):
 
         n_interp = len(interp_list)
 
-        variations = []  # type: List[List[float]]
-        badnesses = []  # type: List[List[float]]
-        for n, (label, i) in enumerate(interp_list[1:]):
-            _, uy = self._build_x_y(table, i, x_list=ux0)
-            v, b = self._calculate_badness(table, ux0, uy0, uy)
-            variations.append(v)
-            badnesses.append(b)
+        variations = []  # type: List[float]
+        badnesses = []  # type: List[float]
+        for n, (label, interpolator) in enumerate(interp_list[1:]):
+            interpolation = interpolator.interpolate(table)
+            uy = numpy.array([interpolation(x) for x in ux0])
+            ey = numpy.array([max(abs(interpolation.unc_m_at(x)), interpolation.unc_p_at(x)) for x in ux0])
+            variation_list = (uy - uy0) / uy0
+            variations.append(numpy.max(numpy.abs(variation_list)))
+            badnesses.append(numpy.max(numpy.abs((uy0 - uy) / ey)))
             color = int(n / 2) if n_interp == len(self.interpolators) * 2 + 1 else n + 1
             k = {"linewidth": 0.5, "label": label, "c": cm.tab10(color)}
             k.update(kwargs)
-            new_x, new_y = [], []  # type: List[float], List[float]
-            for x, y, y0 in zip(ux0, uy, uy0):
-                if all(i is not None for i in [x, y, y0]):
-                    new_x.append(x)
-                    new_y.append(y / y0 - 1)
-            ax.plot(new_x, new_y, **k)
+            ax.plot(ux0, variation_list, **k)
 
-        return max(max(v) for v in variations), max(max(v) for v in badnesses)
+        return numpy.max(variations), numpy.max(badnesses)
 
     def compare(self, table, nllfast_cache_key=None):
         # type: (Table, Optional[str])->None
