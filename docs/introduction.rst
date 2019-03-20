@@ -46,6 +46,7 @@ More information on the script is available in `Section 3`_.
     You can include this package in your Python code for more customization.
     For example, you may use the cross section values in your code, or interpolate the grid tables with other interpolators, including your own ones.
     `Section 4`_ of this document is devoted to such use-cases, and the full API reference of this package is provided in `Section 5`_.
+    In `Section 6`_ we propose two methods to validate the interpolation procedure.
 
 .. only:: latex
     
@@ -53,7 +54,7 @@ More information on the script is available in `Section 3`_.
     For example, you may use the cross section values in your code, or interpolate the grid tables with other interpolators, including your own ones.
     `Section 4`_ of this document is devoted to such use-cases.
 
-    The appendices contain additional information of this package. `Appendix A`_ is the full API reference of this package, and in Appendix B the validation result will be summarized (but to be written).
+    The appendices contain additional information of this package. `Appendix A`_ is the full API reference of this package, and in `Appendix B`_ two methods to estimate the errors due to interpolation are provided together with the validation results.
 
 
 .. _LHC SUSY Cross Section Working Group:
@@ -76,6 +77,10 @@ More information on the script is available in `Section 3`_.
       api_reference
 .. _Appendix A:
       api_reference
+.. _Section 6:
+      validations
+.. _Appendix B:
+      validations
 
 .. rubric:: Footnotes
 
