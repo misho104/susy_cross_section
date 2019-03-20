@@ -25,6 +25,8 @@ from susy_cross_section.table import Table
 from validation.base import BaseValidator, PathLike
 from validation.sieve import SievedInterpolations
 
+InterpType = Union[AbstractInterpolator, Interpolation]
+
 logging.basicConfig(level=logging.WARNING)
 logger = logging.getLogger(__name__)
 
@@ -93,7 +95,7 @@ class OneDimValidator(BaseValidator):
         return numpy.array(x_list), numpy.array(y_list)
 
     def draw_variations(self, ax, table, interp_list, **kwargs):
-        # type: (Axes, Table, List[Tuple[str, AbstractInterpolator]], Any)->Tuple[float, float]
+        # type: (Axes, Table, List[Tuple[str, InterpType]], Any)->Tuple[float, float]
         """Plot variation among interpolators and returns the worst values."""
         label0, i0 = interp_list[0]
         ux0, uy0 = self._build_x_y(table, i0)
@@ -102,19 +104,36 @@ class OneDimValidator(BaseValidator):
 
         variations = []  # type: List[float]
         badnesses = []  # type: List[float]
-        for n, (label, interpolator) in enumerate(interp_list[1:]):
-            interpolation = interpolator.interpolate(table)
-            uy = numpy.array([interpolation(x) for x in ux0])
-            ey = numpy.array([max(abs(interpolation.unc_m_at(x)), interpolation.unc_p_at(x)) for x in ux0])
-            variation_list = (uy - uy0) / uy0
-            variations.append(numpy.max(numpy.abs(variation_list)))
-            badnesses.append(numpy.max(numpy.abs((uy0 - uy) / ey)))
+        for n, (label, i) in enumerate(interp_list[1:]):
+            if isinstance(i, Interpolation):
+                interpolation = i
+            else:
+                interpolation = i.interpolate(table)
+            ux = []  # type: List[float]
+            uy = []  # type: List[float]
+            ey = []  # type: List[float]
+            v = []  # type: List[float]
+            b = []  # type: List[float]
+            for x, y0 in zip(ux0, uy0):
+                try:
+                    y = interpolation(x)
+                    e = max(abs(interpolation.unc_m_at(x)), interpolation.unc_p_at(x))
+                except ValueError:
+                    continue
+                ux.append(x)
+                uy.append(y)
+                ey.append(e)
+                v.append((y - y0) / y0)
+                b.append(abs(y - y0) / e)
+
             color = int(n / 2) if n_interp == len(self.interpolators) * 2 + 1 else n + 1
             k = {"linewidth": 0.5, "label": label, "c": cm.tab10(color)}
             k.update(kwargs)
-            ax.plot(ux0, variation_list, **k)
+            ax.plot(ux, v, **k)
+            variations.append(max(abs(x) for x in v))
+            badnesses.append(max(x for x in b))
 
-        return numpy.max(variations), numpy.max(badnesses)
+        return max(v for v in variations), max(b for b in badnesses)
 
     def compare(self, table, nllfast_cache_key=None):
         # type: (Table, Optional[str])->None
@@ -130,7 +149,7 @@ class OneDimValidator(BaseValidator):
         interp_list = [
             ("{}/{}".format(i.kind, i.axes), cast(AbstractInterpolator, i))
             for i in self.interpolators
-        ]
+        ]  # type: List[Tuple[str, InterpType]]
 
         # first plot
         self.draw_data(ax1, table)
@@ -151,7 +170,10 @@ class OneDimValidator(BaseValidator):
             else:
                 df = pandas.read_csv(cache, sep="\t", header=None, names=["m", "orig"])
                 assert len(df.columns) == 2
-                ip_base = interp_list[0][1].interpolate(table)
+                if isinstance(interp_list[0][1], AbstractInterpolator):
+                    ip_base = interp_list[0][1].interpolate(table)
+                else:
+                    ip_base = interp_list[0][1]
                 for k, row in df.iterrows():
                     df.loc[k, "variation"] = row["orig"] / ip_base(row["m"]) - 1
                 style = {"linestyle": " ", "markeredgewidth": 0, "style": "ko"}
@@ -185,7 +207,7 @@ class OneDimValidator(BaseValidator):
             for i in self.interpolators
         ]
 
-        interp_for_variation = []
+        interp_for_variation = []  # type: List[Tuple[str, InterpType]]
         interp_for_variation.append(interp_list[0])
 
         # first plot
@@ -194,7 +216,7 @@ class OneDimValidator(BaseValidator):
             ips = SievedInterpolations(table, interp).interpolations
             c = cm.tab10(index)
             for ip in ips.values():
-                interp_for_variation.append(("x", ip))
+                interp_for_variation.append(("no name", ip))
                 ax1.plot(*(self._build_x_y(table, ip)), label=label, linewidth=0.5, c=c)
                 label = ""  # to remove label for the second and later lines
 
