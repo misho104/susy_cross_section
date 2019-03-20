@@ -29,9 +29,17 @@ mkdir -p $OUTPUT
 
 gen_pdf sdcpl-compare-1 1 compare 13TeV.sb10.decoup
 gen_pdf slep-compare-1  1 compare 13TeV.slepslep.rr
+gen_pdf sdcpl-sieve-1 1 sieve 13TeV.sb10.decoup
+gen_pdf slep-sieve-1  1 sieve 13TeV.slepslep.rr
 
 gen_pdf_1 compare 13TeV.gg
 pdfseparate tmp.pdf tmp-%d.pdf
 pdfjam tmp-1.pdf tmp-2.pdf --nup 2x1 --landscape --outfile tmp.pdf
 gen_pdf_2 gg-compare 1
+rm tmp*.pdf
+
+gen_pdf_1 sieve 13TeV.gg
+pdfseparate tmp.pdf tmp-%d.pdf
+pdfjam tmp-1.pdf tmp-2.pdf --nup 2x1 --landscape --outfile tmp.pdf
+gen_pdf_2 gg-sieve 1
 rm tmp*.pdf

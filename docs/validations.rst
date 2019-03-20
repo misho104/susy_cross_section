@@ -77,7 +77,7 @@ This method does not suit for :math:`D\ge3`, but such tables are not yet include
       :width: 360px
       :align: center
 
-      For 13 TeV :math:`pp\to\tilde l\tilde l^*` cross section.
+      For 13 TeV :math:`pp\to\tilde l_{\mathrm R}\tilde l^*_{\mathrm R}` cross section.
 
 .. raw::  latex
 
@@ -127,10 +127,96 @@ Thus we put further analyses out of scope of this package and left them to users
 For details, see the files in |vdir|__, where codes and instructions to generate the validation results by their own are provided.
 
 
-.. |vdir| replace:: validations/
 __ https://github.com/misho104/susy_cross_section/tree/master/validation/
 
 "Sieve" method
 --------------
 
-TBW
+This method gives a conservative estimation of the interpolation error by determining the value on a grid point from a "sieved" grid table, which is composed from the original grid table by removing every other line from all the parameter axes.
+
+First, we formally introduce this method.
+Let us consider a :math:`D`-dimensional parameter space :math:`P` that is defined by the grids :math:`[c_{11}, c_{12}, \dots], \dots, [c_{D1}, c_{D2}, \dots]`, as described above.
+Each grid point is given by
+
+.. math:: {\boldsymbol x}_{i_1, \dots, i_D} = (c_{1i_i}, \dots, c_{Di_D}).
+
+We can construct :math:`2^D` sieved grid tables, labeled by :math:`P_{r_1r_2\cdots r_D}` with :math:`r_n` being 0 or 1, as
+
+.. math:: P_{r_1r_2\cdots r_D} = \Bigl\{{\boldsymbol x}_{i_1, \dots, i_D} \Big| i_n \equiv r_n \bmod 2\Bigr\}.
+
+We can do interpolation over the sieved tables, but the resulting functions :math:`f_{r_1r_2\cdots r_D}` should give much worse results than the original interpolation :math:`f`.
+
+Let us consider a grid point :math:`{\boldsymbol x}_{3,4,5}`, where we assume :math:`D=3` for simplicity.
+The point is included only in :math:`P_{101}`, so :math:`f_{101}({\boldsymbol x}_{3,4,5})` gives the true value :math:`y_{3,4,5}`, so does :math:`f`.
+Meanwhile, the other interpolations :math:`f_{ijk}` do not give the correct value.
+In particular, the value is least accurate in :math:`f_{010}` because all the neighboring points are not included in :math:`f_{010}`; the point :math:`{\boldsymbol x}_{3,4,5}` locates the central region of a patch.
+Therefore, the difference from the true value, :math:`\delta_{3,4,5}:=f_{010}({\boldsymbol x}_{3,4,5}) - y_{3,4,5}`, gives a good estimation of the interpolation error of :math:`f_{010}` for the region close to :math:`{\boldsymbol x}_{3,4,5}`.
+We use this difference and resulting variation and badnesses as the error estimation of the original interpolation :math:`f` around :math:`{\boldsymbol x}_{3,4,5}`.
+
+In summary, the "sieve" method gives a very conservative estimation of the interpolation error around :math:`{\boldsymbol x}_{i_1,\dots,i_D}` for an interpolation :math:`f` by
+
+.. math:: \delta_{i_1,\dots, i_D}:=f_{\bar r_1\cdots\bar r_D}({\boldsymbol x}_{i_1,\dots,i_D}) - y_{i_1,\dots,i_D},
+
+where :math:`\bar r_n:=(i_n+1)\bmod2`.
+
+Note not only that this method does not give an estimation for the surface points, but also that, for spline-based interpolators, the estimation given by this method becomes extremely conservative for the next-to-surface and next-to-next-to-surface points because they locate at the center of a surface patch in the sieved grid table.
+Therefore, for spline-based interpolation, it will be ideal to prepare grid points with margins of two or three grid points beyond the region of interest.
+
+
+|begintwofigure|
+
+.. _sdcpl-sieve:
+.. twofigure:: _static/images/sdcpl-sieve-1.*
+      :width: 360px
+      :align: center
+
+      For 13 TeV :math:`pp\to\tilde q\tilde q^*` cross section.
+
+.. _slep-sieve:
+.. twofigure:: _static/images/slep-sieve-1.*
+      :width: 360px
+      :align: center
+
+      For 13 TeV :math:`pp\to\tilde l_{\mathrm R}\tilde l^*_{\mathrm R}` cross section.
+
+.. raw::  latex
+
+   \caption{%
+      The same as Fig.~\ref{validations:slep-compare} but based on ``sieve'' method.
+      In the upper figures the sieved interpolating functions are plotted with the original grid data, while the lower figures show the variations and badnesses of the sieved interpolating functions.
+   }
+
+|endtwofigure|
+
+
+.. _gg-sieve:
+.. figure:: _static/images/gg-sieve.*
+      :align: center
+
+      A validation result of two-dimensional interpolators using the 13 TeV :math:`pp\to\tilde g\tilde g` cross-section grid provided by NNLLfast collaboration.
+      The left (right) figure is for the linear (cubic-spline) interpolator.
+      In the upper plots the vertical intervals show the uncertainty range of true values and the horizontal ticks show the sieved interpolation results.
+      The lower plots show the badnesses around each of the grid points.
+
+
+Sample results are shown in :numref:`sdcpl-sieve`, :numref:`slep-sieve`, and :numref:`gg-sieve`, which are for the same grid tables as in the previous section.
+In the first figure, :math:`D=1` and thus two lines are shown for each interpolator.
+Those eight lines are overlapped and barely distinguishable; in the lower plot one may see two lines for the linear interpolator, which have a zig-zag form because each interpolator gives the true value at every other points.
+Since the maximal badness is 0.30, the interpolation error is negligible for this case.
+
+A worse result is shown in :numref:`slep-sieve`, which indicates that we could not trust the interpolation for :math:`m_{\text{slep}}\lesssim125\,\text{GeV}` if the grid spacing were doubled (100 GeV).
+Practically, one will avoid using the interpolation, consider to insert additional grid points, or include uncertainty due to interpolation based on the results of the "compare" method for this region.
+Conversely, we can safely ignore the interpolation error for :math:`m_{\text{slep}}\gtrsim125\,\text{GeV}`, which agrees with the "compare" method.
+
+:numref:`gg-sieve` is an example with :math:`D=2`; the left (right) figure is a validation for the linear (cubic-spline) interpolator.
+The upper plots include the sieved interpolation results :math:`f_{\bar r_1\bar r_2}({\boldsymbol x}_{i_1, i_2})` as the horizontal ticks and the uncertainty range of true values as the vertical lines; by construction, the surface points lacks the sieved interpolation results.
+The lower figures show the badness for each grid point.
+Generally, the spline interpolator gives better results, and this is the reason we use the spline interpolato in :ref:`get sub-command <cmd_get>`.
+Here, however, one should be careful of the surface region, where the interpolation result is affected by boundary conditions; in fact, the spline interpolator gives much worse results than the linear interpolator at the corner.
+
+Validation results for other grid tables are provided together with the package.
+In general, as far as avoiding the surface region and the region next to them, the spline interpolator gives very accurate results and users do not have to care of the interpolation error.
+Meanwhile, the spline interpolation is less trustable for the first and second intervals, where one should consider introducing the interpolation uncertainty.
+For details, see the files in |vdir|__, where codes and instructions to generate the validation results by their own are provided.
+
+__ https://github.com/misho104/susy_cross_section/tree/master/validation/
