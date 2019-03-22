@@ -17,6 +17,15 @@ Base directory for table data, relative to the package directory.
     :typ:`str`
 """
 
+package_dir = pathlib.Path(__file__).absolute().parent.parent
+"""
+The package diretory, usually no need to change.
+
+:Type:
+    :typ:`pathlib.Path`
+"""
+
+
 table_names = {
     # gluino
     "7TeV.gg.decoup": "nllfast/7TeV/gdcpl_nllnlo_mstw2008.grid",
@@ -93,14 +102,16 @@ def parse_table_value(obj):
         return obj, None
 
 
-def table_paths(key):
-    # type: (str)->Tuple[Optional[pathlib.Path], Optional[pathlib.Path]]
+def table_paths(key, absolute=False):
+    # type: (str, bool)->Tuple[Optional[pathlib.Path], Optional[pathlib.Path]]
     """Return the relative paths to table file and info file.
 
     Parameters
     ----------
     key: str
         The key of cross-section table.
+    absolute: bool
+        Whether to return absolute paths or not.
 
     Returns
     -------
@@ -117,6 +128,8 @@ def table_paths(key):
     grid, info = parse_table_value(value)
 
     base_dir = pathlib.Path(table_dir)
+    if absolute:
+        base_dir = package_dir / base_dir
     grid_path = base_dir / grid
     info_path = base_dir / info if info else None
     return grid_path, info_path
