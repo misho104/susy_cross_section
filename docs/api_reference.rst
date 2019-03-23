@@ -1,5 +1,6 @@
 .. raw:: latex
 
+      \input{foot_matter.tex}
       \clearpage
       \appendix
       \changefontsizes{10pt}

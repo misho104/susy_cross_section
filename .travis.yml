@@ -21,6 +21,9 @@ stages:
 
 script:
   - nosetests -s -d
+  - susy-xs list 13TeV
+  - susy-xs show 8TeV.gg
+  - susy-xs get 13TeV.ss10 1234 567
 
 after_success:
   - coveralls

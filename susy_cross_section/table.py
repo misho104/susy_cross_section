@@ -114,11 +114,11 @@ class CrossSectionAttributes(object):
             Dumped data.
         """
         lines = [
-            "collider: {}-collider, ECM={}".format(self.collider, self.ecm),
-            "calculation order: {}".format(self.order),
-            "PDF: {}".format(self.pdf_name),
+            u"collider: {}-collider, ECM={}".format(self.collider, self.ecm),
+            u"calculation order: {}".format(self.order),
+            u"PDF: {}".format(self.pdf_name),
             "included processes:",
-        ]
+        ]  # py2
         for p in self.processes:
             lines.append("  " + p)
         return "\n".join(lines)

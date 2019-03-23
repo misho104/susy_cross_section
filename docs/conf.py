@@ -116,10 +116,21 @@ pygments_style = None
 default_role = "any"
 add_module_names = False
 
-rst_epilog = """
+numfig = True
+
+rst_epilog = r"""
 .. bibliography:: references.bib cross_section_references.bib
     :filter: docname in docnames
     :style: default
+
+.. |begintwofigure| raw:: latex
+
+                     \begin{figure}[tp]
+
+
+.. |endtwofigure| raw:: latex
+
+                   \end{figure}
 """
 
 
@@ -164,6 +175,7 @@ latex_additional_files = [
     "_themes/utphys27mod.bst",
     "references.bib",
     "cross_section_references.bib",
+    "foot_matter.tex",
 ]
 
 latex_abstract = r"""

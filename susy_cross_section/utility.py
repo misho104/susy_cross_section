@@ -240,7 +240,7 @@ def get_paths(data_name, info_path=None):
     Returns
     -------
     Tuple[pathlib.Path, pathlib.Path]
-        A tuple with paths to data file and info file.
+        Paths to data file and info file; absolute if preconfigured.
 
     Raises
     ------
@@ -254,7 +254,8 @@ def get_paths(data_name, info_path=None):
         specified_grid = data_name
         specified_info = pathlib.Path(info_path) if info_path else None
     else:
-        configured_grid, configured_info = table_paths(data_name)
+        # here abs path should be calculated for configured (but not for specified)
+        configured_grid, configured_info = table_paths(data_name, absolute=True)
         specified_grid = pathlib.Path(data_name)
         specified_info = pathlib.Path(info_path) if info_path else None
 
