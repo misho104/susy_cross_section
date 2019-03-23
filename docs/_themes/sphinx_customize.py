@@ -4,7 +4,6 @@
 
 import re
 
-import sphinx  # sphinx 1.7.9 adapter
 from docutils import nodes, transforms
 from docutils.parsers.rst.roles import set_classes
 from docutils.parsers.rst.directives.images import Figure as FigureDirective
@@ -12,7 +11,6 @@ from sphinx import addnodes
 from sphinx.domains.python import PyXRefRole
 from sphinx.environment.adapters.toctree import TocTree
 from sphinx.environment.collectors.toctree import TocTreeCollector
-from sphinx.ext.mathbase import math_role  # sphinx 1.7.9 adapter
 from sphinx.transforms import SphinxContentsFilter
 from sphinx.writers.html import HTMLTranslator
 
@@ -70,10 +68,7 @@ def ar_role(name, rawtext, text, lineno, inliner, options={}, content=[]):
 
 
 def math_if_latex_role(name, rawtext, text, lineno, inliner, options={}, content=[]):
-    if sphinx.version_info[0:3] < (1, 8, 0):
-        return math_role(name, rawtext, text, lineno, inliner, options, content)
-    else:
-        return [nodes.math(rawtext, text, no_math="html")], []
+    return [nodes.math(rawtext, text, no_math="html")], []
 
 
 class MyPyXRefRole(PyXRefRole):
