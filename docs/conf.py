@@ -175,7 +175,7 @@ latex_additional_files = [
     "_themes/utphys27mod.bst",
     "references.bib",
     "cross_section_references.bib",
-    "foot_matter.tex",
+    "foot_matter.tex.in",
 ]
 
 latex_abstract = r"""
