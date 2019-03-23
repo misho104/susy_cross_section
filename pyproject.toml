@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "susy_cross_section"
-version = "0.0.6"
+version = "0.1.0"
 description = "A Python package for high-energy physics analysis to provide SUSY cross section data"
 authors = ["Sho Iwamoto (Misho) <webmaster@misho-web.com>"]
 license = "MIT"
