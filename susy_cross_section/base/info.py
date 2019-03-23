@@ -574,5 +574,5 @@ class FileInfo(object):
         """
         results = ["[Document]"]
         for k, v in self.document.items():
-            results.append("  {}: {}".format(k, v))
+            results.append(u"  {}: {}".format(k, v))  # py2
         return "\n".join(results)

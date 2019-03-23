@@ -295,6 +295,6 @@ class BaseFile(Generic[TableT]):
 
         results.append(line)
         for k, v in self.info.document.items():
-            results.append("{}: {}".format(k, v))
+            results.append(u"{}: {}".format(k, v))
         results.append(line)
         return "\n".join(results)
