@@ -4,7 +4,7 @@
     "authors": "LHC SUSY Cross Section Working Group",
     "calculator": "resummino",
     "source": "https://twiki.cern.ch/twiki/bin/view/LHCPhysics/SUSYCrossSections13TeVn1n2hino",
-    "version": "2017-07-25"
+    "version": "2017-07-25_patched1"
   },
   "attributes": {
     "processes": "p p > hino0_1 hino0_2",
