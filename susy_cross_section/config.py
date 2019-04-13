@@ -100,7 +100,7 @@ def parse_table_value(obj):
     """
     if not obj:
         raise ValueError("Table value must not be empty.")
-    elif len(obj) < 2:
+    elif len(obj) <= 2:
         # having one or two elements must be a tuple.
         return obj[0], obj[1] if len(obj) == 2 else None
     else:
