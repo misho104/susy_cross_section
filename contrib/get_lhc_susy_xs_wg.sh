@@ -26,4 +26,23 @@ cat tmp | python $SCRAPER --index=1 > $OUTPUT_DIR/13TeVslepslep_ll.csv
 cat tmp | python $SCRAPER --index=2 > $OUTPUT_DIR/13TeVslepslep_rr.csv
 cat tmp | python $SCRAPER --index=3 > $OUTPUT_DIR/13TeVslepslep_maxmix.csv
 
+curl -o tmp "https://twiki.cern.ch/twiki/bin/view/LHCPhysics/SUSYCrossSections13TeVn1n2hino"
+cat tmp | python $SCRAPER --index=1 > $OUTPUT_DIR/13TeVn1n2hino_deg_envelope.csv
+cat tmp | python $SCRAPER --index=2 > $OUTPUT_DIR/13TeVn1n2hino_deg_cteq.csv
+cat tmp | python $SCRAPER --index=3 > $OUTPUT_DIR/13TeVn1n2hino_deg_mstw.csv
+
+curl -o tmp "https://twiki.cern.ch/twiki/bin/view/LHCPhysics/SUSYCrossSections13TeVn2x1hino"
+cat tmp | python $SCRAPER --index=1 > $OUTPUT_DIR/13TeVn2x1hino_deg_envelope_pm.csv
+cat tmp | python $SCRAPER --index=2 > $OUTPUT_DIR/13TeVn2x1hino_deg_cteq_pm.csv
+cat tmp | python $SCRAPER --index=3 > $OUTPUT_DIR/13TeVn2x1hino_deg_cteq_p.csv
+cat tmp | python $SCRAPER --index=4 > $OUTPUT_DIR/13TeVn2x1hino_deg_cteq_m.csv
+cat tmp | python $SCRAPER --index=5 > $OUTPUT_DIR/13TeVn2x1hino_deg_mstw_pm.csv
+cat tmp | python $SCRAPER --index=6 > $OUTPUT_DIR/13TeVn2x1hino_deg_mstw_p.csv
+cat tmp | python $SCRAPER --index=7 > $OUTPUT_DIR/13TeVn2x1hino_deg_mstw_m.csv
+
+curl -o tmp "https://twiki.cern.ch/twiki/bin/view/LHCPhysics/SUSYCrossSections13TeVx1x1hino"
+cat tmp | python $SCRAPER --index=1 > $OUTPUT_DIR/13TeVx1x1hino_deg_envelope.csv
+cat tmp | python $SCRAPER --index=2 > $OUTPUT_DIR/13TeVx1x1hino_deg_cteq.csv
+cat tmp | python $SCRAPER --index=3 > $OUTPUT_DIR/13TeVx1x1hino_deg_mstw.csv
+
 rm tmp

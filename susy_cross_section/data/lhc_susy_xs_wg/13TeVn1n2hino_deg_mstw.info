@@ -1,0 +1,41 @@
+{
+  "document": {
+    "title": "NLO-NLL degenerated higgsino-like neutralino-neutralino (N1N2) cross sections",
+    "authors": "LHC SUSY Cross Section Working Group",
+    "calculator": "resummino",
+    "source": "https://twiki.cern.ch/twiki/bin/view/LHCPhysics/SUSYCrossSections13TeVn1n2hino",
+    "version": "2017-07-25_patched1"
+  },
+  "attributes": {
+    "processes": "p p > hino0_1 hino0_2",
+    "collider": "pp",
+    "ecm": "13TeV",
+    "order": "NLO+NLL",
+    "pdf_name": "MSTW2008nlo90cl"
+  },
+  "columns": [
+    { "name": "m_hino", "unit": "GeV" },
+    { "name": "xsec", "unit": "fb" },
+    { "name": "unc-_scale", "unit": "%" },
+    { "name": "unc-_pdf", "unit": "%" },
+    { "name": "unc+_scale", "unit": "%" },
+    { "name": "unc+_pdf", "unit": "%" }
+  ],
+  "reader_options": {
+    "skipinitialspace": 1
+  },
+  "parameters": [{ "column": "m_hino", "granularity": 1 }],
+  "values": [
+    {
+      "column": "xsec",
+      "unc-": [
+        { "column": "unc-_scale", "type": "relative" },
+        { "column": "unc-_pdf", "type": "relative" }
+      ],
+      "unc+": [
+        { "column": "unc+_scale", "type": "relative" },
+        { "column": "unc+_pdf", "type": "relative" }
+      ]
+    }
+  ]
+}

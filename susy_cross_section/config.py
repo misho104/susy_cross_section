@@ -55,14 +55,21 @@ table_names = {
     "7TeV.st": "nllfast/7TeV/st_nllnlo_mstw2008.grid",
     "8TeV.st": "nllfast/8TeV/st_nllnlo_mstw2008.grid",
     "13TeV.st": "nnllfast/13TeV/st_nnlonnll_pdf4lhc15_13TeV_wpresc.grid",
-    # EWKino
+    # wino
     "13TeV.n2x1-.wino": "lhc_susy_xs_wg/13TeVn2x1wino_envelope_m.csv",
     "13TeV.n2x1+.wino": "lhc_susy_xs_wg/13TeVn2x1wino_envelope_p.csv",
     "13TeV.n2x1+-.wino": "lhc_susy_xs_wg/13TeVn2x1wino_envelope_pm.csv",
     "13TeV.x1x1.wino": "lhc_susy_xs_wg/13TeVx1x1wino_envelope.csv",
+    # slepton
     "13TeV.slepslep.ll": "lhc_susy_xs_wg/13TeVslepslep_ll.csv",
     "13TeV.slepslep.rr": "lhc_susy_xs_wg/13TeVslepslep_rr.csv",
     "13TeV.slepslep.maxmix": "lhc_susy_xs_wg/13TeVslepslep_maxmix.csv",
+    # higgsino (using MSTW because n2x1+ lacks envelope)
+    "13TeV.n1n2.hino.deg": "lhc_susy_xs_wg/13TeVn1n2hino_deg_mstw.csv",
+    "13TeV.n2x1-.hino.deg": "lhc_susy_xs_wg/13TeVn2x1hino_deg_mstw_m.csv",
+    "13TeV.n2x1+.hino.deg": "lhc_susy_xs_wg/13TeVn2x1hino_deg_mstw_p.csv",
+    "13TeV.n2x1+-.hino.deg": "lhc_susy_xs_wg/13TeVn2x1hino_deg_mstw_pm.csv",
+    "13TeV.x1x1.hino.deg": "lhc_susy_xs_wg/13TeVx1x1hino_deg_mstw.csv",
 }  # type: Mapping[str, Union[str, Tuple[str, str]]]
 """
 Preset table names and paths to files.
