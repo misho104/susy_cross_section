@@ -14,7 +14,7 @@ import click
 import colorama
 import coloredlogs
 
-import susy_cross_section.config
+import susy_cross_section.config as config
 import susy_cross_section.utility as Util
 from susy_cross_section.interp.axes_wrapper import AxesWrapper
 from susy_cross_section.interp.interpolator import (
@@ -199,7 +199,7 @@ def cmd_list(**kw):
     colorama.init()
     _configure_logger()
 
-    base_dir = pathlib.Path(susy_cross_section.config.table_dir)
+    table_dir_abs = config.package_dir / config.table_dir  # absolute path
     substr_list = [s.lower() for s in kw["substr"]]  # case insensitive
 
     def to_show(key, grid, info):
@@ -212,21 +212,21 @@ def cmd_list(**kw):
 
     def str_to_pathstr(s):
         # type: (str)->str
-        return (base_dir / s).absolute().__str__() if kw["full"] else s
+        return (table_dir_abs / s).absolute().__str__() if kw["full"] else s
 
     # predefined paths
     lines = []  # type: List[Tuple[Optional[str], str, Optional[str]]]
     checked = {}  # type: MutableMapping[str, bool]
-    for key, value in susy_cross_section.config.table_names.items():
-        grid, info = susy_cross_section.config.parse_table_value(value)
+    for key, value in config.table_names.items():
+        grid, info = config.parse_table_value(value)
         checked[grid.__str__()] = True
         if to_show(key, grid, info):
             lines.append((key, grid, info))
 
     # list all the grid even without predefined keys
     if kw["all"]:
-        for f in sorted(base_dir.glob("**/*")):
-            rel_path = f.relative_to(base_dir).__str__()
+        for f in sorted(table_dir_abs.glob("**/*")):
+            rel_path = f.relative_to(table_dir_abs).__str__()
             if all(
                 [
                     not rel_path.endswith(".info"),
