@@ -12,16 +12,17 @@ The number of new physics events in colliders are given by the product of produc
 Therefore, cross sections of new physics processes are the most important values in any new-physics theory and should be calculated with similar precision.
 
 Cross-section calculation with such precision is not a simple task because the leading order (LO) calculation, which usually includes only the tree-level contributions, will not give such precision and we have to include loop-level calculations.
-Especially, when colored particles are involved in the process, the large QCD couplings worsen convergence of the perturbation series and even the next-to-leading-order (NLO) calculation may give uncertainties more than 10%, and we have to include the next-to-NLO (NNLO) diagrams and/or soft-gluon resummation.
+Especially, if colored particles are involved in the process, the large QCD couplings worsen convergence of the perturbation series and even the next-to-leading-order (NLO) calculation may give uncertainties more than 10%, and we have to include the next-to-NLO (NNLO) diagrams and/or soft-gluon resummation.
 
 For SUSY processes, several tools are published for precise cross-section calculations.
 Prospino :cite:`Beenakker:1996ed` is one of the pioneer works.
 It is upgraded to `Prospino 2`_ :cite:`ProspinoWeb`, with which we can calculate NLO cross sections of most SUSY processes within a few minutes.
 For soft-gluon resummation, `Resummino`_ :cite:`Fuks:2013vua` is available, which allows us to calculate the resummation at the accuracy level of next-to-leading-log (NLL) or the next-to-NLL (NNLL).
 
-`NNLL-fast`_ :cite:`Beenakker:2016lwe` is another type of tools for SUSY cross sections.
-It provides grid data of cross sections calculated with accuracy level of approximated-NNLO plus NNLL together with an interpolator, with which users can obtain cross sections for various parameter set of simplified scenario less than a few second.
-While available process are limited compared to `Prospino 2`_ or `Resummino`_ and the results suffer from uncertainties due to the interpolation, the fast calculation provided by NNLL-fast has a great advantage for new-physics studies, which usually consider a huge number of parameter sets.
+`NNLL-fast`_ :cite:`Beenakker:2016lwe` (and its preceding work `NLL-fast`_) is another type of tools for SUSY cross sections;
+it provides, rather than calculation programs, grid-format data tables of predicted cross sections together with interpolators.
+The data tables are based on their very precise calculations with the accuracy level of approximated-NNLO plus NNLL in `NNLL-fast`_ (and NLO plus NLL in `NLL-fast`_).
+By interpolation, users can obtain accurate predictions of cross sections in simplified scenarios within one second.
 
 Grid tables for SUSY cross sections are provided by other collaborations as well [#deepxs]_.
 The most nominal set is the one provided by `LHC SUSY Cross Section Working Group`_ :cite:`LHCSUSYCSWG`, which is obtained by compiling the results from the above calculators.
@@ -34,7 +35,8 @@ This Package
 
 `!susy_cross_section` is a Python package to handle cross-section grid tables regardless of their format.
 With this package, one can import any table-like grid files as a `pandas`_ DataFrame, once an annotation file (`info` file) is provided in JSON format :cite:`json`.
-Several interpolators are also provided, with which one can interpolate the grid tables to obtain the central values together with (possibly asymmetric) uncertainties.
+Selected grid tables from above-introduced collaborations are pre-installed with annotation files.
+Using several types of interpolators provided in this package, users can interpolate those grid tables to obtain the central values together with (possibly asymmetric) uncertainties.
 A quick start guide is provided in `Section 2`_.
 
 For simple use-cases, a command-line script `!susy-xs` is provided.
@@ -62,6 +64,8 @@ More information on the script is available in `Section 3`_.
 .. _Prospino 2:
       https://www.thphys.uni-heidelberg.de/~plehn/index.php?show=prospino
 .. _NNLL-fast:
+      https://www.uni-muenster.de/Physik.TP/~akule_01/nnllfast/doku.php?id=start
+.. _NLL-fast:
       https://www.uni-muenster.de/Physik.TP/~akule_01/nnllfast/doku.php?id=start
 .. _Resummino:
       https://resummino.hepforge.org/
