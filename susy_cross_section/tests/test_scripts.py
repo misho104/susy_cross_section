@@ -91,8 +91,8 @@ class TestScripts(unittest.TestCase):
                 scripts.get, ["13TeV.slepslep.ll", mass.__str__()]
             )  # py2
             self.assert_success(result[mass])
-        eq_(result[300].output.strip(), "(4.43 +0.19 -0.24) fb")
-        eq_(result[350].output.strip(), "(2.33 +0.11 -0.14) fb")
+        eq_(result[300].output.strip(), "(0.004508 +0.000099 -0.000095) pb")
+        eq_(result[350].output.strip(), "(0.002378 +0.000062 -0.000058) pb")
 
     def test_get_two_args(self):
         """Test get command for two-argument case."""
