@@ -61,9 +61,10 @@ table_names = {
     "13TeV.n2x1+-.wino": "lhc_susy_xs_wg/13TeVn2x1wino_envelope_pm.csv",
     "13TeV.x1x1.wino": "lhc_susy_xs_wg/13TeVx1x1wino_envelope.csv",
     # slepton
-    "13TeV.slepslep.ll": "lhc_susy_xs_wg/13TeVslepslep_ll.csv",
-    "13TeV.slepslep.rr": "lhc_susy_xs_wg/13TeVslepslep_rr.csv",
-    "13TeV.slepslep.maxmix": "lhc_susy_xs_wg/13TeVslepslep_maxmix.csv",
+    "13TeV.slepslep": "lhc_susy_xs_wg/13TeVslepslep_pdf4lhc15_llrr.csv",
+    "13TeV.slepslep.ll": "lhc_susy_xs_wg/13TeVslepslep_pdf4lhc15_ll.csv",
+    "13TeV.slepslep.rr": "lhc_susy_xs_wg/13TeVslepslep_pdf4lhc15_rr.csv",
+    # "13TeV.slepslep.maxmix": "lhc_susy_xs_wg/13TeVslepslep_ct10_maxmix.csv",
     # higgsino (using MSTW because n2x1+ lacks envelope)
     "13TeV.n1n2.hino.deg": "lhc_susy_xs_wg/13TeVn1n2hino_deg_mstw.csv",
     "13TeV.n2x1-.hino.deg": "lhc_susy_xs_wg/13TeVn2x1hino_deg_mstw_m.csv",

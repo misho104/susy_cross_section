@@ -1,0 +1,37 @@
+{
+  "document": {
+    "title": "NLO-NLL slepton-pair cross sections",
+    "authors": "LHC SUSY Cross Section Working Group",
+    "calculator": "resummino",
+    "source": "https://twiki.cern.ch/twiki/bin/view/LHCPhysics/SUSYCrossSections13TeVslepslep",
+    "version": "2019-07-17"
+  },
+  "attributes": {
+    "processes": "p p > el+ el-",
+    "collider": "pp",
+    "ecm": "13TeV",
+    "order": "NLO+NLL",
+    "pdf_name": "PDF4LHC15"
+  },
+  "columns": [
+    { "name": "m_slep", "unit": "GeV" },
+    { "name": "xsec", "unit": "pb" },
+    { "name": "unc-", "unit": "%" },
+    { "name": "unc+", "unit": "%" }
+  ],
+  "reader_options": {
+    "skipinitialspace": 1
+  },
+  "parameters": [{ "column": "m_slep", "granularity": 1 }],
+  "values": [
+    {
+      "column": "xsec",
+      "unc-": [
+        { "column": "unc-", "type": "relative" }
+      ],
+      "unc+": [
+        { "column": "unc+", "type": "relative" }
+      ]
+    }
+  ]
+}
