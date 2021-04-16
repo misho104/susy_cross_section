@@ -12,17 +12,11 @@ from __future__ import absolute_import, division, print_function  # py2
 import itertools
 import logging
 import pathlib
-import sys
 from typing import Any, List, Mapping, MutableMapping, Optional, Sequence, Tuple, Union
 
 from numpy import log10
 
 from susy_cross_section.config import table_paths
-
-if sys.version_info[0] < 3:  # py2
-    str = basestring  # noqa: A001, F821
-    FileNotFoundError = OSError  # noqa: A001, F821
-
 
 logging.basicConfig(level=logging.WARNING)
 logger = logging.getLogger(__name__)

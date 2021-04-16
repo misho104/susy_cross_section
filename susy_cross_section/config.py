@@ -3,11 +3,7 @@
 from __future__ import absolute_import, division, print_function  # py2
 
 import pathlib
-import sys
 from typing import Mapping, Optional, Tuple, Union  # noqa: F401
-
-if sys.version_info[0] < 3:  # py2
-    str = basestring  # noqa: A001, F821
 
 table_dir = "susy_cross_section/data"
 """

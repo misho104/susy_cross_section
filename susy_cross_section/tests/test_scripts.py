@@ -3,9 +3,9 @@
 from __future__ import absolute_import, division, print_function  # py2
 
 import logging
+import os
 import pathlib
 import unittest
-import os
 
 from click.testing import CliRunner
 from nose.tools import assert_almost_equals, eq_, ok_, raises  # noqa: F401

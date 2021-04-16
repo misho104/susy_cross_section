@@ -13,7 +13,6 @@ import itertools
 import json
 import logging
 import pathlib  # noqa: F401
-import sys
 from typing import (  # noqa: F401
     Any,
     Generic,
@@ -33,11 +32,7 @@ import pandas
 from susy_cross_section.base.info import FileInfo, UncSpecType, ValueInfo
 from susy_cross_section.utility import Unit
 
-if sys.version_info[0] < 3:  # py2
-    str = basestring  # noqa: A001, F821
-    JSONDecodeError = Exception
-else:
-    JSONDecodeError = json.decoder.JSONDecodeError
+JSONDecodeError = json.decoder.JSONDecodeError
 
 
 logging.basicConfig(level=logging.WARNING)

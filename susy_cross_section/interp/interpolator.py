@@ -17,7 +17,6 @@ from __future__ import absolute_import, division, print_function  # py2
 
 import logging
 import re
-import sys
 from typing import Any, Callable, List, Mapping, Optional, Sequence, Tuple, Union, cast
 
 import numpy
@@ -27,9 +26,6 @@ import scipy.interpolate as sci_interp
 from susy_cross_section.table import BaseTable
 
 from .axes_wrapper import AxesWrapper
-
-if sys.version_info[0] < 3:  # py2
-    str = basestring  # noqa: A001, F821
 
 logging.basicConfig(level=logging.WARNING)
 logger = logging.getLogger(__name__)
@@ -98,7 +94,7 @@ class Interpolation:
             return xs
 
         # parse kwargs; before parsing, convert (possibly) ndarray to list.
-        x_list = [x for x in xs]  # type: List[Union[float, None]]
+        x_list = list(xs)  # type: List[Union[float, None]]
         for key, value in kwargs.items():
             try:
                 index = self.param_index[key]

@@ -6,8 +6,6 @@ For details, see the manual or try to execute with ``--help`` option.
 from __future__ import absolute_import, division, print_function  # py2
 
 import logging
-import pathlib
-import sys
 from typing import Any, List, MutableMapping, Optional, Tuple  # noqa: F401
 
 import click
@@ -15,7 +13,7 @@ import colorama
 import coloredlogs
 
 import susy_cross_section.config as config
-import susy_cross_section.utility as Util
+import susy_cross_section.utility as utility
 from susy_cross_section.interp.axes_wrapper import AxesWrapper
 from susy_cross_section.interp.interpolator import (
     AbstractInterpolator,
@@ -25,13 +23,11 @@ from susy_cross_section.interp.interpolator import (
 from susy_cross_section.table import File
 
 __author__ = "Sho Iwamoto"
-__copyright__ = "Copyright (C) 2018-2019 Sho Iwamoto / Misho"
+__copyright__ = "Copyright (C) 2018-2021 Sho Iwamoto / Misho"
 __license__ = "MIT"
 __packagename__ = "susy_cross_section"
-__version__ = "0.1.2beta"
+__version__ = "0.2.0"
 
-if sys.version_info[0] < 3:  # py2
-    str = basestring  # noqa: A001, F821
 
 logging.basicConfig(level=logging.WARNING)
 logger = logging.getLogger(__name__)
@@ -118,7 +114,7 @@ def get(context, **kw):
     args = kw["args"] or []
     value_name = kw["name"] or _DEFAULT_VALUE_NAME
     try:
-        table_path, info_path = Util.get_paths(kw["table"], kw["info"])
+        table_path, info_path = utility.get_paths(kw["table"], kw["info"])
         data_file = File(table_path, info_path)
     except (FileNotFoundError, RuntimeError, ValueError, TypeError) as e:
         click.echo(repr(e))
@@ -155,7 +151,7 @@ def get(context, **kw):
     else:
         relative = bool(kw.get("relative", False))
         unit = table.unit if kw["unit"] else None
-        click.echo(Util.value_format(cent, u_p, u_m, unit, relative))
+        click.echo(utility.value_format(cent, u_p, u_m, unit, relative))
     exit(0)
 
 
@@ -174,7 +170,7 @@ def show(**kw):
     _configure_logger()
     # handle arguments
     try:
-        table_path, info_path = Util.get_paths(kw["table"], kw["info"])
+        table_path, info_path = utility.get_paths(kw["table"], kw["info"])
     except (FileNotFoundError, RuntimeError) as e:
         click.echo(e.__repr__())  # py2
         exit(1)

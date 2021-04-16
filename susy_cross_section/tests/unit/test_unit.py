@@ -2,13 +2,13 @@ from __future__ import absolute_import, division, print_function  # py2
 
 import unittest
 
-from nose.tools import (
+from nose.tools import (  # noqa: F401
+    assert_almost_equal,
+    assert_raises,
     eq_,
     ok_,
     raises,
-    assert_raises,
-    assert_almost_equal,
-)  # noqa: F401
+)
 
 from susy_cross_section.utility import Unit
 

@@ -221,7 +221,7 @@ class MyHtmlTranslator(HTMLTranslator):
                 orig_text = n.children[0].astext()
                 try:
                     strip = orig_text.split(" ")[0].rindex(".")
-                    n.children[0] = nodes.Text(orig_text[strip + 1:], orig_text)
+                    n.children[0] = nodes.Text(orig_text[strip + 1 :], orig_text)
                 except ValueError:
                     pass
         return super().visit_bullet_list(node)

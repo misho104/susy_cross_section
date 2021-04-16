@@ -3,7 +3,7 @@ from __future__ import absolute_import, division, print_function  # py2
 import pathlib
 import unittest
 
-from nose.tools import eq_, ok_, raises, assert_raises  # noqa: F401
+from nose.tools import assert_raises, eq_, ok_, raises  # noqa: F401
 
 from susy_cross_section import config
 
