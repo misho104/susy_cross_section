@@ -2,7 +2,13 @@ from __future__ import absolute_import, division, print_function  # py2
 
 import unittest
 
-from nose.tools import eq_, ok_, raises, assert_raises, assert_almost_equal  # noqa: F401
+from nose.tools import (
+    eq_,
+    ok_,
+    raises,
+    assert_raises,
+    assert_almost_equal,
+)  # noqa: F401
 
 from susy_cross_section.utility import Unit
 
@@ -29,7 +35,7 @@ class TestUnit(unittest.TestCase):
             "fb",
             "%",
             (1000, "fb"),
-            ("fb", "fb", "%", 120, 0.1)
+            ("fb", "fb", "%", 120, 0.1),
         ]
         for c in cases:
             if isinstance(c, tuple):
@@ -77,7 +83,7 @@ class TestUnit(unittest.TestCase):
             (Unit(), 1),
             (Unit(1000), 1000),
             (Unit(0.5), 0.5),
-            (Unit("%"), 0.01)
+            (Unit("%"), 0.01),
         ]:
             assert_almost_equal(float(a), b)
 

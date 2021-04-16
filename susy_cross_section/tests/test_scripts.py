@@ -57,9 +57,11 @@ class TestScripts(unittest.TestCase):
             ok_(line in all_lines)
 
         # if arguments are given, lines with the arguments are shown.
-        expected = [line for line in full_lines if (
-            "8tev" in line.lower() and "cteq" in line.lower()
-        )]
+        expected = [
+            line
+            for line in full_lines
+            if ("8tev" in line.lower() and "cteq" in line.lower())
+        ]
         actual = self.runner.invoke(scripts.cmd_list, ["8TeV", "CTEQ"])
         self.assert_success(actual)
 
