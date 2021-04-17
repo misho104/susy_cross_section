@@ -130,7 +130,9 @@ class TestScripts(unittest.TestCase):
 
     def test_get_with_invlaid_table_names(self):
         """Assert that command_get complains for nonexisting table name."""
-        ret = self.runner.invoke(scripts.get, ["13TeV.gg", "--name=INVAL1D", 2000, 800])
+        ret = self.runner.invoke(
+            scripts.get, ["13TeV.gg", "--name=INVAL1D", "2000", "800"]
+        )
         ok_(ret.exit_code != 0)
 
     def test_get_simple(self):

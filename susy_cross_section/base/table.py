@@ -87,6 +87,16 @@ class BaseTable(object):
         """Dump the data-frame."""
         return cast(str, self._df.__str__())
 
+    def header(self):
+        # type: ()->List[Any]
+        """Return the header of DataFrame regarded as a table."""
+        return list(self._df.index.names) + list(self._df.columns)
+
+    def to_records(self):
+        # type: ()->Any
+        """Export the data-frame to a plain list."""
+        return self._df.to_records()
+
 
 class BaseFile(Generic[TableT]):
     """File with table data-sets and annotations.

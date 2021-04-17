@@ -185,6 +185,84 @@ def show(**kw):
     exit(0)
 
 
+@main.command(context_settings={"help_option_names": ["-h", "--help"]})
+@click.argument("table", required=True, type=click.Path(exists=False))
+@click.option("--name", default="xsec", help="name of a table")
+@click.option("--unit/--no-unit", help="with unit", default=True, show_default=True)
+@click.option("--unc/--no-unc", help="uncertainty", default=True, show_default=True)
+@click.option(
+    "--format",
+    type=click.Choice(["TSV", "CSV", "Math"], case_sensitive=False),
+    default="TSV",
+    show_default=True,
+)
+@click.option(
+    "--info",
+    type=click.Path(exists=True, dir_okay=False),
+    help="path of table-info file if non-standard file name",
+)
+@click.pass_context
+def export(context, **kw):
+    # type: (Any, Any)->None
+    """Export cross-section table."""
+    _configure_logger()
+    # handle arguments
+    value_name = kw["name"] or _DEFAULT_VALUE_NAME
+    try:
+        table_path, info_path = utility.get_paths(kw["table"], kw["info"])
+        data_file = File(table_path, info_path)
+    except (FileNotFoundError, RuntimeError, ValueError, TypeError) as e:
+        click.echo(repr(e))
+        exit(1)
+
+    try:
+        table = data_file.tables[value_name]
+    except KeyError as e:
+        logger.critical("Data file does not contain specified table.")
+        click.echo(repr(e))
+        exit(1)
+
+    header = table.header()
+    records = table.to_records()
+    n_columns = len(header)
+
+    units = ["" for i in header]
+    if kw["unit"]:
+        try:
+            units = [" " + u for u in table.units()]
+        except RuntimeError:
+            logger.warning("Unit information not available for specified table.")
+
+    if kw["format"] == "TSV" or kw["format"] == "CSV":
+        sep = "\t" if kw["format"] == "TSV" else ","
+        click.echo(sep.join(header))
+        for record in records:
+            line = []  # type: List[str]
+            for i, v in enumerate(record):
+                if i < n_columns - 2:
+                    line.append(str(v) + units[i])  # key & value
+                elif kw["unc"]:
+                    line.append(f"{v:.5g}{units[-1]}")  # unc
+            click.echo(sep.join(line))
+    elif kw["format"] == "Math":  # Mathematica
+
+        def concat(c):  # type: (List[str])->str
+            return "  {" + ", ".join(c) + "}"
+
+        lines = [concat([f'"{s}"' for s in header[:-2]])]  # header
+        for r in records:
+            if kw["unc"]:
+                value = f"Around[{r[-3]}, {{{r[-1]:.5g}, {r[-2]:.5g}}}]"
+            else:
+                value = str(r[-3])
+            value = value.replace("e", "*^") + units[-1]  # Mathematica "E" notation
+            keys = [f"{v}{units[i]}" for i, v in enumerate(r) if i < n_columns - 3]
+            keys.append(value)
+            lines.append(concat(keys))
+        click.echo("{\n" + ",\n".join(lines) + "\n}")
+    exit(0)
+
+
 @main.command(name="list", context_settings={"help_option_names": ["-h", "--help"]})
 @click.argument("substr", nargs=-1)
 @click.option("--all", "-a", is_flag=True, help="List all the tables in this package.")

@@ -175,6 +175,19 @@ class Table(BaseTable):
         else:
             raise RuntimeError("No information is given for this table.")
 
+    def units(self):
+        # type: ()->List[str]
+        """Return the units of table keys and columns."""
+        if self.file and self.name:
+            units = [
+                self.file.info.get_column(p.column).unit
+                for p in self.file.info.parameters
+            ]  # keys' unit
+            units.append(self.unit)  # value's unit
+            return units
+        else:
+            raise RuntimeError("No information is given for this table.")
+
 
 class File(BaseFile[Table]):
     """Data of a cross section with parameters, read from a table file.
