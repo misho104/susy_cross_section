@@ -23,10 +23,10 @@ from susy_cross_section.interp.interpolator import (
 from susy_cross_section.table import File
 
 __author__ = "Sho Iwamoto"
-__copyright__ = "Copyright (C) 2018-2021 Sho Iwamoto / Misho"
+__copyright__ = "Copyright (C) 2018-2022 Sho Iwamoto / Misho"
 __license__ = "MIT"
 __packagename__ = "susy_cross_section"
-__version__ = "0.2.0"
+__version__ = "0.2.2"
 
 
 logging.basicConfig(level=logging.WARNING)
