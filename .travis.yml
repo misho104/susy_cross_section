@@ -12,7 +12,7 @@ before_install:
 
 install:
   - poetry --version
-  - poetry install -vvv --develop=susy_cross_section
+  - poetry install -vvv
 
 stages:
   - test
@@ -30,14 +30,11 @@ after_success:
 
 jobs:
   include:
-    - python: "2.7"
-    - python: "3.5"
-    - python: "3.6"
     - python: "3.7"
-      dist: xenial
+    - python: "3.9"
 
     - stage: typecheck
-      python: "3.6"
+      python: "3.9"
       script:
         - mypy -p susy_cross_section
 #    - stage: linting

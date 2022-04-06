@@ -2,7 +2,7 @@ from __future__ import absolute_import, division, print_function  # py2
 
 import unittest
 
-from nose.tools import eq_, ok_, raises, assert_raises, assert_almost_equal  # noqa: F401
+import pytest
 
 from susy_cross_section.utility import Unit
 
@@ -18,7 +18,7 @@ class TestUnit(unittest.TestCase):
         except ValueError:
             raise AssertionError("%s != %s" % (unit1, unit2))
 
-        assert_almost_equal(f, 1)
+        assert f == pytest.approx(1, rel=0.00001)
 
     def test_initialize(self):
         cases = [
@@ -29,14 +29,14 @@ class TestUnit(unittest.TestCase):
             "fb",
             "%",
             (1000, "fb"),
-            ("fb", "fb", "%", 120, 0.1)
+            ("fb", "fb", "%", 120, 0.1),
         ]
         for c in cases:
             if isinstance(c, tuple):
                 u = Unit(*c)
             else:
                 u = Unit(c)
-            ok_(u)
+            assert u
 
             # idempotence
             self.eq_unit(u, Unit(u))
@@ -59,7 +59,7 @@ class TestUnit(unittest.TestCase):
             Unit("fb"),
             Unit("pb"),
         ]:
-            eq_(float(u * u.inverse()), 1)
+            assert float(u * u.inverse()) == 1
 
     def test_multiplication_and_division(self):
         for a, b, c in [
@@ -77,14 +77,14 @@ class TestUnit(unittest.TestCase):
             (Unit(), 1),
             (Unit(1000), 1000),
             (Unit(0.5), 0.5),
-            (Unit("%"), 0.01)
+            (Unit("%"), 0.01),
         ]:
-            assert_almost_equal(float(a), b)
+            assert float(a) == pytest.approx(b, rel=0.00001)
 
         for u in [
             Unit("pb"),
             Unit("fb").inverse(),
             Unit("pb") * Unit("pb"),
         ]:
-            with assert_raises(ValueError):
+            with pytest.raises(ValueError):
                 float(u)

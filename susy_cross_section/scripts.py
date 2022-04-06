@@ -6,8 +6,6 @@ For details, see the manual or try to execute with ``--help`` option.
 from __future__ import absolute_import, division, print_function  # py2
 
 import logging
-import pathlib
-import sys
 from typing import Any, List, MutableMapping, Optional, Tuple  # noqa: F401
 
 import click
@@ -15,7 +13,7 @@ import colorama
 import coloredlogs
 
 import susy_cross_section.config as config
-import susy_cross_section.utility as Util
+import susy_cross_section.utility as utility
 from susy_cross_section.interp.axes_wrapper import AxesWrapper
 from susy_cross_section.interp.interpolator import (
     AbstractInterpolator,
@@ -25,13 +23,11 @@ from susy_cross_section.interp.interpolator import (
 from susy_cross_section.table import File
 
 __author__ = "Sho Iwamoto"
-__copyright__ = "Copyright (C) 2018-2019 Sho Iwamoto / Misho"
+__copyright__ = "Copyright (C) 2018-2022 Sho Iwamoto / Misho"
 __license__ = "MIT"
 __packagename__ = "susy_cross_section"
-__version__ = "0.1.2beta"
+__version__ = "0.2.2"
 
-if sys.version_info[0] < 3:  # py2
-    str = basestring  # noqa: A001, F821
 
 logging.basicConfig(level=logging.WARNING)
 logger = logging.getLogger(__name__)
@@ -118,7 +114,7 @@ def get(context, **kw):
     args = kw["args"] or []
     value_name = kw["name"] or _DEFAULT_VALUE_NAME
     try:
-        table_path, info_path = Util.get_paths(kw["table"], kw["info"])
+        table_path, info_path = utility.get_paths(kw["table"], kw["info"])
         data_file = File(table_path, info_path)
     except (FileNotFoundError, RuntimeError, ValueError, TypeError) as e:
         click.echo(repr(e))
@@ -155,7 +151,7 @@ def get(context, **kw):
     else:
         relative = bool(kw.get("relative", False))
         unit = table.unit if kw["unit"] else None
-        click.echo(Util.value_format(cent, u_p, u_m, unit, relative))
+        click.echo(utility.value_format(cent, u_p, u_m, unit, relative))
     exit(0)
 
 
@@ -174,7 +170,7 @@ def show(**kw):
     _configure_logger()
     # handle arguments
     try:
-        table_path, info_path = Util.get_paths(kw["table"], kw["info"])
+        table_path, info_path = utility.get_paths(kw["table"], kw["info"])
     except (FileNotFoundError, RuntimeError) as e:
         click.echo(e.__repr__())  # py2
         exit(1)
@@ -186,6 +182,86 @@ def show(**kw):
         exit(1)
 
     click.echo(data_file.dump())
+    exit(0)
+
+
+@main.command(context_settings={"help_option_names": ["-h", "--help"]})
+@click.argument("table", required=True, type=click.Path(exists=False))
+@click.option("--name", default="xsec", help="name of a table")
+@click.option("--unit/--no-unit", help="with unit", default=True, show_default=True)
+@click.option("--unc/--no-unc", help="uncertainty", default=True, show_default=True)
+@click.option(
+    "--format",
+    type=click.Choice(["TSV", "CSV", "Math"], case_sensitive=False),
+    default="TSV",
+    show_default=True,
+)
+@click.option(
+    "--info",
+    type=click.Path(exists=True, dir_okay=False),
+    help="path of table-info file if non-standard file name",
+)
+@click.pass_context
+def export(context, **kw):
+    # type: (Any, Any)->None
+    """Export cross-section table."""
+    _configure_logger()
+    # handle arguments
+    value_name = kw["name"] or _DEFAULT_VALUE_NAME
+    try:
+        table_path, info_path = utility.get_paths(kw["table"], kw["info"])
+        data_file = File(table_path, info_path)
+    except (FileNotFoundError, RuntimeError, ValueError, TypeError) as e:
+        click.echo(repr(e))
+        exit(1)
+
+    try:
+        table = data_file.tables[value_name]
+    except KeyError as e:
+        logger.critical("Data file does not contain specified table.")
+        click.echo(repr(e))
+        exit(1)
+
+    header = table.header()
+    records = table.to_records()
+    n_columns = len(header)
+
+    units = ["" for i in header]
+    if kw["unit"]:
+        try:
+            units = [" " + u for u in table.units()]
+        except RuntimeError:
+            logger.warning("Unit information not available for specified table.")
+
+    if kw["format"] == "TSV" or kw["format"] == "CSV":
+        sep = "\t" if kw["format"] == "TSV" else ","
+        click.echo(sep.join(header))
+        for i_record in range(len(records)):  # As mypy.records does not have __iter__
+            record = records[i_record]
+            line = []  # type: List[str]
+            for i, v in enumerate(record):
+                if i < n_columns - 2:
+                    line.append(str(v) + units[i])  # key & value
+                elif kw["unc"]:
+                    line.append(f"{v:.5g}{units[-1]}")  # unc
+            click.echo(sep.join(line))
+    elif kw["format"] == "Math":  # Mathematica
+
+        def concat(c):  # type: (List[str])->str
+            return "  {" + ", ".join(c) + "}"
+
+        lines = [concat([f'"{s}"' for s in header[:-2]])]  # header
+        for i_record in range(len(records)):
+            r = records[i_record]
+            if kw["unc"]:
+                value = f"Around[{r[-3]}, {{{r[-1]:.5g}, {r[-2]:.5g}}}]"
+            else:
+                value = str(r[-3])
+            value = value.replace("e", "*^") + units[-1]  # Mathematica "E" notation
+            keys = [f"{v}{units[i]}" for i, v in enumerate(r) if i < n_columns - 3]
+            keys.append(value)
+            lines.append(concat(keys))
+        click.echo("{\n" + ",\n".join(lines) + "\n}")
     exit(0)
 
 

@@ -29,6 +29,7 @@ from typing import (  # noqa: F401
 )
 
 import pandas
+import numpy
 
 from susy_cross_section.base.info import FileInfo, UncSpecType, ValueInfo
 from susy_cross_section.utility import Unit
@@ -91,6 +92,16 @@ class BaseTable(object):
         # type: ()->str
         """Dump the data-frame."""
         return cast(str, self._df.__str__())
+
+    def header(self):
+        # type: ()->List[Any]
+        """Return the header of DataFrame regarded as a table."""
+        return list(self._df.index.names) + list(self._df.columns)
+
+    def to_records(self):
+        # type: ()->numpy.record
+        """Export the data-frame to a plain list."""
+        return self._df.to_records()  # type: ignore
 
 
 class BaseFile(Generic[TableT]):
@@ -185,7 +196,7 @@ class BaseFile(Generic[TableT]):
                 else:
                     unc_candidates = [abs(row[c]) for c in source]
                 unc_components.append(max(unc_candidates) if unc_candidates else 0)
-            return sum(i ** 2 for i in unc_components) ** 0.5
+            return sum(i ** 2 for i in unc_components) ** 0.5  # type: ignore
 
         for value_info in self.info.values:
             name = value_info.column
@@ -214,7 +225,8 @@ class BaseFile(Generic[TableT]):
         data.set_index([p.column for p in self.info.parameters], inplace=True)
 
         # collect columns to use
-        abs_columns, rel_columns = set(), set()  # type: Set[str], Set[str]
+        abs_columns = set()  # type: Set[str]
+        rel_columns = set()  # type: Set[str]
         for unc_cols, unc_type in itertools.chain(value_info.unc_p, value_info.unc_m):
             is_relative = "relative" in unc_type.split(",")
             for c in unc_cols:

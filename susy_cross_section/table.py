@@ -12,7 +12,6 @@ from __future__ import absolute_import, division, print_function  # py2
 
 import logging
 import pathlib
-import sys
 from typing import (  # noqa: F401
     Any,
     List,
@@ -29,9 +28,6 @@ from typing import (  # noqa: F401
 import pandas  # noqa: F401
 
 from susy_cross_section.base.table import BaseFile, BaseTable
-
-if sys.version_info[0] < 3:  # py2
-    str = basestring  # noqa: A001, F821
 
 logging.basicConfig(level=logging.WARNING)
 logger = logging.getLogger(__name__)
@@ -135,7 +131,7 @@ class Table(BaseTable):
             self.file = obj.file  # type: Optional[File]
             self.name = obj.name  # type: Optional[str]
         elif isinstance(obj, BaseTable):
-            self._df = obj._df  # type: pandas.DataFrame
+            self._df = obj._df
             if file and not isinstance(file, File):
                 raise TypeError("Table.file must be File.")
             self.file = file or None
@@ -176,6 +172,19 @@ class Table(BaseTable):
             if not value_info:
                 raise RuntimeError("Value-info lookup failed.")
             return CrossSectionAttributes(**value_info[0].attributes)
+        else:
+            raise RuntimeError("No information is given for this table.")
+
+    def units(self):
+        # type: ()->List[str]
+        """Return the units of table keys and columns."""
+        if self.file and self.name:
+            units = [
+                self.file.info.get_column(p.column).unit
+                for p in self.file.info.parameters
+            ]  # keys' unit
+            units.append(self.unit)  # value's unit
+            return units
         else:
             raise RuntimeError("No information is given for this table.")
 

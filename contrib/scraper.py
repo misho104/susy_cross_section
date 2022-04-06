@@ -12,10 +12,10 @@ import bs4
 import click
 
 __author__ = "Sho Iwamoto"
-__copyright__ = "Copyright (C) 2018 Sho Iwamoto / Misho"
+__copyright__ = "Copyright (C) 2018-2022 Sho Iwamoto / Misho"
 __license__ = "MIT"
 __scriptname__ = "XS scraper"
-__version__ = "0.2.0"
+__version__ = "0.2.2"
 
 
 CrossSectionValueType = Union[float, str]  # because '10.0%' may be in the data

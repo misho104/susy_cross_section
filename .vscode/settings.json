@@ -53,11 +53,13 @@
     "yscale",
     "zlabel"
   ],
-  "python.unitTest.nosetestsEnabled": false,
   "files.associations": {
     "*.info": "json"
   },
   "restructuredtext.builtDocumentationPath": "${workspaceRoot}/docs/_build/html",
   "restructuredtext.confPath": "${workspaceFolder}/docs",
-  "editor.wordWrapColumn": 88
+  "editor.wordWrapColumn": 88,
+  "python.formatting.provider": "black",
+  "esbonio.sphinx.buildDir": "${workspaceRoot}/docs/_build",
+  "esbonio.sphinx.confDir": "${workspaceFolder}/docs"
 }

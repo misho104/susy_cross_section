@@ -19,16 +19,11 @@ import itertools
 import json
 import logging
 import pathlib  # noqa: F401
-import sys
 from typing import Any, Dict, List, Mapping, MutableMapping, Optional, Tuple, Union
 
 from susy_cross_section.utility import TypeCheck as TC
 
-if sys.version_info[0] < 3:  # py2
-    str = basestring  # noqa: A001, F821
-    JSONDecodeError = Exception
-else:
-    JSONDecodeError = json.decoder.JSONDecodeError
+JSONDecodeError = json.decoder.JSONDecodeError
 
 
 logging.basicConfig(level=logging.WARNING)

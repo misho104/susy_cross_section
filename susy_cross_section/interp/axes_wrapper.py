@@ -57,13 +57,9 @@ and derive the interpolation function :math:`\bar f` based on
 .. |YT| replace:: :data_typ:`YT`
 """
 
-import sys
 from typing import Any, Callable, Mapping, Sequence, Union, cast  # noqa: F401
 
 import numpy
-
-if sys.version_info[0] < 3:  # py2
-    str = basestring  # noqa: A001, F821
 
 VT = float
 FT = Callable[[VT], VT]

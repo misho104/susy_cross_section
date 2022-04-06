@@ -22,7 +22,6 @@ subclasses of `AbstractInterpolator` and not listed here.
 
 Note
 ----
-
 Interpolation of :math:`N` data points,
 
 .. math:: (x_{n1}, \dots, x_{nd}; y_n)
@@ -34,7 +33,6 @@ satisfying :math:`f({\boldsymbol x}_n)=y_n`.
 
 Warning
 -------
-
 One should distinguish an interpolation :math:`f` from fitting functions. An
 interpolation satisfies :math:`f({\boldsymbol x}_n)=y_n` but this does not
 necessarily hold for fitting functions. Meanwhile, an interpolation is defined
