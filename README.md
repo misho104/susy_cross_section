@@ -1,5 +1,5 @@
-[![Build Status](https://api.travis-ci.org/misho104/susy_cross_section.svg?branch=master)](https://travis-ci.org/misho104/susy_cross_section)
-[![Coverage Status](https://coveralls.io/repos/github/misho104/susy_cross_section/badge.svg?branch=master)](https://coveralls.io/github/misho104/susy_cross_section?branch=master)
+[![Build Status](https://github.com/misho104/susy_cross_section/actions/workflows/unit-test.yaml/badge.svg?branch=master)](https://github.com/misho104/susy_cross_section/actions/workflows/unit-test.yaml)
+[![Coverage Status](https://codecov.io/gh/misho104/susy_cross_section/branch/master/graph/badge.svg)](https://codecov.io/gh/misho104/susy_cross_section)
 [![Doc Status](http://readthedocs.org/projects/susy-cross-section/badge/)](https://susy-cross-section.readthedocs.io/)
 [![PyPI version](https://badge.fury.io/py/susy-cross-section.svg)](https://badge.fury.io/py/susy-cross-section)
 [![License: MIT](https://img.shields.io/badge/License-MIT-ff25d1.svg)](https://github.com/misho104/susy_cross_section/blob/master/LICENSE)

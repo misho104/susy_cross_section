@@ -35,7 +35,7 @@ jobs:
           poetry run pytest --junit-xml=pytest_${PYTHON}.xml --cov --cov-report=xml
         continue-on-error: true
       - name: Run coverage
-        if: ${{ steps.run.outcome == 'success' && github.ref == 'refs/heads/main' }}
+        if: ${{ steps.run.outcome == 'success' && github.ref == 'refs/heads/master' }}
         uses: codecov/codecov-action@v2
         with:
           env_vars: PYTHON
