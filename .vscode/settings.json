@@ -59,5 +59,7 @@
   "restructuredtext.builtDocumentationPath": "${workspaceRoot}/docs/_build/html",
   "restructuredtext.confPath": "${workspaceFolder}/docs",
   "editor.wordWrapColumn": 88,
-  "python.formatting.provider": "black"
+  "python.formatting.provider": "black",
+  "esbonio.sphinx.buildDir": "${workspaceRoot}/docs/_build",
+  "esbonio.sphinx.confDir": "${workspaceFolder}/docs"
 }

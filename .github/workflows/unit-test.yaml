@@ -1,0 +1,63 @@
+name: Test
+
+permissions:
+  checks: write
+  pull-requests: write
+
+on:
+  push:
+  pull_request:
+    types: [opened, reopened]
+  workflow_dispatch:
+
+jobs:
+  execute:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: [ '3.7', '3.10' ]
+      fail-fast: false
+    env:
+      PYTHON: ${{ matrix.python-version }}
+    name: Execute on Python ${{ matrix.python-version }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Set up environment
+        uses: ./.github/actions/setup-poetry-with-cache
+        with:
+          python-version: ${{ matrix.python-version }}
+          architecture: x64
+      - name: Run
+        id: run
+        run: |
+          source $VENV
+          poetry run pytest --junit-xml=pytest_${PYTHON}.xml --cov --cov-report=xml
+        continue-on-error: true
+      - name: Run coverage
+        if: ${{ steps.run.outcome == 'success' && github.ref == 'refs/heads/main' }}
+        uses: codecov/codecov-action@v2
+        with:
+          env_vars: PYTHON
+        continue-on-error: true
+      - name: Upload results
+        uses: actions/upload-artifact@v2
+        with:
+          name: Result (Python ${{ matrix.python-version }})
+          path: '*.xml'
+
+  publish-results:
+    name: "Publish Results"
+    needs: execute
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download Artifacts
+        uses: actions/download-artifact@v2
+        with:
+          path: artifacts
+
+      - name: Publish Results
+        uses: EnricoMi/publish-unit-test-result-action@v1
+        with:
+          files: |
+            artifacts/**/pytest_*.xml

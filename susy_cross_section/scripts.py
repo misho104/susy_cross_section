@@ -236,7 +236,8 @@ def export(context, **kw):
     if kw["format"] == "TSV" or kw["format"] == "CSV":
         sep = "\t" if kw["format"] == "TSV" else ","
         click.echo(sep.join(header))
-        for record in records:
+        for i_record in range(len(records)):  # As mypy.records does not have __iter__
+            record = records[i_record]
             line = []  # type: List[str]
             for i, v in enumerate(record):
                 if i < n_columns - 2:
@@ -250,7 +251,8 @@ def export(context, **kw):
             return "  {" + ", ".join(c) + "}"
 
         lines = [concat([f'"{s}"' for s in header[:-2]])]  # header
-        for r in records:
+        for i_record in range(len(records)):
+            r = records[i_record]
             if kw["unc"]:
                 value = f"Around[{r[-3]}, {{{r[-1]:.5g}, {r[-2]:.5g}}}]"
             else:

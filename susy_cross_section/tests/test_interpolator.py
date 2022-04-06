@@ -8,7 +8,7 @@ import pathlib
 import unittest
 
 import numpy
-from nose.tools import assert_almost_equals, assert_raises, eq_, ok_  # noqa: F401
+import pytest
 
 from susy_cross_section.interp import Scipy1dInterpolator, ScipyGridInterpolator
 from susy_cross_section.interp.axes_wrapper import AxesWrapper
@@ -26,11 +26,6 @@ class TestInterpolator(unittest.TestCase):
         if isinstance(obj, numpy.ndarray):
             return obj.ndim == 0
         return isinstance(obj, float) or isinstance(obj, int)
-
-    @staticmethod
-    def _assert_all_close(actual, expected, decimal=None):
-        for a, e in zip(actual, expected):
-            assert_almost_equals(a, e, decimal)
 
     def setUp(self):
         """Set up."""
@@ -50,14 +45,16 @@ class TestInterpolator(unittest.TestCase):
                 # on the grid points:
                 # 300.0: 379.23, -0.47, -4.8, 0.4, 4.7 == 379.23 -18.29 +17.89
                 # 325.0: 276.17, -0.44, -5.1, 0.4, 4.8 == 276.17 -14.14 +13.30
-                self._assert_all_close(fit.tuple_at(300), (379.23, 17.89, -18.29), 2)
-                assert_almost_equals(fit(325), 276.17, 2)
-                assert_almost_equals(fit.unc_p_at(325), +13.30, 2)
-                assert_almost_equals(fit.unc_m_at(325), -14.14, 2)
+                assert fit.tuple_at(300) == pytest.approx(
+                    (379.23, 17.89, -18.29), abs=0.01
+                )
+                assert fit(325) == pytest.approx(276.17, abs=0.01)
+                assert fit.unc_p_at(325) == pytest.approx(+13.30, abs=0.01)
+                assert fit.unc_m_at(325) == pytest.approx(-14.14, abs=0.01)
 
                 # interpolation: for uncertainty, returns sensible results
-                ok_(13.30 < fit.unc_p_at(312.5) < 17.89)
-                ok_(14.14 < -fit.unc_m_at(312.5) < 18.29)
+                assert 13.30 < fit.unc_p_at(312.5) < 17.89
+                assert 14.14 < -fit.unc_m_at(312.5) < 18.29
                 if kind == "linear":
                     if axes == "linear":
                         x, y = (300 + 325) / 2, (379.23 + 276.17) / 2
@@ -67,9 +64,9 @@ class TestInterpolator(unittest.TestCase):
                         x, y = (300 + 325) / 2, (379.23 * 276.17) ** 0.5
                     else:
                         x, y = (300 * 325) ** 0.5, (379.23 * 276.17) ** 0.5
-                    assert_almost_equals(fit(x), y, 2)
+                    assert fit(x) == pytest.approx(y, abs=0.01)
                 else:
-                    ok_(276.17 < fit(312.5) < 379.23)
+                    assert 276.17 < fit(312.5) < 379.23
 
     def test_scipy_1d_interpolator_nonstandard_args(self):
         """Verify Scipy1dInterpolator accepts/refuses argument correctly."""
@@ -80,26 +77,26 @@ class TestInterpolator(unittest.TestCase):
             value = test_method(333.3)
             if m == "tuple_at":
                 # the output should be (3,) array (or 3-element tuple)
-                eq_(numpy.array(value).shape, (3,))
+                assert numpy.array(value).shape == (3,)
             else:
                 # the output should be float or ndarray with 0-dim, not arrays.
-                ok_(self._is_scalar_number(value))
+                assert self._is_scalar_number(value)
 
             # method should accept 0-dim ndarray
-            eq_(test_method(numpy.array(333.3)), value)
+            assert test_method(numpy.array(333.3)) == value
             # method should accept arrays
-            eq_(test_method([333.3]), value)
-            eq_(test_method(numpy.array([333.3])), value)
+            assert test_method([333.3]) == value
+            assert test_method(numpy.array([333.3])) == value
             # method should accept keyword arguments
-            eq_(test_method(m_wino=333.3), value)
+            assert test_method(m_wino=333.3) == value
 
             # method should not accept arrays or numpy.ndarray with >0 dim.
             for bad_input in ([[333.3]], [333.3, 350]):
-                with assert_raises(TypeError):
+                with pytest.raises(TypeError):
                     test_method(bad_input)
-                with assert_raises(TypeError):
+                with pytest.raises(TypeError):
                     test_method(numpy.array(bad_input))
-                with assert_raises(TypeError):
+                with pytest.raises(TypeError):
                     test_method(m_wino=bad_input)
 
     def test_scipy_grid_interpolator(self):
@@ -118,12 +115,13 @@ class TestInterpolator(unittest.TestCase):
                 # 700    1450   0.0382279746207      0.0075711349465
                 # 750    1400   0.0390134257995      0.00768847466247
                 # 750    1450   0.0316449395656      0.0065050745643
-                self._assert_all_close(
-                    fit.tuple_at(700, 1400), (0.04734, 0.00906, -0.00906), decimal=5
+                assert fit.tuple_at(700, 1400) == pytest.approx(
+                    (0.04734, 0.00906, -0.00906), abs=0.00001
                 )
-                assert_almost_equals(fit(700, 1400), 0.04734, 5)
-                assert_almost_equals(fit.unc_p_at(700, 1400), +0.00906, 5)
-                assert_almost_equals(fit.unc_m_at(700, 1400), -0.00906, 5)
+
+                assert fit(700, 1400) == pytest.approx(0.04734, abs=0.00001)
+                assert fit.unc_p_at(700, 1400) == pytest.approx(+0.00906, abs=0.00001)
+                assert fit.unc_m_at(700, 1400) == pytest.approx(-0.00906, abs=0.00001)
 
                 # interpolation: for uncertainty, returns sensible results
                 for interp_axis in (1, 2):
@@ -131,16 +129,16 @@ class TestInterpolator(unittest.TestCase):
                     x2 = midpoint[x2a](1400, 1450) if interp_axis == 2 else 1400
                     y_upperend = 0.0390134 if interp_axis == 1 else 0.03822797
                     if kind == "linear":
-                        assert_almost_equals(
-                            fit(x1, x2), midpoint[ya](0.0473379, y_upperend), 5
+                        assert fit(x1, x2) == pytest.approx(
+                            midpoint[ya](0.0473379, y_upperend), abs=0.00001
                         )
                     else:
-                        ok_(y_upperend < fit(x1, x2) < 0.047337959)
-                    ok_(0.0075711 < fit.unc_p_at(x1, x2) < 0.0090594)
-                    ok_(0.0075711 < -fit.unc_m_at(x1, x2) < 0.0090594)
-                ok_(0.0316449 < fit(725, 1425) < 0.0473378)
-                ok_(0.0065051 < fit.unc_p_at(725, 1425) < 0.0090594)
-                ok_(0.0065051 < -fit.unc_m_at(725, 1425) < 0.0090594)
+                        assert y_upperend < fit(x1, x2) < 0.047337959
+                    assert 0.0075711 < fit.unc_p_at(x1, x2) < 0.0090594
+                    assert 0.0075711 < -fit.unc_m_at(x1, x2) < 0.0090594
+                assert 0.0316449 < fit(725, 1425) < 0.0473378
+                assert 0.0065051 < fit.unc_p_at(725, 1425) < 0.0090594
+                assert 0.0065051 < -fit.unc_m_at(725, 1425) < 0.0090594
 
     def test_scipy_grid_interpolator_nonstandard_args(self):
         """Verify ScipyGridInterp accepts/refuses args correctly."""
@@ -153,28 +151,28 @@ class TestInterpolator(unittest.TestCase):
                 value = test_method(777, 888)
                 if m == "tuple_at":
                     # the output should be (3,) array (or 3-element tuple)
-                    eq_(numpy.array(value).shape, (3,))
+                    assert numpy.array(value).shape == (3,)
                 else:
                     # it is a scalar
-                    ok_(self._is_scalar_number(value))
+                    assert self._is_scalar_number(value)
                 # method should accept keyword arguments
-                eq_(test_method(msq=777, mgl=888), value)
-                eq_(test_method(mgl=888, msq=777), value)
-                eq_(test_method(777, mgl=888), value)
+                assert test_method(msq=777, mgl=888) == value
+                assert test_method(mgl=888, msq=777) == value
+                assert test_method(777, mgl=888) == value
 
                 # method should not accept invalid arrays or numpy.ndarray with >0 dim.
                 for bad_input in ([[777]], [[777, 888], [789, 890]], [777, 888, 999]):
-                    with assert_raises((ValueError, TypeError, IndexError)):
+                    with pytest.raises((ValueError, TypeError, IndexError)):
                         test_method(bad_input)
-                    with assert_raises((ValueError, TypeError, IndexError)):
+                    with pytest.raises((ValueError, TypeError, IndexError)):
                         test_method(numpy.array(bad_input))
-                with assert_raises(TypeError):
+                with pytest.raises(TypeError):
                     test_method(777, 888, m_wino=100)
-                with assert_raises(TypeError):
+                with pytest.raises(TypeError):
                     test_method(777, m_wino=100)
-                with assert_raises(TypeError):
+                with pytest.raises(TypeError):
                     test_method(m_wino=100)
-                with assert_raises((IndexError, TypeError)):
+                with pytest.raises((IndexError, TypeError)):
                     test_method()
-                with assert_raises((IndexError, TypeError)):
+                with pytest.raises((IndexError, TypeError)):
                     test_method(777)
