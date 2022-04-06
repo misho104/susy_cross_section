@@ -15,7 +15,7 @@ __author__ = "Sho Iwamoto"
 __copyright__ = "Copyright (C) 2018-2022 Sho Iwamoto / Misho"
 __license__ = "MIT"
 __scriptname__ = "XS scraper"
-__version__ = "0.2.2"
+__version__ = "0.2.3"
 
 
 CrossSectionValueType = Union[float, str]  # because '10.0%' may be in the data
